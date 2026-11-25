@@ -2,12 +2,12 @@
   <!-- TE/ED: بنك الأنشطة المركزي — واجبات واختبارات المنصة والمعتمدة من المعلمين؛ يربطها أي معلم بقسمه -->
   <div>
     <PageHeader title="بنك الأنشطة" subtitle="واجبات واختبارات جاهزة من المنصة ومن زملائك (المعتمدة). اختر نشاطاً وأدرجه في قسمك بدرسه وآخر أجله." />
-    <div class="bar panel">
+    <div class="abar panel">
       <IconField class="q"><InputIcon class="pi pi-search" /><InputText v-model="q" placeholder="ابحث بالعنوان أو الدرس" fluid /></IconField>
-      <Select v-model="level" :options="[{ label: 'كل المستويات', value: null }, ...levelOpts]" option-label="label" option-value="value" />
-      <Select v-model="subject" :options="[{ label: 'كل المواد', value: null }, ...subjectOpts]" option-label="label" option-value="value" />
-      <Select v-model="kind" :options="[{ label: 'الكل', value: null }, { label: 'اختبارات', value: 'quiz' }, { label: 'واجبات', value: 'homework' }]" option-label="label" option-value="value" />
-      <Select v-model="qt" :options="[{ label: 'كل أنواع الأسئلة', value: null }, ...Object.entries(QTYPES).map(([value, x]) => ({ value, label: x.label }))]" option-label="label" option-value="value" />
+      <Select v-model="level" :options="levelOpts" placeholder="كل المستويات" show-clear option-label="label" option-value="value" />
+      <Select v-model="subject" :options="subjectOpts" placeholder="كل المواد" show-clear option-label="label" option-value="value" />
+      <Select v-model="kind" :options="[{ label: 'اختبارات', value: 'quiz' }, { label: 'واجبات', value: 'homework' }]" option-label="label" option-value="value" placeholder="اختبارات وواجبات" show-clear />
+      <Select v-model="qt" :options="Object.entries(QTYPES).map(([value, x]) => ({ value, label: x.label }))" option-label="label" option-value="value" placeholder="كل أنواع الأسئلة" show-clear />
       <span class="grow" />
       <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;اختبار جديد</RouterLink>
       <RouterLink to="/app/new-homework" class="p-button p-component p-button-sm p-button-outlined">واجب جديد</RouterLink>
@@ -78,7 +78,7 @@ onMounted(async () => {
 const levelOpts = computed(() => cat.levelOptions.filter((o) => all.value.some((a) => a.levelId === o.value)))
 const subjectOpts = computed(() => [...new Map(all.value.filter((a) => !level.value || a.levelId === level.value).map((a) => [a.subjectName, { label: a.subjectName, value: a.subjectName }])).values()])
 const list = computed(() => all.value.filter((a) => (!level.value || a.levelId === level.value) && (!subject.value || a.subjectName === subject.value) && (!kind.value || a.type === kind.value) && (!qt.value || a.qtypes?.includes(qt.value)) && (!q.value || [a.title, a.lessonTitle].some((v) => v?.includes(q.value)))))
-const canLink = (a) => myLevels.value.includes(a.levelId) && (a.origin === 'platform' || ['approved', 'temp', 'review', 'draft'].includes(a.status))
+const canLink = (a) => myLevels.value.includes(a.levelId) && (a.origin === 'platform' || a.status === 'approved' || a.authorId === auth.person.id)
 function link(a) {
   linkIt.value = a
   cur.value = null
@@ -87,7 +87,7 @@ function link(a) {
 </script>
 
 <style scoped>
-.bar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+.abar { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 .q { min-width: 220px; flex: 1; }
 .grow { flex: 1; }
 .cnt { margin: 0.75rem 0; font-size: 0.85rem; }

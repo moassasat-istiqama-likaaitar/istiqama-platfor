@@ -1,130 +1,154 @@
 <template>
-  <!-- TE17: الاختبارات الحضورية — ورقة اختبار مطبوعة بشعار المؤسسة والمدرسة، من بنك الأسئلة أو أسئلة حرة -->
+  <!-- TE17: بنك الاختبارات الحضورية — أفكار للمعلمين فقط: وثيقة الاختبار + الحلول + سلّم التنقيط.
+       تُنشر مباشرة دون مصادقة، لا تُدرج في الأقسام، ولا يراها التلميذ ولا الولي. يراها معلمو المستوى نفسه. -->
   <div>
-    <PageHeader title="الاختبارات الحضورية" subtitle="جهّز ورقة اختبار للقسم وتُطبع بترويسة المؤسسة والمدرسة، مع ورقة الإجابات للمعلم." />
-    <div class="ot">
-      <section class="panel">
-        <h3 class="sec">أوراقي</h3>
-        <ul class="papers">
-          <li v-for="p in papers" :key="p.id" :class="{ on: p.id === f.id }" @click="edit(p)"><b>{{ p.title }}</b><small class="muted">{{ p.className }} · {{ p.items.length }} أسئلة</small></li>
-          <li v-if="!papers.length" class="muted">لا أوراق بعد.</li>
-        </ul>
-        <Button label="ورقة جديدة" icon="pi pi-plus" text @click="reset" />
-      </section>
-
-      <section class="panel ed">
-        <div class="grid2">
-          <label class="fl full"><span>عنوان الورقة *</span><InputText v-model="f.title" fluid placeholder="مثال: الفرض الأول — الفصل الأول" /></label>
-          <label class="fl"><span>القسم *</span><Select v-model="f.classId" :options="cat.classOptions(auth.active.classIds)" option-label="label" option-value="value" fluid /></label>
-          <label class="fl"><span>المادة *</span><Select v-model="f.subjectId" :options="cat.subjectOptions(levelId)" option-label="label" option-value="value" fluid :disabled="!levelId" /></label>
-          <label class="fl"><span>المدة</span><InputText v-model="f.duration" fluid placeholder="ساعة واحدة" /></label>
-          <label class="fl"><span>التاريخ</span><InputText v-model="f.date" type="date" fluid /></label>
-        </div>
-        <div class="items-bar">
-          <h3 class="sec">الأسئلة ({{ f.items.length }})</h3>
-          <div>
-            <Button label="من بنك الأسئلة" icon="pi pi-database" outlined size="small" :disabled="!levelId" @click="openBank" />
-            <Button label="سؤال مقالي" icon="pi pi-plus" size="small" @click="f.items.push({ kind: 'open', q: '', points: 2, lines: 4 })" />
-          </div>
-        </div>
-        <div v-for="(it, i) in f.items" :key="i" class="it">
-          <span class="n">{{ i + 1 }}</span>
-          <div class="it__b">
-            <InputText v-model="it.q" fluid placeholder="نص السؤال" />
-            <small v-if="it.kind === 'mcq'" class="muted">اختيار من متعدد: {{ it.options.join(' / ') }}</small>
-          </div>
-          <InputNumber v-model="it.points" :min="0.5" :step="0.5" input-class="pts" title="النقاط" />
-          <button type="button" class="del" @click="f.items.splice(i, 1)"><i class="pi pi-trash" /></button>
-        </div>
-        <p class="muted total">المجموع: {{ f.items.reduce((n, x) => n + (x.points || 0), 0) }} نقطة</p>
-        <div class="actions">
-          <Button label="حفظ" severity="secondary" outlined :disabled="!valid" @click="persist(false)" />
-          <Button label="حفظ ومعاينة الطباعة" icon="pi pi-print" :disabled="!valid" @click="persist(true)" />
-        </div>
-      </section>
+    <PageHeader title="الاختبارات الحضورية" subtitle="بنك يستلهم منه معلمو المستوى: كل معلم يرفع اختباره مع الحلول وسلّم التنقيط. للمعلمين فقط — لا يصل التلاميذ ولا الأولياء." />
+    <div class="tabs">
+      <button type="button" class="pill" :class="{ 'is-active': tab === 'bank' }" @click="tab = 'bank'"><i class="pi pi-database" /> البنك <span class="pill__count">{{ list.length }}</span></button>
+      <button type="button" class="pill" :class="{ 'is-active': tab === 'up' }" @click="tab = 'up'"><i class="pi pi-upload" /> رفع اختبار</button>
     </div>
 
-    <Dialog v-model:visible="bankDlg" modal header="بنك الأسئلة" :style="{ width: 'min(720px, 96vw)' }">
-      <div class="bank">
-        <label v-for="b in bank" :key="b.id" class="bq"><Checkbox v-model="picked" :value="b.id" /><div><b>{{ b.q }}</b><small class="muted">{{ b.lessonTitle }}</small></div></label>
+    <template v-if="tab === 'bank'">
+      <div class="fbar panel">
+        <IconField class="q"><InputIcon class="pi pi-search" /><InputText v-model="q" placeholder="ابحث بالعنوان" fluid /></IconField>
+        <Select v-model="fl.level" :options="levelOpts" placeholder="كل مستوياتي" show-clear option-label="label" option-value="value" />
+        <Select v-model="fl.subject" :options="subjectNames" placeholder="كل المواد" show-clear option-label="label" option-value="value" />
+        <Select v-model="fl.season" :options="SEASONS.map((s) => ({ label: s, value: s }))" placeholder="كل المواسم" show-clear option-label="label" option-value="value" />
+        <Select v-model="fl.semester" :options="SEMESTERS" placeholder="كل السداسيات" show-clear option-label="label" option-value="value" />
       </div>
-      <template #footer><Button :label="`إضافة ${picked.length}`" :disabled="!picked.length" @click="addFromBank" /></template>
-    </Dialog>
+      <p class="muted cnt">{{ shown.length }} اختبار · من معلمي {{ levelOpts.map((l) => l.label).join('، ') }}</p>
+      <div class="grid">
+        <article v-for="t in shown" :key="t.id" class="card" :class="{ hid: t.hidden }">
+          <header><span class="ic"><i class="pi pi-file" /></span><div><b>{{ t.title }}</b><small class="muted">{{ t.subjectName }} · {{ t.levelName }}</small></div></header>
+          <div class="meta"><span>{{ t.kind }}</span><span>{{ t.season }}</span><span>السداسي {{ t.semester === 1 ? 'الأول' : 'الثاني' }}</span></div>
+          <ul class="files">
+            <li><i class="pi pi-file-pdf" /> الاختبار <small class="muted">{{ t.files.test }}</small></li>
+            <li v-if="t.files.solution"><i class="pi pi-check-square" /> الحلول <small class="muted">{{ t.files.solution }}</small></li>
+            <li v-if="t.files.grading"><i class="pi pi-list" /> سلّم التنقيط <small class="muted">{{ t.files.grading }}</small></li>
+          </ul>
+          <p v-if="t.notes" class="notes">{{ t.notes }}</p>
+          <footer>
+            <small class="muted"><i class="pi pi-user" /> {{ t.authorName }}</small>
+            <span>
+              <Button v-if="isEditor" :label="t.hidden ? 'إظهار' : 'إخفاء'" :icon="t.hidden ? 'pi pi-eye' : 'pi pi-eye-slash'" text size="small" severity="secondary" @click="hide(t)" />
+              <Button v-if="t.authorId === auth.person.id" icon="pi pi-trash" text rounded size="small" severity="danger" title="حذف" @click="del(t)" />
+              <Button label="تنزيل" icon="pi pi-download" size="small" outlined @click="toast.add({ severity: 'info', summary: 'يُنزَّل الملف بعد الربط بالخلفية', life: 2000 })" />
+            </span>
+          </footer>
+        </article>
+        <div v-if="!shown.length" class="panel empty">لا اختبارات بهذه التصفية.</div>
+      </div>
+    </template>
+
+    <form v-else class="panel up" @submit.prevent="send">
+      <label class="fl full"><span>العنوان *</span><InputText v-model="f.title" fluid placeholder="مثال: اختبار السداسي الأول — الفقه" /></label>
+      <label class="fl"><span>المستوى *</span><Select v-model="f.levelId" :options="levelOpts" option-label="label" option-value="value" fluid /></label>
+      <label class="fl"><span>المادة *</span><Select v-model="f.subjectId" :options="cat.subjectOptions(f.levelId)" option-label="label" option-value="value" fluid :disabled="!f.levelId" /></label>
+      <label class="fl"><span>الموسم *</span><Select v-model="f.season" :options="SEASONS" fluid /></label>
+      <label class="fl"><span>السداسي *</span><Select v-model="f.semester" :options="SEMESTERS" option-label="label" option-value="value" fluid /></label>
+      <label class="fl"><span>النوع</span><Select v-model="f.kind" :options="['فرض', 'اختبار', 'اختبار تجريبي']" fluid /></label>
+      <div class="full files-in">
+        <label v-for="k in FILES" :key="k.key" class="drop" :class="{ has: f.files[k.key] }">
+          <i :class="k.icon" /><b>{{ k.label }}{{ k.req ? ' *' : '' }}</b>
+          <small class="muted">{{ f.files[k.key] || 'اختر ملفاً (PDF / Word / صورة)' }}</small>
+          <input type="file" @change="(e) => (f.files[k.key] = e.target.files[0]?.name || null)" />
+        </label>
+      </div>
+      <label class="fl full"><span>ملاحظات للزملاء</span><Textarea v-model="f.notes" rows="2" auto-resize fluid placeholder="مثال: يناسب حصة ساعة، ركّزت فيه على التطبيق" /></label>
+      <p class="muted small full"><i class="pi pi-info-circle" /> يُنشر مباشرة في البنك لمعلمي المستوى نفسه، ويظهر في «ملفاتي». لا يُدرج في الأقسام ولا يراه التلاميذ.</p>
+      <div class="full act"><Button type="submit" label="نشر في البنك" icon="pi pi-upload" :loading="busy" :disabled="!valid" /></div>
+    </form>
   </div>
 </template>
 
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
-import InputNumber from 'primevue/inputnumber'
+import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
-import Checkbox from 'primevue/checkbox'
-import Dialog from 'primevue/dialog'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
 import PageHeader from '@/components/PageHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalog } from '@/composables/useCatalog'
-import { questionBank, listOfflineTests, saveOfflineTest } from '@/api/teaching'
+import { offlineBank, uploadOfflineTest, removeOfflineTest, setOfflineHidden } from '@/api/teaching'
 
 const auth = useAuthStore()
 const cat = useCatalog()
-const router = useRouter()
 const toast = useToast()
-const blank = () => ({ id: null, title: '', classId: auth.active.classIds?.[0] || null, subjectId: null, duration: 'ساعة واحدة', date: '', items: [] })
+const SEASONS = ['2026 / 2027', '2025 / 2026', '2024 / 2025']
+const SEMESTERS = [{ label: 'السداسي الأول', value: 1 }, { label: 'السداسي الثاني', value: 2 }]
+const FILES = [{ key: 'test', label: 'وثيقة الاختبار', icon: 'pi pi-file-pdf', req: true }, { key: 'solution', label: 'الحلول', icon: 'pi pi-check-square' }, { key: 'grading', label: 'سلّم التنقيط', icon: 'pi pi-list' }]
+const isEditor = computed(() => auth.role === 'editor')
+const myLevels = computed(() => (isEditor.value ? (auth.active.levels || []).map((l) => l.id) : [...new Set((auth.active.classIds || []).map(cat.levelOfClass))]))
+const levelOpts = computed(() => cat.levelOptions.filter((o) => myLevels.value.includes(o.value)))
+const tab = ref('bank')
+const list = ref([])
+const q = ref('')
+const fl = reactive({ level: null, subject: null, season: null, semester: null })
+const blank = () => ({ title: '', levelId: myLevels.value[0] || null, subjectId: null, season: SEASONS[0], semester: 1, kind: 'اختبار', files: { test: null, solution: null, grading: null }, notes: '' })
 const f = reactive(blank())
-const papers = ref([])
-const bankDlg = ref(false)
-const bank = ref([])
-const picked = ref([])
-const levelId = computed(() => cat.levelOfClass(f.classId))
-const valid = computed(() => f.title.trim() && f.classId && f.subjectId && f.items.length)
-const load = async () => (papers.value = await listOfflineTests(auth.person.id))
+const busy = ref(false)
+const valid = computed(() => f.title.trim() && f.subjectId && f.files.test)
+const subjectNames = computed(() => [...new Set(list.value.map((t) => t.subjectName))].map((n) => ({ label: n, value: n })))
+const shown = computed(() => list.value.filter((t) => (!fl.level || t.levelId === fl.level) && (!fl.subject || t.subjectName === fl.subject) && (!fl.season || t.season === fl.season) && (!fl.semester || t.semester === fl.semester) && (!q.value || t.title.includes(q.value))))
+const load = async () => (list.value = await offlineBank({ levels: myLevels.value, curator: isEditor.value }))
 onMounted(load)
-const reset = () => Object.assign(f, blank())
-const edit = (p) => Object.assign(f, JSON.parse(JSON.stringify(p)))
-async function openBank() {
-  picked.value = []
-  bank.value = await questionBank(levelId.value, f.subjectId)
-  bankDlg.value = true
+async function send() {
+  busy.value = true
+  try {
+    await uploadOfflineTest(auth.person, JSON.parse(JSON.stringify(f)))
+    toast.add({ severity: 'success', summary: 'نُشر في البنك', detail: 'متاح لمعلمي المستوى، ويظهر في ملفاتي', life: 2800 })
+    Object.assign(f, blank())
+    tab.value = 'bank'
+    load()
+  } catch (e) {
+    toast.add({ severity: 'warn', summary: e.message, life: 2500 })
+  } finally {
+    busy.value = false
+  }
 }
-function addFromBank() {
-  bank.value.filter((b) => picked.value.includes(b.id)).forEach((b) => f.items.push({ kind: 'mcq', q: b.q, options: b.options, answer: b.answer, points: 1 }))
-  bankDlg.value = false
+async function hide(t) {
+  await setOfflineHidden(t.id, !t.hidden)
+  load()
 }
-async function persist(print) {
-  const saved = await saveOfflineTest(auth.person, { ...JSON.parse(JSON.stringify(f)), className: cat.classes.find((c) => c.id === f.classId)?.name, subjectName: cat.subjects.find((s) => s.id === f.subjectId)?.name, schoolId: auth.active.school?.id })
-  f.id = saved.id
-  await load()
-  toast.add({ severity: 'success', summary: 'حُفظت الورقة', life: 1800 })
-  if (print) router.push({ name: 'offline-print', params: { id: saved.id } })
+async function del(t) {
+  await removeOfflineTest(t.id)
+  toast.add({ severity: 'info', summary: 'حُذف', life: 1800 })
+  load()
 }
 </script>
 
 <style scoped>
-.ot { display: grid; grid-template-columns: 260px 1fr; gap: 1rem; align-items: start; }
-.sec { font-size: 1rem; margin: 0 0 0.6rem; }
-.papers { list-style: none; margin: 0 0 0.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-.papers li { padding: 0.55rem 0.7rem; border-radius: 10px; cursor: pointer; border: 1px solid transparent; }
-.papers li:hover, .papers li.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 5%, #fff); }
-.papers b { display: block; font-size: 0.88rem; }
-.papers small { font-size: 0.76rem; }
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem 1rem; margin-bottom: 1rem; }
+.tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.fbar { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.q { flex: 1; min-width: 200px; }
+.cnt { margin: 0.75rem 0; font-size: 0.85rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.9rem; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.55rem; }
+.card.hid { opacity: 0.55; border-style: dashed; }
+.card header { display: flex; gap: 0.6rem; }
+.card header b { display: block; }
+.ic { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; background: color-mix(in srgb, var(--brand) 12%, transparent); color: var(--brand); flex-shrink: 0; }
+.meta { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.meta span { font-size: 0.74rem; background: #f0f2f6; border-radius: 999px; padding: 0.1rem 0.55rem; }
+.files { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; }
+.files i { color: var(--brand); margin-inline-end: 0.3rem; }
+.notes { margin: 0; font-size: 0.84rem; background: var(--bg); padding: 0.4rem 0.6rem; border-radius: 8px; }
+.card footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; }
+.empty { text-align: center; padding: 2rem; grid-column: 1 / -1; }
+.up { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem 1rem; max-width: 900px; }
 .full { grid-column: 1 / -1; }
 .fl { display: flex; flex-direction: column; gap: 0.3rem; }
 .fl > span { font-weight: 700; font-size: 0.86rem; }
-.items-bar { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.6rem; }
-.items-bar > div { display: flex; gap: 0.4rem; }
-.it { display: grid; grid-template-columns: auto 1fr 90px auto; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem; }
-.it__b small { font-size: 0.76rem; }
-.n { width: 26px; height: 26px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; font-weight: 800; font-size: 0.85rem; }
-:deep(.pts) { width: 80px; }
-.del { border: 0; background: none; color: #b42318; cursor: pointer; }
-.total { text-align: end; margin: 0.5rem 0; }
-.actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
-.bank { display: flex; flex-direction: column; gap: 0.4rem; max-height: 55vh; overflow: auto; }
-.bq { display: flex; gap: 0.6rem; padding: 0.55rem; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; }
-.bq b { display: block; font-size: 0.88rem; }
-@media (max-width: 900px) { .ot { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; } }
+.files-in { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+.drop { border: 2px dashed var(--line); border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; text-align: center; cursor: pointer; }
+.drop.has { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 5%, transparent); }
+.drop i { font-size: 1.5rem; color: var(--brand); }
+.drop input { display: none; }
+.small { font-size: 0.8rem; margin: 0; }
+.act { display: flex; justify-content: flex-end; }
+@media (max-width: 860px) { .up, .files-in { grid-template-columns: 1fr; } }
 </style>

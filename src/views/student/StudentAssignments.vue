@@ -14,7 +14,7 @@
       <RouterLink v-for="a in visible" :key="a.id" :to="`/app/activity/${a.id}`" class="k-card" :style="{ '--c': a.subject.color }">
         <span class="k-card__icon"><i :class="a.type === 'quiz' ? 'pi pi-question' : 'pi pi-pencil'" /></span>
         <strong>{{ a.type === 'quiz' ? 'لعبة أسئلة' : 'واجب' }}</strong>
-        <span>{{ a.lesson.title }}</span>
+        <span>{{ a.label }}</span>
         <span v-if="a.state === 'graded'" class="k-card__stars"><i v-for="n in 3" :key="n" class="pi" :class="n <= Math.round((a.score / a.maxScore) * 3) ? 'pi-star-fill' : 'pi-star'" /></span>
         <span v-else-if="a.state === 'submitted'" class="k-card__tag">أرسلته ✓</span>
         <span v-else class="k-card__tag" :class="{ late: a.state === 'late' }">{{ due(a).text }}</span>
@@ -25,10 +25,10 @@
     <div v-else-if="theme === 'juniors'" class="j-log">
       <RouterLink v-for="a in visible" :key="a.id" :to="`/app/activity/${a.id}`" class="j-item" :style="{ '--c': a.subject.color }">
         <span class="j-item__box" :class="a.state"><i :class="a.state === 'graded' || a.state === 'submitted' ? 'pi pi-check' : a.type === 'quiz' ? 'pi pi-question' : 'pi pi-pencil'" /></span>
-        <div class="j-item__b"><small>{{ a.subject.name }} · {{ a.type === 'quiz' ? 'تحدي' : 'مهمة' }}</small><strong>{{ a.lesson.title }}</strong></div>
+        <div class="j-item__b"><small>{{ a.subject.name }} · {{ a.type === 'quiz' ? 'تحدي' : 'مهمة' }}</small><strong>{{ a.label }}</strong></div>
         <span v-if="a.state === 'graded'" class="j-item__score">{{ a.score }}/{{ a.maxScore }}</span>
         <span v-else class="chip" :data-hue="a.state === 'submitted' ? 'blue' : due(a).hue">{{ a.state === 'submitted' ? 'بانتظار المعلم' : due(a).text }}</span>
-        <span class="j-item__xp">+{{ a.type === 'quiz' ? 25 : 15 }} XP</span>
+        <span class="j-item__xp">{{ a.type === 'quiz' ? `حتى +${10 + 5 * (a.questionsCount || 0)}` : '+15' }} نقطة</span>
       </RouterLink>
     </div>
 
@@ -37,7 +37,7 @@
       <thead><tr><th>العمل</th><th class="hide-sm">المقرر</th><th>الأجل</th><th>الحالة</th><th>العلامة</th></tr></thead>
       <tbody>
         <tr v-for="a in visible" :key="a.id" @click="$router.push(`/app/activity/${a.id}`)">
-          <td><span class="type">{{ a.type === 'quiz' ? 'اختبار' : 'واجب' }}</span> {{ a.lesson.title }} <span v-if="a.required" class="req">إلزامي</span></td>
+          <td><span class="type">{{ a.type === 'quiz' ? 'اختبار' : 'واجب' }}</span> {{ a.label }} <span v-if="a.required" class="req">إلزامي</span></td>
           <td class="hide-sm"><span class="sq" :style="{ background: a.subject.color }" />{{ a.subject.name }}</td>
           <td class="num">{{ shortDate(a.due) }}</td>
           <td><span class="st" :class="`st--${a.state}`">{{ t(`student.state.${a.state}`) }}</span></td>

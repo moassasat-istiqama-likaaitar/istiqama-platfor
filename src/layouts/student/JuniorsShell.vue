@@ -4,7 +4,7 @@
     <header class="j-top">
       <div class="j-top__row">
         <RouterLink :to="{ name: 'home' }" class="j-logo"><BrandPair :school="brand.school" :branding="brand.branding" :size="36" tone="light" names /></RouterLink>
-        <div class="j-level" v-tooltip.bottom="`${student.stars} XP`">
+        <div class="j-level" v-tooltip.bottom="`${student.stars} نقطة`">
           <span class="j-level__badge">{{ level }}</span>
           <div class="j-level__info">
             <small>مستوى المستكشف</small>

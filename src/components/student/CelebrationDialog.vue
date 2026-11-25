@@ -4,7 +4,7 @@
       <div v-if="theme === 'kids'" class="celeb__mascot"><Mascot mood="happy" bounce :color="'#ffc93c'" :accent="'var(--brand)'" /></div>
       <div v-else class="celeb__icon" :class="`celeb__icon--${theme}`"><i :class="theme === 'juniors' ? 'pi pi-trophy' : 'pi pi-check'" /></div>
       <h2>{{ c.title || t(`student.bravo.${theme}`) }}</h2>
-      <div v-if="c.gained" class="celeb__gain"><i class="pi pi-star-fill" /> <bdi dir="ltr">{{ t('student.gained', { n: c.gained }) }}<template v-if="theme === 'juniors'"> XP</template></bdi></div>
+      <div v-if="c.gained" class="celeb__gain"><i class="pi pi-star-fill" /> <bdi dir="ltr">{{ t('student.gained', { n: c.gained }) }}<template v-if="theme === 'juniors'"> نقطة</template></bdi></div>
       <div v-for="b in c.badges" :key="b.id" class="celeb__badge">
         <span class="celeb__badge-icon"><i :class="b.icon" /></span>
         <div><small>{{ t('student.newBadge') }}</small><strong>{{ b.title }}</strong></div>

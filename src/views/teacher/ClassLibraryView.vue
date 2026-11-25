@@ -3,13 +3,13 @@
   <div class="cl">
     <PageHeader title="مكتبة القسم" :subtitle="isEditor ? 'اختر قسماً بعينه، أو المستوى كقسم واحد: ما تدرجه فيه يصل كل أقسامه إجبارياً.' : 'ما يصل تلاميذ القسم، مرتباً كالمكتبة المركزية. الأساسي ثابت، وما أدرجته أنت يمكنك إزالته.'" />
 
-    <div class="bar panel">
-      <Select v-model="target" :options="targetOpts" option-label="label" option-value="value" option-group-label="label" option-group-children="items" class="bar__sel" />
-      <IconField class="bar__q"><InputIcon class="pi pi-search" /><InputText v-model="q" placeholder="ابحث في الدروس والمحتوى" fluid /></IconField>
-      <div class="bar__chips">
+    <div class="clbar panel">
+      <Select v-model="target" :options="targetOpts" option-label="label" option-value="value" option-group-label="label" option-group-children="items" class="clbar__sel" />
+      <IconField class="clbar__q"><InputIcon class="pi pi-search" /><InputText v-model="q" placeholder="ابحث في الدروس والمحتوى" fluid /></IconField>
+      <div class="clbar__chips">
         <button v-for="f in FILTERS" :key="f.key" type="button" class="pill" :class="{ 'is-active': show === f.key }" @click="show = f.key">{{ f.label }}</button>
       </div>
-      <div class="bar__links">
+      <div class="clbar__links">
         <RouterLink to="/app/central-library" class="p-button p-component p-button-outlined p-button-sm"><i class="pi pi-book" />&nbsp;من المكتبة المركزية</RouterLink>
         <RouterLink to="/app/activities" class="p-button p-component p-button-outlined p-button-sm"><i class="pi pi-pencil" />&nbsp;من بنك الأنشطة</RouterLink>
         <RouterLink to="/app/upload-content" class="p-button p-component p-button-sm"><i class="pi pi-upload" />&nbsp;رفع</RouterLink>
@@ -46,6 +46,7 @@
                     <span v-else-if="it.source === 'link'" class="bd bd--link"><i class="pi pi-link" /> أدرجته</span>
                     <span v-if="it.source === 'mine'" class="bd bd--mine"><i class="pi pi-user" /> من رفعي</span>
                     <span v-if="it.temp" class="bd bd--temp"><i class="pi pi-hourglass" /> مؤقت</span>
+                    <span v-if="it.isAct && it.visibleToStudents === false" class="bd bd--wait" title="لا يراه التلاميذ حتى يصادق عليه المدير أو يعتمده المحرر"><i class="pi pi-eye-slash" /> بانتظار المصادقة</span>
                   </span>
                   <Button v-if="it.linkId && (!it.mandatory || isEditor)" icon="pi pi-times" text rounded size="small" severity="secondary" title="إزالة من القسم" @click="unlink(it)" />
                 </li>
@@ -96,7 +97,7 @@ async function load() {
   if (!target.value) return
   loading.value = true
   const [k, id] = [target.value.slice(0, 1), target.value.slice(2)]
-  data.value = await (k === 'L' ? levelLibrary(id) : classLibrary(id))
+  data.value = await (k === 'L' ? levelLibrary(id) : classLibrary(id, auth.person.id))
   // تُفتح المادة الأولى فقط؛ البقية مطوية حتى لا تطول الصفحة
   closed.value = new Set(tree.value.slice(1).map((s) => s.name))
   loading.value = false
@@ -148,11 +149,11 @@ async function unlink(it) {
 </script>
 
 <style scoped>
-.bar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 0.6rem; }
-.bar__sel { min-width: 240px; }
-.bar__q { flex: 1; min-width: 200px; }
-.bar__chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
-.bar__links { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.clbar { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; margin-bottom: 0.6rem; }
+.clbar__sel { min-width: 240px; }
+.clbar__q { flex: 1; min-width: 200px; }
+.clbar__chips { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.clbar__links { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; margin-bottom: 1rem; }
 .empty { text-align: center; padding: 2rem; }
 .subj { border-radius: 18px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 1rem; overflow: hidden; }
@@ -179,5 +180,6 @@ async function unlink(it) {
 .bd--lock { background: #eef1f6; color: #3d4a5c; }
 .bd--link { background: #e8f3ff; color: #1d5fa8; }
 .bd--mine { background: #f3ecff; color: #6a3fb5; }
+.bd--wait { background: #f1f1f4; color: #6b6b7b; }
 .bd--temp { background: #fff3d6; color: #8a5a00; }
 </style>

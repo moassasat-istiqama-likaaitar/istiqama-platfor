@@ -50,6 +50,8 @@ const routes = [
       { path: 'my-files', name: 'my-files', component: () => import('@/views/teacher/MyFilesView.vue'), meta: { roles: ['teacher', 'editor'] } },
       { path: 'offline-tests', name: 'offline-tests', component: () => import('@/views/teacher/OfflineTestsView.vue'), meta: { roles: ['teacher', 'editor'] } },
       // ——— التحرير ———
+      { path: 'lesson-opening', name: 'lesson-opening', component: () => import('@/views/editor/LessonOpeningView.vue'), meta: { roles: ['editor'] } },
+      { path: 'activities-review', name: 'activities-review', component: () => import('@/views/editor/ReviewView.vue'), meta: { roles: ['editor', 'admin', 'super_admin'] } },
       { path: 'library-review', name: 'library-review', component: () => import('@/views/editor/ReviewView.vue'), meta: { roles: ['editor', 'admin', 'super_admin'] } },
       { path: 'activities', name: 'activities', component: () => import('@/views/library/ActivitiesBankView.vue'), meta: { roles: ['teacher', 'editor', 'admin', 'super_admin'] } },
       { path: 'editor-reports', name: 'editor-reports', component: () => import('@/views/editor/EditorReports.vue'), meta: { roles: ['editor'] } },

@@ -14,7 +14,7 @@ export default {
     teaching: 'Mes classes', 'my-library': 'Bibliothèque de classe',
     home: 'Accueil', users: 'Utilisateurs', 'users-list': 'Liste des utilisateurs', 'users-import': 'Import groupé',
     'users-duplicates': 'Comptes en double', 'activity-log': "Journal d'activité", library: 'Bibliothèque',
-    'library-manage': 'Contenu numérique', 'library-review': 'Révision et validation', activities: 'Activités et évaluations',
+    'library-manage': 'Contenu numérique', 'lesson-opening': 'Ouverture des leçons', 'activities-review': 'Révision des activités', 'library-review': 'Révision et validation', activities: 'Activités et évaluations',
     'activities-group': 'Activités et évaluations', reports: 'Rapports', 'reports-general': 'Rapports généraux',
     'reports-schools': 'Performance des écoles', 'reports-files': 'Statistiques des fichiers', 'reports-engagement': "Qualité de l'interaction",
     settings: 'Paramètres généraux', schools: 'Écoles', levels: 'Cycles et niveaux', seasons: 'Années scolaires',

@@ -14,7 +14,7 @@ export default {
     teaching: 'أقسامي', 'my-library': 'مكتبة القسم',
     home: 'الرئيسية', users: 'المستخدمون', 'users-list': 'قائمة المستخدمين', 'users-import': 'الاستيراد الجماعي',
     'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل النشاطات', library: 'المكتبة',
-    'library-manage': 'المحتوى الرقمي', 'library-review': 'المراجعة والمصادقة', activities: 'بنك الأنشطة',
+    'library-manage': 'المحتوى الرقمي', 'lesson-opening': 'فتح الدروس', 'activities-review': 'مراجعة الأنشطة', 'library-review': 'المراجعة والمصادقة', activities: 'بنك الأنشطة',
     'activities-group': 'الأنشطة والتقييمات', reports: 'التقارير', 'reports-general': 'تقارير عامة',
     'reports-schools': 'أداء المدارس', 'reports-files': 'إحصائيات الملفات', 'reports-engagement': 'جودة التفاعل',
     settings: 'الإعدادات العامة', schools: 'المدارس', levels: 'الأطوار والمستويات', seasons: 'المواسم الدراسية',
@@ -121,7 +121,7 @@ export default {
       homework: 'الواجبات', interactions: 'التفاعلات', bySubject: 'حسب المادة', allBadges: 'كل الشارات', locked: 'لم تُفتح بعد' }
   },
   library: {
-    title: 'المكتبة المركزية', subtitle: 'كل المحتوى والأنشطة المرفوعة، مصنّفة حسب المستوى والمادة والدرس',
+    title: 'المكتبة المركزية', subtitle: 'المحتوى التعليمي المعتمد، مرتباً كمكتبة القسم: المادة ← المحور ← الدرس',
     search: 'ابحث بالعنوان أو الكلمات المفتاحية', level: 'المستوى', subject: 'المادة', type: 'النوع', classification: 'التصنيف',
     status: 'الحالة', all: 'الكل', results: '{n} عنصر', empty: 'لا توجد نتائج بهذه المرشحات', reset: 'مسح المرشحات',
     statuses: { approved: 'معتمد', temp: 'معتمد مؤقتاً', pending: 'قيد المراجعة', draft: 'مسودة', rejected: 'غير معتمد' },

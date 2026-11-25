@@ -7,11 +7,11 @@
         <label class="fl full"><span>عنوان الاختبار *</span><InputText v-model="q.title" fluid placeholder="مثال: اختبار قصير — أحكام الطهارة" /></label>
         <label class="fl"><span>{{ tg.isEditor.value ? 'أين يُنشر؟ (المستوى كقسم واحد أو قسم)' : 'الأقسام *' }}</span><MultiSelect v-model="q.targets" :options="targetOpts" option-label="label" option-value="value" display="chip" fluid placeholder="اختر" /></label>
         <label class="fl"><span>المادة *</span><Select v-model="q.subjectId" :options="cat.subjectOptions(levelId)" option-label="label" option-value="value" fluid :disabled="!levelId" /></label>
-        <label class="fl"><span>الدرس</span><Select v-model="q.lessonId" :options="[{ label: '— بلا درس —', value: null }, ...cat.lessonOptions(q.subjectId)]" option-label="label" option-value="value" filter fluid :disabled="!q.subjectId" /></label>
+        <label class="fl"><span>الدرس</span><Select v-model="q.lessonId" placeholder="— بلا درس —" :options="[{ label: '— بلا درس —', value: null }, ...cat.linkLessonOptions(q.subjectId)]" option-label="label" option-value="value" option-disabled="disabled" filter fluid :disabled="!q.subjectId" /></label>
         <label class="fl"><span>المدة (دقائق)</span><InputNumber v-model="q.minutes" :min="0" :max="180" fluid placeholder="بلا حدّ" /></label>
         <label class="fl"><span>آخر أجل</span><InputText v-model="q.due" type="datetime-local" fluid /></label>
         <label class="fl sw full"><ToggleSwitch v-model="q.showAnswers" /> <span>إظهار الإجابات الصحيحة بعد التسليم</span></label>
-        <label v-if="!tg.isEditor.value" class="fl sw full"><ToggleSwitch v-model="toCentral" /> <span>إرساله للمكتبة المركزية (بنك الأنشطة) ليستفيد منه زملائي</span></label>
+        <p v-if="!tg.isEditor.value" class="muted small full"><i class="pi pi-info-circle" /> يُرسل تلقائياً للمكتبة المركزية للمراجعة، ولا يراه التلاميذ حتى يصادق عليه مدير المدرسة أو يعتمده المحرر.</p>
         <p v-else class="muted small">ما ينشره المحرر يدخل بنك الأنشطة معتمداً، وما يُنشر على المستوى إجباري لكل أقسامه.</p>
       </section>
 
@@ -115,7 +115,6 @@ const targetOpts = computed(() => tg.options())
 const week = () => new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 16)
 const blank = () => ({ title: '', targets: targetOpts.value.slice(0, 1).map((o) => o.value), subjectId: null, lessonId: null, minutes: 15, due: week(), showAnswers: true, questions: [] })
 const q = reactive(blank())
-const toCentral = ref(true)
 const mode = ref('edit')
 const busy = ref(false)
 const bankDlg = ref(false)
@@ -171,9 +170,9 @@ async function save(publish) {
   busy.value = true
   const { targets, due, ...rest } = JSON.parse(JSON.stringify(q))
   rest.questions = rest.questions.map(({ key, ...x }) => x)
-  const r = await createActivity(auth.person, { kind: 'quiz', ...rest, levelId: levelId.value }, { targets: publish ? tg.decode(targets) : [], due, submit: publish && toCentral.value, byRole: auth.role })
+  const r = await createActivity(auth.person, { kind: 'quiz', ...rest, levelId: levelId.value }, { targets: publish ? tg.decode(targets) : [], due, submit: publish, byRole: auth.role })
   busy.value = false
-  toast.add({ severity: 'success', summary: !publish ? 'حُفظت المسودة' : `نُشر في ${r.reached} قسم`, detail: publish && toCentral.value && !tg.isEditor.value ? 'وأُرسل للمكتبة المركزية للمراجعة' : '', life: 3000 })
+  toast.add({ severity: 'success', summary: !publish ? 'حُفظت المسودة' : `نُشر في ${r.reached} قسم`, detail: publish && !tg.isEditor.value ? 'يظهر للتلاميذ بعد مصادقة المدير أو اعتماد المحرر' : '', life: 3000 })
   Object.assign(q, blank())
 }
 </script>

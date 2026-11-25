@@ -6,8 +6,13 @@
     <div class="tabs">
       <button type="button" class="pill" :class="{ 'is-active': tab === 'files' }" @click="tab = 'files'"><i class="pi pi-folder" /> المحتوى <span class="pill__count">{{ files.length }}</span></button>
       <button type="button" class="pill" :class="{ 'is-active': tab === 'acts' }" @click="tab = 'acts'"><i class="pi pi-pencil" /> الواجبات والاختبارات <span class="pill__count">{{ acts.length }}</span></button>
+      <button type="button" class="pill" :class="{ 'is-active': tab === 'offline' }" @click="tab = 'offline'"><i class="pi pi-print" /> الاختبارات الحضورية <span class="pill__count">{{ offline.length }}</span></button>
     </div>
-    <RecordTable :rows="tab === 'files' ? files : acts" :columns="cols" :search-keys="['title', 'subjectName']" :filters="[{ key: 'status', label: 'الحالة', options: Object.entries(LIFECYCLE).map(([value, x]) => ({ value, label: x.label })) }]" :unit="tab === 'files' ? 'ملف' : 'نشاط'" empty-text="لا شيء بعد">
+    <RecordTable v-if="tab === 'offline'" :rows="offline" :columns="[{ field: 'title', label: 'العنوان' }, { field: 'kind', label: 'النوع' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' }, { field: 'season', label: 'الموسم' }, { field: 'semLabel', label: 'السداسي' }, { field: 'at', label: 'نُشر', type: 'date' }]" :search-keys="['title']" unit="اختبار" empty-text="لم ترفع اختباراً حضورياً بعد">
+      <template #cell-title="{ row }"><b>{{ row.title }}</b><small v-if="row.hidden" class="note rejected">أخفاه المحرر</small></template>
+      <template #toolbar><RouterLink to="/app/offline-tests" class="p-button p-component p-button-sm"><i class="pi pi-upload" />&nbsp;رفع اختبار حضوري</RouterLink></template>
+    </RecordTable>
+    <RecordTable v-else :rows="tab === 'files' ? files : acts" :columns="cols" :search-keys="['title', 'subjectName']" :filters="[{ key: 'status', label: 'الحالة', options: Object.entries(LIFECYCLE).map(([value, x]) => ({ value, label: x.label })) }]" :unit="tab === 'files' ? 'ملف' : 'نشاط'" empty-text="لا شيء بعد">
       <template #cell-title="{ row }"><b>{{ row.title }}</b><small v-if="row.note" class="note" :class="row.status"><i class="pi pi-comment" /> {{ row.status === 'rejected' ? 'سبب الرفض' : 'المطلوب تعديله' }}: {{ row.note }}</small></template>
       <template #actions="{ row }">
         <template v-if="row.status === 'draft'">
@@ -37,7 +42,7 @@ import StatusTag from '@/components/ui/StatusTag.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalog } from '@/composables/useCatalog'
 import { LIFECYCLE, classLabel } from '@/composables/useStatusLabels'
-import { myUploads, listMyActivities, removeUpload, submitUpload, submitActivity } from '@/api/teaching'
+import { myOfflineUploads, myUploads, listMyActivities, removeUpload, submitUpload, submitActivity } from '@/api/teaching'
 import { teacherActs } from '@/api/bank'
 
 const auth = useAuthStore()
@@ -46,11 +51,13 @@ const toast = useToast()
 const tab = ref('files')
 const files = ref([])
 const acts = ref([])
+const offline = ref([])
 const cols = computed(() => tab.value === 'files'
   ? [{ field: 'title', label: 'العنوان' }, { field: 'typeLabel', label: 'النوع' }, { field: 'classLabel', label: 'التصنيف' }, { field: 'subjectName', label: 'المادة' }, { field: 'at', label: 'التاريخ', type: 'date' }, { field: 'status', label: 'الحالة', type: 'status' }]
   : [{ field: 'title', label: 'العنوان' }, { field: 'kindLabel', label: 'النوع' }, { field: 'count', label: 'الأسئلة' }, { field: 'subjectName', label: 'المادة' }, { field: 'at', label: 'أُنشئ', type: 'date' }, { field: 'status', label: 'الحالة', type: 'status' }])
 async function load() {
   files.value = (await myUploads(auth.person.id)).map((u) => ({ ...u, typeLabel: cat.TYPE_LABEL[u.type], classLabel: classLabel(u.classification || u.proposedClass) + (u.classification ? '' : ' (مقترح)') }))
+  offline.value = (await myOfflineUploads(auth.person.id)).map((t) => ({ ...t, semLabel: t.semester === 1 ? 'الأول' : 'الثاني' }))
   acts.value = (await listMyActivities(auth.person.id)).map((a) => ({ ...a, kindLabel: a.kind === 'quiz' ? 'اختبار' : 'واجب', count: a.questions?.length || '—', subjectName: cat.subjects.find((s) => s.id === a.subjectId)?.name }))
 }
 onMounted(load)

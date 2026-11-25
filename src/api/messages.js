@@ -85,6 +85,16 @@ function contactsFor(assignmentId) {
   if (!me) return []
   const teachersOfClass = (classId) => assignments.filter((a) => a.role === 'teacher' && a.classIds?.includes(classId))
   const managerOf = (schoolId) => assignments.filter((a) => a.role === 'school_manager' && a.schoolId === schoolId)
+  /*
+   * قواعد المراسلة:
+   *  التلميذ ← معلمو قسمه.  المعلم ← تلاميذ أقسامه وأولياؤهم + مدير مدرسته.
+   *  الولي ← مدير مدرسة ابنه فقط (لا يبدأ مراسلة المعلم؛ يردّ إن راسله المعلم).
+   *  المدير ← معلمو مدرسته + أولياء تلاميذها.  المحرر ← معلمو مستوياته + الإدارة.
+   */
+  const parentsOfSchool = (schoolId) => {
+    const kids = assignments.filter((a) => a.role === 'student' && a.schoolId === schoolId).map((a) => a.personId)
+    return assignments.filter((a) => a.role === 'parent' && a.childIds?.some((c) => kids.includes(c)))
+  }
   let list = []
   if (me.role === 'teacher') {
     const students = assignments.filter((a) => a.role === 'student' && me.classIds.includes(a.classId))
@@ -95,10 +105,13 @@ function contactsFor(assignmentId) {
   } else if (me.role === 'parent') {
     me.childIds.forEach((cid) => {
       const s = assignments.find((a) => a.personId === cid && a.role === 'student')
-      if (s) list.push(...teachersOfClass(s.classId), ...managerOf(s.schoolId))
+      if (s) list.push(...managerOf(s.schoolId))
     })
   } else if (me.role === 'school_manager') {
-    list = assignments.filter((a) => a.role === 'teacher' && a.schoolId === me.schoolId)
+    list = [...assignments.filter((a) => a.role === 'teacher' && a.schoolId === me.schoolId), ...parentsOfSchool(me.schoolId)]
+  } else if (me.role === 'editor') {
+    const cls = classes.filter((c) => (me.levelIds || []).includes(c.levelId)).map((c) => c.id)
+    list = [...assignments.filter((a) => a.role === 'teacher' && a.classIds?.some((c) => cls.includes(c))), ...assignments.filter((a) => ['super_admin', 'admin', 'editor'].includes(a.role))]
   } else {
     list = assignments.filter((a) => ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'support'].includes(a.role))
   }

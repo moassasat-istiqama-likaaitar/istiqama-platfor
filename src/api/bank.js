@@ -59,7 +59,7 @@ function SEED_ACTS() {
     { type: 'essay', q: 'اشرحي بأسلوبك أثر الطهارة في حياة المسلمة.', points: 4 }
   ]
   return [
-    { id: 'ta-s2-bay', kind: 'quiz', authorId: 'p5', authorName: 'عمر باعمر', title: 'اختبار شامل: البيع (8 أنواع من الأسئلة)', levelId: 'S2', subjectId: 'S2-fiqh', lessonId: L('S2', 'fiqh', 0)?.id, questions: qs8, minutes: 20, status: 'review', note: '', at: ago(3) },
+    { id: 'ta-s2-bay', kind: 'quiz', authorId: 'p5', authorName: 'عمر باعمر', title: 'اختبار شامل: البيع (8 أنواع من الأسئلة)', levelId: 'S2', subjectId: 'S2-fiqh', lessonId: L('S2', 'fiqh', 0)?.id, questions: qs8, minutes: 20, status: 'temp', note: '', at: ago(3) },
     { id: 'ta-m4-taha', kind: 'quiz', authorId: 'p5', authorName: 'عمر باعمر', title: 'اختبار: أحكام الطهارة', levelId: 'M4', subjectId: 'M4-fiqh', lessonId: L('M4', 'fiqh', 0)?.id, questions: qs4, minutes: 15, status: 'temp', note: '', at: ago(30) },
     { id: 'ta-m4-hw', kind: 'homework', authorId: 'p5', authorName: 'عمر باعمر', title: 'واجب: بطاقة أحكام المياه', levelId: 'M4', subjectId: 'M4-fiqh', lessonId: L('M4', 'fiqh', 1)?.id, instructions: 'صمّمي بطاقة تلخّص أقسام المياه مع مثال لكل قسم، ثم أرفقي صورتها.', maxScore: 20, mode: 'any', status: 'approved', note: '', at: ago(400) }
   ]
@@ -72,9 +72,9 @@ function SEED_LINKS() {
   ]
 }
 
-export const uploads = () => collection('uploads2', SEED_UPLOADS)
-export const teacherActs = () => collection('teacherActivities2', SEED_ACTS)
-const links = () => collection('classLinks', SEED_LINKS)
+export const uploads = () => collection('uploads3', SEED_UPLOADS)
+export const teacherActs = () => collection('teacherActivities3', SEED_ACTS)
+const links = () => collection('classLinks2', SEED_LINKS)
 
 const lessonOf = (id) => lessons.find((l) => l.id === id)
 const subjectOf = (id) => subjects.find((s) => s.id === id)
@@ -145,12 +145,13 @@ export function classContentItems(classId) {
     if (!out.has(key)) out.set(key, { ...item, ...extra })
   }
   // محتوى المؤسسة في المكتبة (المعتمد) أساسي لكل أقسام المستوى
-  contents.filter((x) => x.levelId === c.levelId && VISIBLE.includes(x.status)).forEach((x) => add(x, { source: 'essential', mandatory: true }))
+  contents.filter((x) => x.levelId === c.levelId && x.status === 'approved').forEach((x) => add(x, { source: 'essential', mandatory: true }))
   const tIds = teacherIdsOf(classId)
   uploads().all().forEach((u) => {
     if (u.levelId !== c.levelId) return
     if (u.status === 'approved' && u.essential) add(normUpload(u), { source: 'essential', mandatory: true })
-    else if (VISIBLE.includes(u.status) && tIds.includes(u.authorId) && u.classIds?.includes(classId)) add(normUpload(u), { source: 'mine', mandatory: false, temp: u.status === 'temp' })
+    // ما رفعه المعلم لأقسامه: المعتمد، أو المؤقت (صادق عليه المدير) — يظهر في أقسام صاحبه فقط
+    else if (VISIBLE.includes(u.status) && tIds.includes(u.authorId) && u.classIds?.includes(classId)) add(normUpload(u), { source: 'mine', mandatory: false, temp: u.status === 'temp', ownerId: u.authorId })
   })
   linksForClass(classId, 'content').forEach((l) => {
     const item = findContent(l.itemId)
@@ -163,10 +164,13 @@ export function classContentItems(classId) {
 export function classActivityItems(classId) {
   const c = classes.find((x) => x.id === classId)
   if (!c) return []
-  const out = activities.filter((a) => a.levelId === c.levelId).map((a) => ({ ...normActivity(a), source: 'essential', mandatory: true }))
+  const out = activities.filter((a) => a.levelId === c.levelId).map((a) => ({ ...normActivity(a), source: 'essential', mandatory: true, visibleToStudents: true }))
   linksForClass(classId, 'activity').forEach((l) => {
     const a = findActivity(l.itemId)
-    if (a && !out.some((x) => x.id === a.id)) out.push({ ...a, lessonId: l.lessonId ?? a.lessonId, due: l.due || a.due, source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, linkId: l.id, linkedBy: l.byName })
+    if (!a || out.some((x) => x.id === a.id)) return
+    // لا يصل التلميذَ إلا ما صودق عليه: المعتمد، أو المؤقت في أقسام صاحبه
+    const visible = a.origin === 'platform' || a.status === 'approved' || (a.status === 'temp' && teacherIdsOf(classId).includes(a.authorId))
+    out.push({ ...a, lessonId: l.lessonId ?? a.lessonId, due: l.due || a.due, source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, linkId: l.id, linkedBy: l.byName, visibleToStudents: visible, temp: a.status === 'temp', ownerId: a.authorId })
   })
   return out.filter((a) => {
     const l = a.lessonId && lessonOf(a.lessonId)
@@ -188,17 +192,19 @@ function decorate(x) {
 /* ——— واجهات الربط ——— */
 
 /** GET /api/classes/:id/library → مكتبة القسم (محتوى + أنشطة) */
-export function classLibrary(classId) {
+export function classLibrary(classId, viewerId = null) {
+  // المؤقت يخصّ صاحبه: لا يراه زميله الذي يُدرّس في القسم نفسه
+  const mineOnly = (x) => !viewerId || !x.temp || x.ownerId === viewerId
   return respond(() => ({
-    contents: classContentItems(classId),
-    activities: classActivityItems(classId).map((a) => decorate({ ...a, classification: 'activity' }))
+    contents: classContentItems(classId).filter(mineOnly),
+    activities: classActivityItems(classId).filter((a) => mineOnly(a) && (a.visibleToStudents || a.ownerId === viewerId)).map((a) => decorate({ ...a, classification: 'activity' }))
   }))
 }
 
 /** GET /api/levels/:id/library → المستوى كقسم واحد (للمحرر): الأساسي + ما رُبط على المستوى */
 export function levelLibrary(levelId) {
   return respond(() => {
-    const cts = contents.filter((x) => x.levelId === levelId && VISIBLE.includes(x.status)).map((x) => decorate({ ...x, source: 'essential', mandatory: true }))
+    const cts = contents.filter((x) => x.levelId === levelId && x.status === 'approved').map((x) => decorate({ ...x, source: 'essential', mandatory: true }))
     const lk = links().all().filter((l) => l.scope === 'level' && l.levelId === levelId)
     lk.filter((l) => l.itemKind === 'content').forEach((l) => {
       const it = findContent(l.itemId)
@@ -253,7 +259,7 @@ export function unlinkItem(id, personId, role) {
 export function activitiesBank({ personId, scopeLevels } = {}) {
   return respond(() => {
     const plat = activities.map(normActivity)
-    const mine = teacherActs().all().map(normActivity).filter((a) => a.status === 'approved' || a.authorId === personId || a.status === 'temp' && a.authorId === personId)
+    const mine = teacherActs().all().map(normActivity).filter((a) => a.status === 'approved' || a.authorId === personId)
     return [...mine, ...plat]
       .filter((a) => !scopeLevels || scopeLevels.includes(a.levelId))
       .map((a) => decorate({ ...a, qtypes: [...new Set((a.questions || []).map((q) => q.type || (q.options?.length === 2 ? 'tf' : 'mcq')))] }))
@@ -263,10 +269,13 @@ export function activitiesBank({ personId, scopeLevels } = {}) {
 /* ——— التلميذ ——— */
 
 /** مكتبة القسم كما يراها التلميذ */
+let isOpenFor = () => true
+/** يُحقن من teaching.js (تجنّباً للاستيراد الدائري) */
+export const setOpenCheck = (fn) => (isOpenFor = fn)
 export function studentLibrary(personId) {
   return respond(() => {
     const a = assignments.find((x) => x.personId === personId && x.role === 'student')
-    return classContentItems(a?.classId)
+    return classContentItems(a?.classId).filter((c) => !c.lessonId || isOpenFor(a.classId, lessonOf(c.lessonId)))
   })
 }
 

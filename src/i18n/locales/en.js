@@ -14,7 +14,7 @@ export default {
     teaching: 'My classes', 'my-library': 'Class library',
     home: 'Home', users: 'Users', 'users-list': 'User list', 'users-import': 'Bulk import',
     'users-duplicates': 'Duplicate accounts', 'activity-log': 'Activity log', library: 'Library',
-    'library-manage': 'Digital content', 'library-review': 'Review & approval', activities: 'Activities & assessments',
+    'library-manage': 'Digital content', 'lesson-opening': 'Lesson opening', 'activities-review': 'Activities review', 'library-review': 'Review & approval', activities: 'Activities & assessments',
     'activities-group': 'Activities & assessments', reports: 'Reports', 'reports-general': 'General reports',
     'reports-schools': 'School performance', 'reports-files': 'File statistics', 'reports-engagement': 'Engagement quality',
     settings: 'Settings', schools: 'Schools', levels: 'Cycles & levels', seasons: 'School years',

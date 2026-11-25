@@ -55,9 +55,10 @@
             <div v-for="tc in teachers" :key="tc.id" class="tc">
               <span class="tc__av">{{ tc.name.charAt(0) }}</span>
               <div><b>{{ tc.gender === 'female' ? 'المعلمة' : 'المعلم' }} {{ tc.name }}</b><small>{{ tc.subjects.join('، ') }}</small></div>
-              <RouterLink v-if="tc.canMessage" :to="{ name: 'messages', query: { to: tc.id, subject: `متابعة ${child.firstName}` } }" class="tc__msg"><i class="pi pi-envelope" /> مراسلة</RouterLink>
             </div>
           </div>
+          <p class="muted via"><i class="pi pi-info-circle" /> للتواصل بشأن {{ child.firstName }} راسل مدير المدرسة، وهو يتابع مع المعلمين. وإن راسلك المعلم فيمكنك الردّ عليه.
+            <RouterLink :to="{ name: 'messages', query: { subject: `متابعة ${child.firstName}` } }" class="tc__msg"><i class="pi pi-envelope" /> مراسلة المدير</RouterLink></p>
         </section>
       </div>
     </template>
@@ -121,6 +122,7 @@ const dueText = (iso) => {
 </script>
 
 <style scoped>
+.via { font-size: 0.84rem; margin: 0.8rem 0 0; display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
 .ph__banner { margin-bottom: 1.1rem; }
 .ph__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .span2 { grid-column: 1 / -1; }

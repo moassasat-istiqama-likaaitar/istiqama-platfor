@@ -16,7 +16,7 @@
           <div class="lvl-badge"><b>{{ d.xp.level }}</b><small>المستوى</small></div>
           <div class="lvl-bar">
             <div class="lvl-bar__track"><span :style="{ width: d.xp.inLevel + '%' }" /></div>
-            <small>{{ d.xp.inLevel }} / {{ d.xp.next }} XP للمستوى {{ d.xp.level + 1 }}</small>
+            <small>{{ d.xp.inLevel }} / {{ d.xp.next }} نقطة للمستوى {{ d.xp.level + 1 }}</small>
           </div>
         </div>
         <div class="explorer__stats">
@@ -32,12 +32,12 @@
         <RouterLink v-if="d.continueWith" :to="`/app/lesson/${d.continueWith.lessonId}`" class="quest quest--lesson" :style="{ '--c': d.continueWith.subject.color }">
           <span class="quest__check"><i class="pi pi-play" /></span>
           <div class="quest__body"><small>{{ d.continueWith.fromTeacher ? 'درس الأسبوع من معلمك' : 'استكشف درساً' }}</small><strong>{{ d.continueWith.title }}</strong><span>{{ d.continueWith.subject.name }}</span></div>
-          <span class="quest__xp">+20 XP</span>
+          <span class="quest__xp">+20 نقطة</span>
         </RouterLink>
         <RouterLink v-for="a in d.upcoming" :key="a.id" :to="`/app/activity/${a.id}`" class="quest" :style="{ '--c': a.subject.color }">
           <span class="quest__check" :class="{ late: a.state === 'late' }"><i :class="a.type === 'quiz' ? 'pi pi-question' : 'pi pi-pencil'" /></span>
-          <div class="quest__body"><small>{{ a.type === 'quiz' ? 'اجتز التحدي' : 'أنجز المهمة' }} · {{ due(a).text }}</small><strong>{{ a.lesson.title }}</strong><span>{{ a.subject.name }}</span></div>
-          <span class="quest__xp">+{{ a.type === 'quiz' ? 25 : 15 }} XP</span>
+          <div class="quest__body"><small>{{ a.type === 'quiz' ? 'اجتز التحدي' : 'أنجز المهمة' }} · {{ due(a).text }}</small><strong>{{ a.label }}</strong><span>{{ a.subject.name }}</span></div>
+          <span class="quest__xp">{{ a.type === 'quiz' ? `حتى +${10 + 5 * (a.questionsCount || 0)}` : '+15' }} نقطة</span>
         </RouterLink>
       </section>
     </div>

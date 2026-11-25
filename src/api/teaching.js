@@ -1,10 +1,10 @@
 import { respond, ApiError, newId } from './client'
 import { assignments, classes, levels } from '@/mock/db'
 import { subjects, lessons, contents, activities } from '@/mock/content'
-import { progressOf, save as saveProgress } from '@/mock/progress'
+import { progressOf, save as saveProgress, BADGES } from '@/mock/progress'
 import { collection } from '@/mock/collections'
 import { personOf, fullName, studentSnapshot, classInfo } from './people'
-import { uploads, teacherActs, findActivity, classActivityItems, normActivity, linkSync } from './bank'
+import { uploads, teacherActs, findActivity, classActivityItems, normActivity, linkSync, setOpenCheck } from './bank'
 import { gradeQuiz, isManual } from '@/utils/quiz'
 
 /**
@@ -18,19 +18,67 @@ const offline = collection('offlineTests', [])
 const classStudentIds = (classId) => assignments.filter((a) => a.role === 'student' && a.classId === classId).map((a) => a.personId)
 const levelOfClass = (classId) => classes.find((c) => c.id === classId)?.levelId
 
-/* ——— خطة القسم ——— */
+/* ——— فتح الدروس على مستويين ———
+ * 1) المحرر يفتح دروس المستوى (مادةً مادة)، فوراً أو بتاريخ. قبل فتحه لا يستطيع المعلم إدراج شيء في الدرس.
+ * 2) المعلم يفتح لتلاميذه ما فتحه المحرر: تلقائياً (mode=follow، الافتراضي) أو يدوياً بتاريخ لكل درس (mode=manual).
+ * الدرس يراه التلميذ إذا فتحه المحرر وفتحه المعلم (وحلّ تاريخهما).
+ * بداية الموسم: كل الدروس مغلقة حتى يفتحها المحرر. */
+const levelPlans = collection('levelPlans', [])
+const now = () => new Date().toISOString()
+const DAY = 864e5
+/** تاريخ فتح المحرر لدرس: ما حدده المحرر، وإلا خطة تجريبية (نصف دروس المادة الأولى مفتوحة، ودرسان مجدولان) */
+export function editorOpenAt(lesson) {
+  const p = levelPlans.find(lesson.subjectId)
+  if (p && lesson.id in p.opens) return p.opens[lesson.id]
+  const n = lessons.filter((l) => l.subjectId === lesson.subjectId).length
+  const cut = Math.max(3, Math.ceil(n * 0.6))
+  if (lesson.order <= cut) return new Date(Date.UTC(2026, 8, 13 + lesson.order * 4)).toISOString()
+  if (lesson.order <= cut + 2) return new Date(Date.now() + (lesson.order - cut) * 4 * DAY).toISOString().slice(0, 16)
+  return null
+}
+const stateOf = (at) => (!at ? 'closed' : at <= now() ? 'open' : 'scheduled')
+export const editorState = (lesson) => stateOf(editorOpenAt(lesson))
 
-/** خطة القسم كما تراها المنصة: mode=all (كل الدروس مفتوحة) أو gradual (حتى درس معيّن في كل مادة) */
+/** خطة القسم: mode=follow (يتبع المحرر) أو manual (تواريخ المعلم لكل درس) */
 export function planOf(classId) {
-  return plans.find(classId) || { id: classId, mode: 'all', openUntil: {}, weekLesson: {} }
+  const p = plans.find(classId) || { id: classId, mode: 'follow', opens: {}, weekLesson: {} }
+  return { opens: {}, weekLesson: {}, ...p, mode: p.mode === 'gradual' || p.mode === 'manual' ? 'manual' : 'follow' }
+}
+function teacherOpenAt(p, lesson) {
+  if (p.mode === 'follow') return editorOpenAt(lesson)
+  if (lesson.id in p.opens) return p.opens[lesson.id]
+  // توافق مع الخطة القديمة «افتح حتى هنا»
+  const until = p.openUntil?.[lesson.subjectId]
+  return until !== undefined && lesson.order <= until ? editorOpenAt(lesson) : null
 }
 
-/** هل الدرس مفتوح لقسم معيّن؟ (يُستعمل في فضاء التلميذ) */
+/** هل الدرس مفتوح لتلاميذ قسم؟ = فتحه المحرر وفتحه المعلم */
 export function isLessonOpen(classId, lesson) {
-  const p = planOf(classId)
-  if (p.mode !== 'gradual') return true
-  const until = p.openUntil[lesson.subjectId]
-  return until === undefined ? lesson.order <= 3 : lesson.order <= until
+  if (editorState(lesson) !== 'open') return false
+  return stateOf(teacherOpenAt(planOf(classId), lesson)) === 'open'
+}
+
+setOpenCheck((classId, lesson) => !lesson || isLessonOpen(classId, lesson))
+
+/** GET /api/levels/:id/plan → خطة المحرر لمواد المستوى */
+export function levelPlan(levelId) {
+  return respond(() => subjects.filter((s) => s.levelId === levelId).map((s) => ({
+    id: s.id, name: s.name, icon: s.icon, color: s.color,
+    lessons: lessons.filter((l) => l.subjectId === s.id).sort((a, b) => a.order - b.order).map((l) => ({ id: l.id, title: l.title, axis: l.axis, order: l.order, gender: l.gender, at: editorOpenAt(l), state: editorState(l) }))
+  })))
+}
+/** PUT /api/subjects/:id/plan { opens: {lessonId: ISO|null} } — المحرر يفتح/يجدول/يغلق */
+export function saveLevelLessons(subjectId, opens) {
+  return respond(() => {
+    const cur = levelPlans.find(subjectId)
+    if (cur) levelPlans.update(subjectId, { opens: { ...cur.opens, ...opens } })
+    else levelPlans.insert({ id: subjectId, opens })
+    return true
+  })
+}
+/** دروس مادة يستطيع المعلم الإدراج فيها: ما فتحه المحرر أو جدوله */
+export function linkableLessonIds(subjectId) {
+  return lessons.filter((l) => l.subjectId === subjectId && editorState(l) !== 'closed').map((l) => l.id)
 }
 
 /** درس الأسبوع للقسم (أول درس محدد من المعلم لم ينجزه التلميذ) */
@@ -53,6 +101,8 @@ export function classPlan(classId) {
         lessons: lessons.filter((l) => l.subjectId === s.id && (!l.gender || l.gender === g)).map((l) => ({
           id: l.id, title: l.title, label: l.label, axis: l.axis, order: l.order,
           open: isLessonOpen(classId, l),
+          editorState: editorState(l), editorAt: editorOpenAt(l),
+          teacherAt: teacherOpenAt(p, l), teacherState: stateOf(teacherOpenAt(p, l)),
           week: p.weekLesson?.[s.id] === l.id,
           doneBy: studs.filter((sid) => personOf(sid)?.generated ? (studentSnapshot(sid).progress / 100) * 20 > l.order : progressOf(sid).done.includes(l.id)).length
         }))
@@ -62,7 +112,7 @@ export function classPlan(classId) {
   })
 }
 
-/** PUT /api/teacher/classes/:id/plan { mode, openUntil, weekLesson } */
+/** PUT /api/teacher/classes/:id/plan { mode, opens, weekLesson } */
 export function savePlan(classId, patch) {
   return respond(() => {
     const cur = planOf(classId)
@@ -253,4 +303,62 @@ export function managerApprove(kind, id) {
     if (r.status !== 'review') throw new ApiError('invalid', 'المصادقة للعناصر قيد المراجعة فقط')
     return col.update(id, { status: 'temp', managerAt: new Date().toISOString() })
   }, 300)
+}
+
+/* ——— بنك الاختبارات الحضورية: أفكار للمعلمين فقط ———
+ * المعلم يرفع وثيقة الاختبار + الحلول + سلّم التنقيط، ويصنّفه (الموسم، السداسي، المستوى، المادة).
+ * يُنشر مباشرة دون مصادقة، ولا يُدرج في الأقسام، ولا يراه التلميذ ولا الولي.
+ * يراه معلمو المستوى نفسه فقط. المحرر يستطيع إخفاء وثيقة غير لائقة. */
+const OB_SEED = () => {
+  const s = (id, authorId, authorName, title, levelId, key, season, semester, kind, h) => ({
+    id, authorId, authorName, title, levelId, subjectId: `${levelId}-${key}`, season, semester, kind,
+    files: { test: `${title}.pdf`, solution: `حل — ${title}.pdf`, grading: 'سلم التنقيط.pdf' }, notes: '', hidden: false, at: new Date(Date.now() - h * 36e5).toISOString()
+  })
+  return [
+    s('ob1', 'p5', 'عمر باعمر', 'فرض الفقه — أحكام البيع', 'S2', 'fiqh', '2025 / 2026', 1, 'فرض', 900),
+    s('ob2', 'p5', 'عمر باعمر', 'اختبار السداسي الأول — الفقه', 'S2', 'fiqh', '2025 / 2026', 1, 'اختبار', 1500),
+    s('ob3', 'g12', 'بكير قاسم', 'اختبار السداسي الثاني — العقيدة', 'S2', 'iman', '2025 / 2026', 2, 'اختبار', 3000),
+    s('ob4', 'p5', 'عمر باعمر', 'فرض الطهارة', 'M4', 'fiqh', '2026 / 2027', 1, 'فرض', 120),
+    s('ob5', 'p6', 'عائشة الشيخ', 'اختبار القراءة والكتابة', 'P1', 'arabic', '2025 / 2026', 2, 'اختبار', 2600)
+  ]
+}
+const offlineBankCol = () => collection('offlineBank', OB_SEED)
+const decorateOB = (t) => ({ ...t, subjectName: subjects.find((s) => s.id === t.subjectId)?.name, levelName: levels.find((l) => l.id === t.levelId)?.name })
+
+/** GET /api/offline-bank?levels= → اختبارات معلمي المستوى نفسه (المخفية للمحرر فقط) */
+export function offlineBank({ levels: lv = [], curator = false } = {}) {
+  return respond(() => offlineBankCol().all().filter((t) => lv.includes(t.levelId) && (curator || !t.hidden)).map(decorateOB).sort((a, b) => b.at.localeCompare(a.at)))
+}
+export function myOfflineUploads(authorId) {
+  return respond(() => offlineBankCol().all().filter((t) => t.authorId === authorId).map(decorateOB))
+}
+/** POST /api/offline-bank — يُنشر مباشرة (ليس محتوى للتلميذ) */
+export function uploadOfflineTest(author, data) {
+  return respond(() => {
+    if (!data.title?.trim() || !data.subjectId || !data.files?.test) throw new ApiError('required', 'العنوان والمادة ووثيقة الاختبار إجبارية')
+    return offlineBankCol().insert({ ...data, id: newId('ob'), authorId: author.id, authorName: fullName(author), hidden: false, at: new Date().toISOString() })
+  }, 400)
+}
+export function removeOfflineTest(id) {
+  return respond(() => offlineBankCol().remove(id))
+}
+/** PATCH /api/offline-bank/:id { hidden } — المحرر يخفي وثيقة غير لائقة */
+export function setOfflineHidden(id, hidden) {
+  return respond(() => offlineBankCol().update(id, { hidden }))
+}
+
+/* ——— شارات يمنحها المعلم ——— */
+export const MANUAL_BADGES = Object.entries(BADGES).filter(([, b]) => b.manual).map(([id, b]) => ({ id, ...b }))
+/** POST /api/students/:id/badges { badge, note } — يظهر للتلميذ في «تقدمي» مع اسم المعلم وسببه */
+export function giveBadge(teacher, studentId, badge, note = '') {
+  return respond(() => {
+    const p = progressOf(studentId)
+    if (!p.badges.includes(badge)) p.badges.push(badge)
+    p.badgeNotes = { ...(p.badgeNotes || {}), [badge]: { by: fullName(teacher), note, at: new Date().toISOString() } }
+    saveProgress()
+    return true
+  }, 300)
+}
+export function studentBadges(studentId) {
+  return respond(() => progressOf(studentId).badges.filter((b) => BADGES[b]?.manual))
 }

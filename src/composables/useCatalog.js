@@ -1,5 +1,7 @@
 import { levels, classes, schools } from '@/mock/db'
 import { subjects, lessons } from '@/mock/content'
+import { editorState } from '@/api/teaching'
+import { useAuthStore } from '@/stores/auth'
 
 /** قوائم الاختيار الموحّدة (المستويات، المواد، الدروس، الأقسام) */
 export function useCatalog() {
@@ -19,5 +21,13 @@ export function useCatalog() {
     { label: 'صورة', value: 'image' }, { label: 'تسجيل صوتي', value: 'audio' }, { label: 'رابط خارجي', value: 'link' }
   ]
   const TYPE_LABEL = Object.fromEntries(TYPE_OPTIONS.map((o) => [o.value, o.label]))
-  return { levelOptions, subjectOptions, subjectNames, lessonOptions, classOptions, schoolOptions, levelOfClass, TYPE_OPTIONS, TYPE_LABEL, levels, subjects, lessons, classes, schools }
+  // دروس يمكن الإدراج فيها: المعلم لا يدرج إلا فيما فتحه المحرر (أو جدوله)؛ المحرر في كل الدروس
+  const linkLessonOptions = (subjectId) => {
+    const isEditor = useAuthStore().role === 'editor'
+    return lessons.filter((l) => l.subjectId === subjectId).map((l) => {
+      const st = editorState(l)
+      return { label: `${l.label ? l.label + ': ' : ''}${l.title}${st === 'scheduled' ? ' (مجدول)' : st === 'closed' ? ' — لم يفتحه المحرر' : ''}`, value: l.id, disabled: !isEditor && st === 'closed' }
+    })
+  }
+  return { levelOptions, subjectOptions, subjectNames, lessonOptions, linkLessonOptions, classOptions, schoolOptions, levelOfClass, TYPE_OPTIONS, TYPE_LABEL, levels, subjects, lessons, classes, schools }
 }

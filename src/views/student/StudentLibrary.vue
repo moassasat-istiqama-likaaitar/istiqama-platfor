@@ -10,8 +10,8 @@
         <button v-for="s in subjects" :key="s.name" type="button" class="chip" :class="{ on: subject === s.name }" :style="{ '--c': s.color }" @click="subject = s.name"><i :class="s.icon" /> {{ s.name }}</button>
       </div>
       <div v-if="theme !== 'kids'" class="row">
-        <Select v-model="type" :options="[{ label: 'كل الأنواع', value: null }, ...cat.TYPE_OPTIONS]" option-label="label" option-value="value" />
-        <Select v-model="klass" :options="[{ label: 'كل التصنيفات', value: null }, ...CLASSIFICATIONS]" option-label="label" option-value="value" />
+        <Select v-model="type" :options="cat.TYPE_OPTIONS" placeholder="كل الأنواع" show-clear option-label="label" option-value="value" />
+        <Select v-model="klass" :options="CLASSIFICATIONS" placeholder="كل التصنيفات" show-clear option-label="label" option-value="value" />
         <IconField class="q"><InputIcon class="pi pi-search" /><InputText v-model="q" placeholder="ابحث" fluid /></IconField>
       </div>
       <div v-else class="chips">

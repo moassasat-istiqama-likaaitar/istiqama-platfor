@@ -1,7 +1,7 @@
 import { respond, ApiError } from './client'
-import { subjects, lessons, contents, activities } from '@/mock/content'
+import { subjects, lessons, contents } from '@/mock/content'
 import { levels } from '@/mock/db'
-import { uploads, teacherActs, normUpload, normActivity } from './bank'
+import { uploads, normUpload } from './bank'
 
 const decorate = (c) => {
   const sub = subjects.find((s) => s.id === c.subjectId)
@@ -10,40 +10,36 @@ const decorate = (c) => {
   return {
     ...c,
     subject: sub ? { id: sub.id, key: sub.key, name: sub.name, color: sub.color, accent: sub.accent, art: sub.art } : { id: null, name: '—', color: '#3159e8', accent: '#ffc23c', art: 'book' },
-    lesson: lesson ? { id: lesson.id, title: lesson.title } : { id: null, title: 'بلا درس' },
+    lesson: lesson ? { id: lesson.id, title: lesson.title, order: lesson.order, axis: lesson.axis, axisIndex: lesson.axisIndex } : { id: null, title: 'بلا درس', order: 999, axis: 'بلا درس', axisIndex: 999 },
+    subjectOrder: sub?.order ?? 99,
     level: level ? { id: level.id, name: level.name } : { id: null, name: '—' }
   }
 }
 
 /**
  * GET /api/library?level=&subject=&type=&classification=&status=&q=&author=
- * المكتبة المركزية: محتوى + أنشطة (Quiz وواجبات)
+ * المكتبة المركزية: المحتوى التعليمي فقط (الواجبات والاختبارات في «بنك الأنشطة»).
+ * المعلم يرى المعتمد فقط؛ المحرر والإدارة يرون كل الحالات (curator).
+ * الترتيب: المستوى ← المادة ← المحور ← الدرس ← الرئيسي قبل الإثرائي.
  */
-export function list(filters = {}) {
+export function list(filters = {}, { curator = false } = {}) {
   return respond(() => {
-    const acts = activities.map((a) => ({
-      id: a.id, lessonId: a.lessonId, subjectId: a.subjectId, levelId: a.levelId,
-      type: a.type, classification: 'activity', status: a.status, title: a.title,
-      keywords: [a.title], authorId: a.authorId, authorName: a.authorName,
-      createdAt: contents.find((c) => c.lessonId === a.lessonId)?.createdAt || a.due, rating: 4.2, views: 0, payload: { questions: a.questions, instructions: a.instructions }
-    }))
     // ما رفعه المعلمون واعتمده المحرر أصبح جزءاً من المكتبة المركزية
     const fromTeachers = uploads().all().filter((u) => u.status === 'approved').map((u) => ({ ...normUpload(u), classification: u.classification || u.proposedClass }))
-    const teacherQuizzes = teacherActs().all().filter((a) => a.status === 'approved').map(normActivity).map((a) => ({
-      id: a.id, lessonId: a.lessonId, subjectId: a.subjectId, levelId: a.levelId, type: a.type, classification: 'activity', status: 'approved', title: a.title,
-      keywords: [a.title], authorId: a.authorId, authorName: a.authorName, createdAt: a.at, rating: 4.4, views: 0, payload: { questions: a.questions, instructions: a.instructions }
-    }))
     const q = (filters.q || '').trim()
-    return [...fromTeachers, ...teacherQuizzes, ...contents, ...acts]
+    const rank = { main: 0, enrichment: 1, activity: 2 }
+    const lvl = (id) => levels.findIndex((l) => l.id === id)
+    return [...fromTeachers, ...contents]
+      .filter((c) => curator || c.status === 'approved')
       .filter((c) => !filters.level || c.levelId === filters.level)
       .filter((c) => !filters.subjectKey || subjects.find((s) => s.id === c.subjectId)?.name === filters.subjectKey)
       .filter((c) => !filters.type || c.type === filters.type)
       .filter((c) => !filters.classification || c.classification === filters.classification)
       .filter((c) => !filters.status || c.status === filters.status)
       .filter((c) => !filters.authorId || c.authorId === filters.authorId)
-      .filter((c) => !q || c.title.includes(q) || c.keywords.some((k) => k.includes(q)))
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .filter((c) => !q || c.title.includes(q) || c.keywords?.some((k) => k.includes(q)))
       .map(decorate)
+      .sort((a, b) => lvl(a.levelId) - lvl(b.levelId) || a.subjectOrder - b.subjectOrder || a.lesson.axisIndex - b.lesson.axisIndex || a.lesson.order - b.lesson.order || (rank[a.classification] ?? 1) - (rank[b.classification] ?? 1))
   }, 200)
 }
 
@@ -57,13 +53,13 @@ export function get(id) {
 }
 
 /** GET /api/library/facets → قيم المرشحات */
-export function facets() {
+export function facets({ curator = false } = {}) {
   return respond(() => ({
     levels: levels.filter((l) => contents.some((c) => c.levelId === l.id)).map((l) => ({ id: l.id, name: l.name })),
     subjects: Array.from(new Set(subjects.map((s) => s.name))),
     stats: {
-      total: contents.length + activities.length,
-      videos: contents.filter((c) => c.type === 'video').length,
+      total: contents.filter((c) => curator || c.status === 'approved').length + uploads().all().filter((u) => u.status === 'approved').length,
+      videos: contents.filter((c) => c.type === 'video' && (curator || c.status === 'approved')).length,
       pending: contents.filter((c) => c.status === 'pending').length
     }
   }), 50)

@@ -33,11 +33,19 @@ export function reviewQueue(scope = {}) {
       id: a.id, kind: 'activity', origin: a.status === 'temp' ? 'صادق عليه المدير' : 'نشاط معلم', title: a.title, type: a.kind === 'quiz' ? 'quiz' : 'homework', proposedClass: 'activity', authorName: a.authorName,
       at: a.at, status: STATUS_TAG[a.status], levelId: a.levelId, subjectId: a.subjectId, lessonId: a.lessonId, ...meta(a), questions: a.questions, instructions: a.instructions
     }))
-    const lib = contents.filter((c) => c.status === 'pending').map((c) => ({
+    const lib = contents.filter((c) => ['pending', 'temp'].includes(c.status)).map((c) => ({
       id: c.id, kind: 'content', origin: 'المكتبة', title: c.title, type: c.type, proposedClass: c.classification, authorName: c.authorName, at: c.createdAt,
       status: 'review', levelId: c.levelId, subjectId: c.subjectId, lessonId: c.lessonId, ...meta(c), payload: c.payload
     }))
     return [...props, ...acts, ...lib].filter(inScope).sort((a, b) => (b.at || '').localeCompare(a.at || ''))
+  })
+}
+
+/** GET /api/editor/review/out-of-scope → كم عنصراً ينتظر خارج نطاق هذا المحرر (عند محررين آخرين) */
+export function outOfScopeCount(scope = {}) {
+  return respond(() => {
+    const inScope = (x) => (!scope.levels?.length || scope.levels.includes(x.levelId)) && (!scope.subjects?.length || scope.subjects.includes(subjects.find((s) => s.id === x.subjectId)?.name || x.subjectName))
+    return [...uploads().all(), ...teacherActs().all()].filter((x) => ['review', 'temp'].includes(x.status) && !inScope(x)).length
   })
 }
 

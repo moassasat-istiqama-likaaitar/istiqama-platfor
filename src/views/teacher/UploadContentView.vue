@@ -18,7 +18,7 @@
         <label class="fl"><span>{{ isEditor ? 'التصنيف *' : 'التصنيف المقترح *' }}</span><Select v-model="f.proposedClass" :options="CLASSIFICATIONS" option-label="label" option-value="value" fluid /></label>
         <label class="fl"><span>المستوى *</span><Select v-model="f.levelId" :options="levelOpts" option-label="label" option-value="value" fluid /></label>
         <label class="fl"><span>المادة *</span><Select v-model="f.subjectId" :options="cat.subjectOptions(f.levelId)" option-label="label" option-value="value" fluid :disabled="!f.levelId" /></label>
-        <label class="fl full"><span>الدرس</span><Select v-model="f.lessonId" :options="[{ label: '— بلا درس —', value: null }, ...cat.lessonOptions(f.subjectId)]" option-label="label" option-value="value" filter fluid :disabled="!f.subjectId" /></label>
+        <label class="fl full"><span>الدرس</span><Select v-model="f.lessonId" placeholder="— بلا درس —" :options="[{ label: '— بلا درس —', value: null }, ...cat.lessonOptions(f.subjectId)]" option-label="label" option-value="value" filter fluid :disabled="!f.subjectId" /></label>
         <label v-if="!isEditor" class="fl full"><span>أقسامي التي يظهر فيها بعد مصادقة المدير</span><MultiSelect v-model="f.classIds" :options="myClassOpts" option-label="label" option-value="value" display="chip" fluid /></label>
         <label v-else class="fl full sw"><ToggleSwitch v-model="f.essential" /><span><b>أساسي للمستوى</b> — يُربط تلقائياً وإجبارياً بكل أقسام المستوى في درسه</span></label>
         <label class="fl full"><span>وصف قصير</span><Textarea v-model="f.description" rows="2" auto-resize fluid /></label>

@@ -60,11 +60,13 @@ export const MENUS = {
     ]),
     group('activities-group', 'pi pi-pencil', [
       item('activities', 'pi pi-database', ['ED05'], 5),
+      item('activities-review', 'pi pi-check-square', ['ED03'], 5),
       item('quiz-builder', 'pi pi-question-circle', ['TE15'], 4),
       item('new-homework', 'pi pi-file-edit', ['TE14'], 4)
     ]),
     // المحرر يأخذ دور المعلم في أقسام مستوياته (والمستوى كقسم واحد)
     group('teaching', 'pi pi-th-large', [
+      item('lesson-opening', 'pi pi-calendar', ['ED07'], 5),
       item('my-classes', 'pi pi-th-large', ['TE02', 'TE03'], 4),
       item('class-library', 'pi pi-bookmark', ['TE04', 'TE05'], 4),
       item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4)

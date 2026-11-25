@@ -35,12 +35,12 @@
       <div v-else-if="tab === 'plan' && plan" class="plan">
         <div class="panel plan__mode">
           <div>
-            <h3>طريقة فتح الدروس</h3>
-            <p class="muted">«كل الدروس»: التلميذ يتقدّم بحرية. «تدريجي»: لا يرى التلميذ إلا الدروس التي فتحتها، فلا يسبق الشرح في القسم.</p>
+            <h3>فتح الدروس لتلاميذ القسم</h3>
+            <p class="muted">المحرر يفتح دروس المستوى أولاً. «تلقائي»: كل ما فتحه المحرر يُفتح لتلاميذك في موعده. «يدوي»: تفتح أنت ما فتحه المحرر، فوراً أو بتاريخ، حتى لا يسبق التلميذ الشرح في القسم.</p>
           </div>
           <div class="seg">
-            <button type="button" :class="{ on: plan.mode === 'all' }" @click="setMode('all')"><i class="pi pi-lock-open" /> كل الدروس مفتوحة</button>
-            <button type="button" :class="{ on: plan.mode === 'gradual' }" @click="setMode('gradual')"><i class="pi pi-sliders-h" /> فتح تدريجي</button>
+            <button type="button" :class="{ on: plan.mode === 'follow' }" @click="setMode('follow')"><i class="pi pi-sync" /> تلقائي (يتبع المحرر)</button>
+            <button type="button" :class="{ on: plan.mode === 'manual' }" @click="setMode('manual')"><i class="pi pi-calendar" /> يدوي / مجدول</button>
           </div>
         </div>
         <p class="muted hint"><i class="pi pi-star-fill" style="color: #f5a400" /> «درس الأسبوع» يظهر لكل تلاميذ القسم كدرس مقترح في رئيسيتهم، قبل اقتراح المنصة الآلي.</p>
@@ -48,15 +48,15 @@
         <details v-for="s in plan.subjects" :key="s.id" class="panel subj" :open="s === plan.subjects[0]">
           <summary><span class="ic" :style="{ background: s.color }"><i :class="s.icon" /></span> <b>{{ s.name }}</b> <small class="muted">{{ s.lessons.filter((l) => l.open).length }} / {{ s.lessons.length }} مفتوح</small></summary>
           <table class="lt">
-            <thead><tr><th>#</th><th>الدرس</th><th>أنجزه</th><th>مفتوح</th><th>درس الأسبوع</th></tr></thead>
+            <thead><tr><th>#</th><th>الدرس</th><th>أنجزه</th><th>المحرر</th><th>لتلاميذي</th><th>درس الأسبوع</th></tr></thead>
             <tbody>
               <tr v-for="l in s.lessons" :key="l.id" :class="{ closed: !l.open, week: l.week }">
                 <td>{{ l.order }}</td>
                 <td><b>{{ l.title }}</b><small class="muted"> · {{ l.axis }}</small></td>
                 <td><bdi dir="ltr">{{ l.doneBy }}/{{ plan.students }}</bdi></td>
+                <td><OpenControl :at="l.editorAt" readonly /></td>
                 <td>
-                  <i v-if="plan.mode === 'all'" class="pi pi-lock-open muted" />
-                  <Button v-else :label="l.open ? 'مفتوح' : 'افتح حتى هنا'" :icon="l.open ? 'pi pi-lock-open' : 'pi pi-lock'" size="small" :severity="l.open ? 'success' : 'secondary'" text @click="openUntil(s, l)" />
+                  <OpenControl :at="l.teacherAt" :readonly="plan.mode === 'follow'" :locked="l.editorState === 'closed' ? 'لم يفتحه المحرر' : ''" @set="(v) => setOpen(l, v)" />
                 </td>
                 <td><button type="button" class="star" :class="{ on: l.week }" :disabled="!l.open" :title="l.week ? 'إلغاء' : 'اجعله درس الأسبوع'" @click="toggleWeek(s, l)"><i :class="l.week ? 'pi pi-star-fill' : 'pi pi-star'" /></button></td>
               </tr>
@@ -88,6 +88,13 @@
         ]" />
         <p><b>الولي:</b> {{ sel.parents }}</p>
         <p class="muted">آخر دخول: {{ sel.seen }}</p>
+        <div class="gb">
+          <b>امنح شارة</b> <small class="muted">تظهر للتلميذ في «تقدمي» باسمك</small>
+          <div class="gb__list">
+            <button v-for="b in MANUAL_BADGES" :key="b.id" type="button" class="gb__b" :class="{ on: badgeSel === b.id, has: owned.includes(b.id) }" :disabled="owned.includes(b.id)" @click="badgeSel = b.id"><i :class="b.icon" /> {{ b.title }}<i v-if="owned.includes(b.id)" class="pi pi-check" /></button>
+          </div>
+          <div v-if="badgeSel" class="gb__go"><InputText v-model="badgeNote" placeholder="لماذا؟ (اختياري) — مثال: ساعد زميله في الحفظ" fluid /><Button label="منح" icon="pi pi-gift" size="small" @click="give" /></div>
+        </div>
       </div>
       <template #footer>
         <RouterLink v-if="sel?.real" :to="{ name: 'messages', query: { to: sel.id, subject: 'متابعة' } }" class="p-button p-component p-button-text">مراسلة التلميذ</RouterLink>
@@ -98,6 +105,9 @@
 </template>
 
 <script setup>
+import OpenControl from '@/components/plan/OpenControl.vue'
+import InputText from 'primevue/inputtext'
+import { giveBadge, studentBadges, MANUAL_BADGES } from '@/api/teaching'
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
@@ -144,10 +154,12 @@ async function persist(patch, msg) {
   plan.value = await classPlan(cur.value.id)
   if (msg) toast.add({ severity: 'success', summary: msg, life: 2200 })
 }
-const setMode = (mode) => persist({ mode }, mode === 'all' ? 'كل الدروس مفتوحة للتلاميذ' : 'الفتح التدريجي مفعّل — افتح الدروس حسب تقدّمك في القسم')
-function openUntil(s, l) {
-  const openUntil = { ...(plan.value.openUntil || {}), [s.id]: l.order }
-  persist({ openUntil }, `فُتحت دروس «${s.name}» حتى: ${l.title}`)
+// عند التحويل إلى «يدوي» نبدأ مما هو مفتوح حالياً حتى لا تُغلق الدروس فجأة على التلاميذ
+const setMode = (mode) => persist(mode === 'manual' && !Object.keys(plan.value.opens || {}).length ? { mode, opens: Object.fromEntries(plan.value.subjects.flatMap((s) => s.lessons.filter((l) => l.open).map((l) => [l.id, l.editorAt]))) } : { mode }, mode === 'follow' ? 'تلقائي: ما يفتحه المحرر يُفتح لتلاميذك في موعده' : 'يدوي: افتح الدروس لتلاميذك فوراً أو بتاريخ')
+function setOpen(l, at) {
+  // لا يُفتح للتلميذ قبل موعد المحرر
+  const v = at && l.editorAt && at < l.editorAt ? l.editorAt : at
+  persist({ opens: { ...(plan.value.opens || {}), [l.id]: v } }, !v ? `أُغلق «${l.title}»` : v <= new Date().toISOString() ? `فُتح «${l.title}» للتلاميذ` : `جُدول «${l.title}»`)
 }
 function toggleWeek(s, l) {
   const weekLesson = { ...(plan.value.weekLesson || {}) }
@@ -155,13 +167,31 @@ function toggleWeek(s, l) {
   else weekLesson[s.id] = l.id
   persist({ weekLesson }, weekLesson[s.id] ? `«${l.title}» درس الأسبوع في ${s.name}` : 'أُلغي درس الأسبوع')
 }
-function openStudent(row) {
+const badgeSel = ref(null)
+const badgeNote = ref('')
+const owned = ref([])
+async function openStudent(row) {
   sel.value = row
+  badgeSel.value = null
+  badgeNote.value = ''
+  owned.value = await studentBadges(row.id)
   sDlg.value = true
+}
+async function give() {
+  await giveBadge(auth.person, sel.value.id, badgeSel.value, badgeNote.value)
+  toast.add({ severity: 'success', summary: `مُنحت شارة «${MANUAL_BADGES.find((b) => b.id === badgeSel.value).title}» لـ ${sel.value.name}`, life: 2500 })
+  owned.value = [...owned.value, badgeSel.value]
+  badgeSel.value = null
 }
 </script>
 
 <style scoped>
+.gb { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--line); }
+.gb__list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0; }
+.gb__b { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 0.3rem 0.75rem; cursor: pointer; font: inherit; font-size: 0.84rem; color: inherit; display: inline-flex; gap: 0.35rem; align-items: center; }
+.gb__b.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 10%, transparent); }
+.gb__b.has { opacity: 0.6; cursor: default; }
+.gb__go { display: flex; gap: 0.5rem; }
 .cls { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .cl { display: flex; flex-direction: column; align-items: flex-start; padding: 0.6rem 1rem; border-radius: 12px; border: 1.5px solid var(--line); background: var(--surface); font: inherit; color: inherit; cursor: pointer; }
 .cl.on { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 15%, transparent); }

@@ -8,7 +8,7 @@ import { gradeQuiz, gradeQuestion, publicQuestion } from '@/utils/quiz'
 
 const classIdOf = (personId) => assignments.find((x) => x.personId === personId && x.role === 'student')?.classId
 /** أنشطة قسم التلميذ (أنشطة المنصة + ما ربطه المعلم أو المحرر بآخر أجله) */
-const studentActs = (personId) => classActivityItems(classIdOf(personId)).filter((a) => a.due)
+const studentActs = (personId) => classActivityItems(classIdOf(personId)).filter((a) => a.due && a.visibleToStudents)
 
 const VISIBLE = ['approved', 'temp'] // ما يراه التلميذ: معتمد أو معتمد مؤقتاً
 
@@ -47,6 +47,8 @@ function activityView(a, p) {
   let state = sub?.status || 'todo'
   if (state === 'todo' && new Date(a.due) < new Date()) state = 'late'
   return {
+    // label: عنوان نشاط المعلم كما كتبه، وعنوان الدرس لأنشطة المنصة
+    label: a.origin === 'teacher' ? a.title : lesson?.title || a.title,
     id: a.id, type: a.type, title: a.title, due: a.due, maxScore: a.maxScore, required: a.required,
     lesson: lesson && { id: lesson.id, title: lesson.title },
     subject: subject && { id: subject.id, name: subject.name, color: subject.color, art: subject.art, icon: subject.icon },
@@ -55,13 +57,19 @@ function activityView(a, p) {
   }
 }
 
+/** يمنح النقاط ويحسب المواظبة: نشاط في يوم يلي آخر يوم نشاط ← تزيد السلسلة، وإلا تبدأ من 1 */
 function award(p, stars) {
   p.stars += stars
   const today = new Date().toDateString()
   if (p.lastDay !== today) {
+    const yesterday = new Date(Date.now() - 864e5).toDateString()
+    p.streak = p.lastDay === yesterday ? (p.streak || 0) + 1 : 1
     p.lastDay = today
   }
 }
+
+// شارة المعلم: «منحها المعلم فلان — السبب»
+const badgeHint = (p, b) => (p.badgeNotes?.[b] ? { hint: `منحها ${p.badgeNotes[b].by}${p.badgeNotes[b].note ? ' — ' + p.badgeNotes[b].note : ''}` } : {})
 
 function checkBadges(p) {
   const earned = []
@@ -74,6 +82,8 @@ function checkBadges(p) {
   if (p.done.length >= 1) add('first-lesson')
   if (p.viewed.length >= 10) add('curious')
   if (Object.keys(p.comments).length) add('helper')
+  if ((p.streak || 0) >= 3) add('streak-3')
+  if ((p.streak || 0) >= 7) add('streak-7')
   return earned
 }
 
@@ -94,7 +104,7 @@ export function dashboard(personId, levelId) {
     return {
       stars: p.stars, streak: p.streak,
       xp: { level: Math.floor(p.stars / 100) + 1, inLevel: p.stars % 100, next: 100 },
-      badges: p.badges.map((b) => ({ id: b, ...BADGES[b] })),
+      badges: p.badges.map((b) => ({ id: b, ...BADGES[b], ...badgeHint(p, b) })),
       subjects: subs,
       week: weekPlan(acts),
       continueWith: wlSub
@@ -329,10 +339,10 @@ export function progressReport(personId, levelId) {
     })
     const graded = Object.values(p.submissions).filter((x) => x.status === 'graded')
     return {
-      stars: p.stars, streak: p.streak, badges: p.badges.map((b) => ({ id: b, ...BADGES[b] })),
+      stars: p.stars, streak: p.streak, badges: p.badges.map((b) => ({ id: b, ...BADGES[b], ...badgeHint(p, b) })),
       xp: { level: Math.floor(p.stars / 100) + 1, inLevel: p.stars % 100, next: 100 },
       history: gradeHistory(p),
-      allBadges: Object.entries(BADGES).map(([id, b]) => ({ id, ...b, earned: p.badges.includes(id) })),
+      allBadges: Object.entries(BADGES).filter(([id, b]) => !b.manual || p.badges.includes(id)).map(([id, b]) => ({ id, ...b, ...badgeHint(p, id), earned: p.badges.includes(id) })),
       subjects: subs,
       totals: {
         lessons: subs.reduce((n, s) => n + s.doneCount, 0),

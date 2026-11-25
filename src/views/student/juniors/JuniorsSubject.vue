@@ -37,7 +37,7 @@
               <span v-if="l.gender === 'female'" class="cp__g">مقرر الإناث</span>
             </span>
           </div>
-          <span class="cp__xp">{{ l.state === 'done' ? 'مكتمل' : l.state === 'locked' ? 'لم يُفتح بعد' : '+20 XP' }}</span>
+          <span class="cp__xp">{{ l.state === 'done' ? 'مكتمل' : l.state === 'locked' ? 'لم يُفتح بعد' : '+20 نقطة' }}</span>
         </RouterLink>
       </div>
     </section>

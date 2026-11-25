@@ -8,7 +8,8 @@
       <div v-if="facets" class="lib__stats">
         <div><b>{{ facets.stats.total }}</b><span>{{ t('library.stats.total') }}</span></div>
         <div><b>{{ facets.stats.videos }}</b><span>{{ t('library.stats.videos') }}</span></div>
-        <div><b>{{ facets.stats.pending }}</b><span>{{ t('library.stats.pending') }}</span></div>
+        <div v-if="curator"><b>{{ facets.stats.pending }}</b><span>{{ t('library.stats.pending') }}</span></div>
+        <RouterLink to="/app/activities" class="lib__act"><i class="pi pi-pencil" /> الواجبات والاختبارات في «بنك الأنشطة»</RouterLink>
       </div>
     </header>
 
@@ -19,7 +20,8 @@
       </IconField>
       <Select v-model="f.level" :options="levelOpts" option-label="label" option-value="value" :placeholder="t('library.level')" show-clear class="sel" @change="reload" />
       <Select v-model="f.subjectKey" :options="subjectOpts" option-label="label" option-value="value" :placeholder="t('library.subject')" show-clear class="sel" @change="reload" />
-      <Select v-model="f.status" :options="statusOpts" option-label="label" option-value="value" :placeholder="t('library.status')" show-clear class="sel" @change="reload" />
+      <Select v-if="curator" v-model="f.status" :options="statusOpts" option-label="label" option-value="value" :placeholder="t('library.status')" show-clear class="sel" @change="reload" />
+      <Select v-else v-model="f.classification" :options="classOpts" option-label="label" option-value="value" placeholder="التصنيف" show-clear class="sel" @change="reload" />
       <div class="filters__types">
         <button v-for="ty in types" :key="ty.v" type="button" class="pill" :class="{ 'is-active': f.type === ty.v }" @click="f.type = ty.v; reload()">
           <i :class="ty.icon" /> {{ ty.v ? t(`student.types.${ty.v}`) : t('library.all') }}
@@ -32,8 +34,18 @@
       <Button v-if="hasFilters" :label="t('library.reset')" icon="pi pi-filter-slash" text size="small" @click="reset" />
     </div>
 
-    <div v-if="items.length" class="grid">
-      <button v-for="c in items" :key="c.id" type="button" class="card" :style="{ '--c': c.subject.color }" @click="open(c)">
+    <!-- نفس ترتيب مكتبة القسم: المادة ← المحور ← الدرس، والمحتوى بطاقات داخل كل درس -->
+    <section v-for="g in groups" :key="g.key" class="sg" :style="{ '--c': g.color }">
+      <button type="button" class="sg__head" @click="toggle(g.key)">
+        <span class="sg__dot" /><h2>{{ g.subject }}</h2><small v-if="!f.level">{{ g.level }}</small><span class="sg__n">{{ g.count }} عنصر</span><i class="pi" :class="closed.has(g.key) ? 'pi-chevron-down' : 'pi-chevron-up'" />
+      </button>
+      <template v-if="!closed.has(g.key)">
+        <div v-for="ax in g.axes" :key="ax.name" class="sg__axis">
+          <h3>{{ ax.name }}</h3>
+          <div v-for="ls in ax.lessons" :key="ls.title" class="sg__lesson">
+            <h4><i class="pi pi-bookmark" /> {{ ls.title }}</h4>
+    <div class="grid">
+      <button v-for="c in ls.items" :key="c.id" type="button" class="card" :style="{ '--c': c.subject.color }" @click="open(c)">
         <div class="card__thumb">
           <img v-if="c.payload?.poster" :src="c.payload.poster" alt="" />
           <LessonArt v-else :kind="thumbArt(c)" :color="c.subject.color" :accent="c.subject.accent" />
@@ -42,7 +54,7 @@
         </div>
         <div class="card__body">
           <div class="card__tags">
-            <span class="tag" :data-hue="statusHue[c.status]">{{ t(`library.statuses.${c.status}`) }}</span>
+            <span v-if="curator" class="tag" :data-hue="statusHue[c.status]">{{ t(`library.statuses.${c.status}`) }}</span>
             <span class="tag tag--plain">{{ t(`student.classification.${c.classification}`) }}</span>
           </div>
           <strong class="card__title">{{ c.title }}</strong>
@@ -54,7 +66,11 @@
         </div>
       </button>
     </div>
-    <div v-else class="panel"><EmptyState icon="pi pi-search" :text="t('library.empty')" /></div>
+          </div>
+        </div>
+      </template>
+    </section>
+    <div v-if="!items.length" class="panel"><EmptyState icon="pi pi-search" :text="t('library.empty')" /></div>
 
     <!-- المعاينة -->
     <Dialog v-model:visible="preview.open" modal dismissable-mask :header="preview.item?.title" :style="{ width: 'min(980px, 96vw)' }">
@@ -105,6 +121,7 @@ import ContentViewer from '@/components/viewers/ContentViewer.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import * as libraryApi from '@/api/library'
 import { useAuthStore } from '@/stores/auth'
+import { classes as classesAll } from '@/mock/db'
 import LinkDialog from '@/components/library/LinkDialog.vue'
 
 const { t } = useI18n()
@@ -113,35 +130,66 @@ const auth = useAuthStore()
 
 const items = ref([])
 const facets = ref(null)
-const f = reactive({ q: '', level: null, subjectKey: null, status: null, type: null })
+const f = reactive({ q: '', level: null, subjectKey: null, status: null, type: null, classification: null })
 const preview = reactive({ open: false, item: null })
 
 const types = [
   { v: null, icon: 'pi pi-th-large' }, { v: 'video', icon: 'pi pi-video' }, { v: 'slides', icon: 'pi pi-images' },
-  { v: 'pdf', icon: 'pi pi-file-pdf' }, { v: 'image', icon: 'pi pi-image' }, { v: 'quiz', icon: 'pi pi-question-circle' }, { v: 'homework', icon: 'pi pi-file-edit' }
+  { v: 'pdf', icon: 'pi pi-file-pdf' }, { v: 'image', icon: 'pi pi-image' }
 ]
+const curator = computed(() => ['editor', 'admin', 'super_admin'].includes(auth.role))
+const classOpts = [{ label: 'رئيسي', value: 'main' }, { label: 'إثرائي', value: 'enrichment' }, { label: 'نشاط', value: 'activity' }]
+const closed = ref(new Set())
+const toggle = (k) => {
+  const x = new Set(closed.value)
+  x.has(k) ? x.delete(k) : x.add(k)
+  closed.value = x
+}
+// تجميع النتائج المرتبة: مستوى+مادة ← محور ← درس
+const groups = computed(() => {
+  const out = []
+  items.value.forEach((c) => {
+    const key = `${c.level.id}|${c.subject.id}`
+    let g = out[out.length - 1]
+    if (!g || g.key !== key) out.push((g = { key, subject: c.subject.name, level: c.level.name, color: c.subject.color, count: 0, axes: [] }))
+    g.count++
+    let ax = g.axes[g.axes.length - 1]
+    if (!ax || ax.name !== c.lesson.axis) g.axes.push((ax = { name: c.lesson.axis || 'دروس', lessons: [] }))
+    let ls = ax.lessons[ax.lessons.length - 1]
+    if (!ls || ls.title !== c.lesson.title) ax.lessons.push((ls = { title: c.lesson.title, items: [] }))
+    ls.items.push(c)
+  })
+  return out
+})
 const typeIcon = Object.fromEntries(types.filter((x) => x.v).map((x) => [x.v, x.icon]))
 const statusHue = { approved: 'green', temp: 'teal', pending: 'orange', draft: 'blue', rejected: 'red' }
 const levelOpts = computed(() => facets.value?.levels.map((l) => ({ value: l.id, label: l.name })) || [])
 const subjectOpts = computed(() => facets.value?.subjects.map((s) => ({ value: s, label: s })) || [])
 const statusOpts = computed(() => Object.keys(statusHue).map((s) => ({ value: s, label: t(`library.statuses.${s}`) })))
-const hasFilters = computed(() => f.q || f.level || f.subjectKey || f.status || f.type)
+const hasFilters = computed(() => f.q || f.subjectKey || f.status || f.type || f.classification)
 const thumbArt = (c) => (c.type === 'image' ? c.payload.art : c.type === 'quiz' ? 'idea' : c.type === 'homework' ? 'pen' : c.subject.art)
 
 let timer
 function reload() {
   clearTimeout(timer)
   timer = setTimeout(async () => {
-    items.value = await libraryApi.list({ ...f })
+    items.value = await libraryApi.list({ ...f }, { curator: curator.value })
+    closed.value = new Set(groups.value.slice(1).map((g) => g.key))
   }, 150)
 }
 function reset() {
-  Object.assign(f, { q: '', level: null, subjectKey: null, status: null, type: null })
+  Object.assign(f, { q: '', level: myLevel(), subjectKey: null, status: null, type: null, classification: null })
   reload()
 }
 function open(c) {
   preview.item = c
   preview.open = true
+}
+// يفتح المعلم/المحرر على مستواه الأول (يغيّره من القائمة)
+function myLevel() {
+  if (auth.role === 'editor') return auth.active.levels?.[0]?.id || null
+  if (auth.role === 'teacher') return classesAll.find((c) => c.id === auth.active.classIds?.[0])?.levelId || null
+  return null
 }
 // الإدراج في القسم: يسأل في أي قسم وأي درس
 const linkOpen = ref(false)
@@ -153,7 +201,8 @@ function add() {
 }
 
 onMounted(async () => {
-  facets.value = await libraryApi.facets()
+  facets.value = await libraryApi.facets({ curator: curator.value })
+  f.level = myLevel()
   reload()
 })
 </script>
@@ -171,6 +220,16 @@ onMounted(async () => {
 .filters__types { grid-column: 1 / -1; display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .sel { width: 100%; }
 .lib__bar { display: flex; justify-content: space-between; align-items: center; }
+.lib__act { align-self: center; color: #fff; text-decoration: none; font-size: 0.82rem; background: rgba(255, 255, 255, 0.14); border-radius: 14px; padding: 0.6rem 0.9rem; max-width: 170px; }
+.sg { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 0 1rem 0.5rem; }
+.sg__head { width: 100%; display: flex; align-items: center; gap: 0.6rem; padding: 0.9rem 0; border: 0; background: none; cursor: pointer; font: inherit; color: inherit; text-align: start; }
+.sg__dot { width: 12px; height: 12px; border-radius: 4px; background: var(--c); }
+.sg__head h2 { margin: 0; font-size: 1.1rem; }
+.sg__n { margin-inline-start: auto; font-size: 0.8rem; color: var(--p-text-muted-color); }
+.sg__axis h3 { margin: 0.6rem 0 0.2rem; font-size: 0.82rem; color: var(--c); }
+.sg__lesson h4 { margin: 0.6rem 0 0.6rem; font-size: 0.95rem; display: flex; gap: 0.4rem; align-items: center; }
+.sg__lesson h4 i { color: var(--c); }
+.sg__lesson { padding-bottom: 0.6rem; border-bottom: 1px dashed var(--line); }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
 .card { display: flex; flex-direction: column; text-align: start; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); cursor: pointer; font: inherit; color: inherit; box-shadow: var(--shadow); transition: transform 0.15s, border-color 0.15s; }
 .card:hover { transform: translateY(-3px); border-color: var(--c); }

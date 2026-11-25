@@ -36,7 +36,7 @@
       <RouterLink v-for="a in d.upcoming" :key="a.id" :to="`/app/activity/${a.id}`" class="bubble" :style="{ '--c': a.subject.color }" @click="tap">
         <span class="bubble__icon"><i :class="a.type === 'quiz' ? 'pi pi-question' : 'pi pi-pencil'" /></span>
         <span class="bubble__t">{{ a.type === 'quiz' ? 'لعبة أسئلة' : 'واجب' }}</span>
-        <small>{{ a.lesson.title }}</small>
+        <small>{{ a.label }}</small>
       </RouterLink>
       <div v-if="!d.upcoming.length" class="bubble bubble--done"><i class="pi pi-check" /> لا تحديات الآن</div>
     </div>

@@ -14,7 +14,13 @@ export const BADGES = {
   'quiz-ace': { icon: 'pi pi-star', title: 'نجم الاختبارات', hint: 'علامة كاملة في اختبار' },
   'curious': { icon: 'pi pi-eye', title: 'فضولي', hint: 'شاهدت 10 محتويات' },
   'helper': { icon: 'pi pi-comments', title: 'مشارك', hint: 'كتبت تعليقاً مفيداً' },
-  'subject-master': { icon: 'pi pi-trophy', title: 'بطل المادة', hint: 'أكملت كل دروس مادة' }
+  'subject-master': { icon: 'pi pi-trophy', title: 'بطل المادة', hint: 'أكملت كل دروس مادة' },
+  // شارات يمنحها المعلم يدوياً (تكافئ السلوك لا الكمّ)
+  'good-manners': { icon: 'pi pi-heart', title: 'حسن الخلق', hint: 'منحها لك معلمك', manual: true },
+  'peer-helper': { icon: 'pi pi-users', title: 'عون لزملائه', hint: 'منحها لك معلمك', manual: true },
+  'diligent': { icon: 'pi pi-check-circle', title: 'مجتهد', hint: 'منحها لك معلمك', manual: true },
+  'creative': { icon: 'pi pi-palette', title: 'مبدع', hint: 'منحها لك معلمك', manual: true },
+  'tidy': { icon: 'pi pi-book', title: 'منظّم', hint: 'منحها لك معلمك', manual: true }
 }
 
 // نسبة الدروس المنجزة في كل مادة، النقاط، المواظبة، جنس القسم (لمقررات الإناث/الذكور)

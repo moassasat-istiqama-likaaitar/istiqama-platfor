@@ -7,8 +7,8 @@
         <small v-if="!targetOpts.length" class="warn">لا أقسام لك في مستوى هذا العنصر ({{ item.levelName || item.level?.name }}).</small>
       </label>
       <label class="fl"><span>في أي درس تريد إدراجه؟</span>
-        <Select v-model="lessonId" :options="lessonOpts" option-label="label" option-value="value" filter fluid />
-        <small class="muted">«بلا درس»: يظهر في مكتبة القسم فقط، ويجده التلميذ بالتصفية.</small>
+        <Select v-model="lessonId" placeholder="— بلا درس —" :options="lessonOpts" option-label="label" option-value="value" option-disabled="disabled" filter fluid />
+        <small class="muted">«بلا درس»: يظهر في مكتبة القسم فقط، ويجده التلميذ بالتصفية. الدروس المقفلة لم يفتحها المحرر بعد.</small>
       </label>
       <label v-if="kind === 'activity'" class="fl"><span>آخر أجل للتسليم</span><InputText v-model="due" type="datetime-local" fluid /></label>
       <p v-if="tg.isEditor.value && targets.some((t) => t.startsWith('L:'))" class="note"><i class="pi pi-lock" /> ما تدرجه على المستوى يصل كل أقسامه ويكون <b>إجبارياً</b>: لا يستطيع المعلم إزالته.</p>
@@ -46,11 +46,12 @@ const busy = ref(false)
 const levelId = computed(() => props.item?.levelId || props.item?.level?.id)
 const targetOpts = computed(() => tg.options(levelId.value))
 const subjectId = computed(() => props.item?.subjectId || props.item?.subject?.id)
-const lessonOpts = computed(() => [{ label: '— بلا درس (عام للقسم) —', value: null }, ...cat.lessonOptions(subjectId.value)])
+const lessonOpts = computed(() => [{ label: '— بلا درس (عام للقسم) —', value: null }, ...cat.linkLessonOptions(subjectId.value)])
 watch(() => props.visible, (v) => {
   if (!v) return
   targets.value = targetOpts.value.length === 1 ? [targetOpts.value[0].value] : []
-  lessonId.value = props.item?.lessonId || props.item?.lesson?.id || null
+  const want = props.item?.lessonId || props.item?.lesson?.id || null
+  lessonId.value = lessonOpts.value.find((o) => o.value === want && !o.disabled) ? want : null
   due.value = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 16)
 })
 async function save() {

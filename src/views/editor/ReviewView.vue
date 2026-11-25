@@ -8,7 +8,11 @@
       { label: 'أنشطة', value: rows.filter((r) => r.kind === 'activity').length, icon: 'pi pi-question-circle', tone: 'blue' },
       { label: 'قرارات أخيرة', value: log.length, icon: 'pi pi-history', tone: 'green' }
     ]" />
-    <RecordTable :rows="rows" :loading="loading" :columns="[
+    <div class="kinds">
+      <button v-for="k in KINDS" :key="k.key" type="button" class="pill" :class="{ 'is-active': kind === k.key }" @click="kind = k.key"><i :class="k.icon" /> {{ k.label }} <span class="pill__count">{{ rows.filter(k.fn).length }}</span></button>
+      <small v-if="outside" class="muted out"><i class="pi pi-info-circle" /> {{ outside }} عنصراً آخر ينتظر خارج نطاقك (عند محررين آخرين)</small>
+    </div>
+    <RecordTable :rows="rows.filter(KINDS.find((k) => k.key === kind).fn)" :loading="loading" :columns="[
       { field: 'title', label: 'العنوان' }, { field: 'origin', label: 'المصدر' }, { field: 'typeLabel', label: 'النوع' }, { field: 'subjectName', label: 'المادة' },
       { field: 'levelName', label: 'المستوى' }, { field: 'authorName', label: 'المؤلف' }, { field: 'at', label: 'التاريخ', type: 'date' }, { field: 'status', label: 'الحالة', type: 'status' }
     ]" :search-keys="['title', 'authorName', 'lessonTitle']" :filters="[
@@ -52,7 +56,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+const route = useRoute()
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Textarea from 'primevue/textarea'
@@ -68,12 +74,20 @@ import StatTiles from '@/components/ui/StatTiles.vue'
 import RecordTable from '@/components/ui/RecordTable.vue'
 import ContentViewer from '@/components/viewers/ContentViewer.vue'
 import { useCatalog } from '@/composables/useCatalog'
-import { reviewQueue, decide, recentDecisions } from '@/api/editorial'
+import { outOfScopeCount, reviewQueue, decide, recentDecisions } from '@/api/editorial'
 
 const toast = useToast()
 const cat = useCatalog()
 const CHECKS = ['المحتوى مطابق للمنهاج والدرس', 'خالٍ من الأخطاء العلمية واللغوية', 'مناسب للمستوى العمري', 'جودة الصوت والصورة مقبولة', 'يحترم الضوابط الشرعية والتربوية']
 const rows = ref([])
+const KINDS = [
+  { key: 'all', label: 'الكل', icon: 'pi pi-inbox', fn: () => true },
+  { key: 'content', label: 'المحتوى', icon: 'pi pi-book', fn: (r) => r.kind !== 'activity' },
+  { key: 'activity', label: 'الواجبات والاختبارات', icon: 'pi pi-question-circle', fn: (r) => r.kind === 'activity' }
+]
+const kind = ref(route.name === 'activities-review' ? 'activity' : 'all')
+watch(() => route.name, (n) => (kind.value = n === 'activities-review' ? 'activity' : 'all'))
+const outside = ref(0)
 const log = ref([])
 const loading = ref(true)
 const dlg = ref(false)
@@ -92,6 +106,7 @@ async function load() {
   loading.value = true
   rows.value = (await reviewQueue(scope.value)).map((r) => ({ ...r, typeLabel: cat.TYPE_LABEL[r.type] || (r.type === 'quiz' ? 'اختبار' : r.type) }))
   log.value = await recentDecisions()
+  outside.value = await outOfScopeCount(scope.value)
   loading.value = false
 }
 onMounted(load)
@@ -119,6 +134,8 @@ async function act(decision) {
 </script>
 
 <style scoped>
+.kinds { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin: 1rem 0; }
+.out { margin-inline-start: auto; }
 .d { display: block; font-size: 0.78rem; }
 .rv { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1rem; }
 .rv__view { min-width: 0; }

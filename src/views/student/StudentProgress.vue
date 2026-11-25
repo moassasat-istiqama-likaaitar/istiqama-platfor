@@ -28,7 +28,7 @@
     <template v-else-if="theme === 'juniors'">
       <div class="sp-head"><h1>إنجازاتي</h1><RouterLink :to="{ name: 'report-card' }" class="print-btn"><i class="pi pi-print" /> كشف النقاط</RouterLink></div>
       <section class="j-road card">
-        <div class="j-road__head"><span class="j-lvl">{{ r.xp.level }}</span><div><strong>مستوى المستكشف {{ r.xp.level }}</strong><small>{{ r.xp.inLevel }}/{{ r.xp.next }} XP للمستوى التالي</small></div></div>
+        <div class="j-road__head"><span class="j-lvl">{{ r.xp.level }}</span><div><strong>مستوى المستكشف {{ r.xp.level }}</strong><small>{{ r.xp.inLevel }}/{{ r.xp.next }} نقطة للمستوى التالي</small></div></div>
         <div class="j-road__track">
           <div v-for="n in 8" :key="n" class="j-stop" :class="{ done: n < r.xp.level, now: n === r.xp.level }">
             <span>{{ n }}</span>

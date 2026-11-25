@@ -12,7 +12,7 @@
       <div class="tpl">
         <i class="pi pi-file-excel" />
         <div><b>نموذج الاستيراد</b><p class="muted">الأعمدة المطلوبة: {{ ENTITIES.find((e) => e.value === entity).cols.join('، ') }}</p></div>
-        <Button label="تنزيل النموذج" icon="pi pi-download" outlined size="small" @click="template" />
+        <Button label="تنزيل نموذج Excel" icon="pi pi-file-excel" outlined size="small" v-tooltip="schoolId ? '' : 'اختر المدرسة أولاً لتظهر أقسامها في القوائم'" @click="template" />
       </div>
       <label class="drop" :class="{ has: file }">
         <input type="file" accept=".xlsx,.xls,.csv" @change="(e) => (file = e.target.files[0]?.name)" />
@@ -51,7 +51,7 @@ import RecordTable from '@/components/ui/RecordTable.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalog } from '@/composables/useCatalog'
 import { previewImport, addJob } from '@/api/admin'
-import { exportCsv } from '@/utils/exportCsv'
+import { downloadImportTemplate } from '@/utils/importTemplate'
 
 const auth = useAuthStore()
 const cat = useCatalog()
@@ -69,9 +69,15 @@ const busy = ref(false)
 const rows = ref([])
 const imported = ref(0)
 const errors = computed(() => rows.value.filter((r) => r.error).length)
-function template() {
-  const cols = ENTITIES.find((e) => e.value === entity.value).cols
-  exportCsv(`نموذج-${entity.value}.csv`, [], cols.map((c) => ({ field: c, label: c })))
+// نموذج Excel: عناوين + أمثلة + قوائم منسدلة بأقسام المدرسة ومواد مستوياتها + ورقة تعليمات
+async function template() {
+  const cls = cat.classes.filter((c) => c.schoolId === schoolId.value)
+  const lv = new Set(cls.map((c) => c.levelId))
+  await downloadImportTemplate(entity.value, {
+    schoolName: cat.schools.find((s) => s.id === schoolId.value)?.name || '',
+    classes: cls.map((c) => c.name),
+    subjects: [...new Set(cat.subjects.filter((s) => lv.has(s.levelId)).map((s) => s.name))]
+  })
 }
 async function analyze() {
   busy.value = true
