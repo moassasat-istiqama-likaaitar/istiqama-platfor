@@ -23,7 +23,7 @@
       <table class="tbl">
         <thead><tr><th>#</th><th>الدرس</th><th class="hide-sm">المحتوى</th><th class="hide-sm">المدة</th><th>الحالة</th></tr></thead>
         <tbody>
-          <tr v-for="l in lessonsOf(ax.name)" :key="l.id" :class="`r--${l.state}`" @click="$router.push(`/app/lesson/${l.id}`)">
+          <tr v-for="l in lessonsOf(ax.name)" :key="l.id" :class="`r--${l.state}`" @click="l.state !== 'locked' && $router.push(`/app/lesson/${l.id}`)">
             <td class="num">{{ l.order }}</td>
             <td>
               <RouterLink :to="`/app/lesson/${l.id}`" class="lt" @click.stop>{{ l.title }}</RouterLink>
@@ -45,10 +45,11 @@ const props = defineProps({ s: { type: Object, required: true } })
 const lessonsOf = (ax) => props.s.lessons.filter((l) => l.axis === ax)
 const axisName = (n) => n
 const typeIcon = { video: 'pi pi-video', slides: 'pi pi-images', pdf: 'pi pi-file-pdf', image: 'pi pi-image' }
-const stateLabel = { done: 'مكتمل', current: 'التالي', open: 'لم يبدأ' }
+const stateLabel = { done: 'مكتمل', current: 'التالي', open: 'لم يبدأ', locked: 'لم يُفتح بعد' }
 </script>
 
 <style scoped>
+.r--locked { opacity: 0.5; } .r--locked .lt { pointer-events: none; }
 .ts { display: flex; flex-direction: column; gap: 1rem; }
 .ts__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; padding-bottom: 0.9rem; border-bottom: 1px solid var(--line); }
 .ts__head h1 { margin: 0; font-size: 1.7rem; display: flex; align-items: center; gap: 0.6rem; }

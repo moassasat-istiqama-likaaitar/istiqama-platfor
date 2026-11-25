@@ -18,7 +18,8 @@ export function describeAssignment(a) {
       const sa = assignments.find((x) => x.personId === cid && x.role === 'student')
       const c = classes.find((x) => x.id === sa?.classId)
       const s = schools.find((x) => x.id === sa?.schoolId)
-      return { id: cid, name: `${p.firstName} ${p.lastName}`, className: c?.name, schoolId: s?.id, schoolName: s?.name }
+      const lv = levels.find((l) => l.id === c?.levelId)
+      return { id: cid, name: `${p.firstName} ${p.lastName}`, firstName: p.firstName, gender: p.gender, classId: c?.id, className: c?.name, levelId: lv?.id, levelName: lv?.name, levelOrder: lv?.order, schoolId: s?.id, schoolName: s?.name }
     })
   }
   return out
@@ -69,7 +70,7 @@ export function forgotPassword(contact) {
 /** GET /api/demo/accounts → قائمة الحسابات التجريبية (خاص بالنموذج، يُحذف عند الربط) */
 export function demoAccounts() {
   return respond(() =>
-    persons.map((p) => ({
+    persons.filter((p) => !p.generated).map((p) => ({
       username: p.username,
       name: `${p.firstName} ${p.lastName}`,
       roles: assignments.filter((a) => a.personId === p.id).map((a) => a.role),

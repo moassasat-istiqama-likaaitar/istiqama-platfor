@@ -1,3 +1,5 @@
+// بيانات تجريبية موسّعة (تُحمَّل أولاً) — تُحذف عند الربط بالخلفية
+import '@/mock/world'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import PrimeVue from 'primevue/config'

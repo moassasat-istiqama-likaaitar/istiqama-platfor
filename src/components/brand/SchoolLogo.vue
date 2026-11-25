@@ -15,7 +15,7 @@ import { computed } from 'vue'
 import { inkOn } from '@/utils/color'
 
 const props = defineProps({ school: Object, branding: Object, size: { type: Number, default: 40 } })
-const letter = computed(() => (props.school?.name || '؟').replace(/^مدرسة\s+(ال)?/, '').charAt(0))
+const letter = computed(() => (props.school?.short || props.school?.name || '؟').replace(/^(مدرسة|ابتدائية|متوسطة|ثانوية)\s+/, '').replace(/^(دار|نور)\s/, (m) => m).replace(/^ال/, '').charAt(0))
 const ink = computed(() => inkOn(props.branding?.primary || '#64748b'))
 </script>
 

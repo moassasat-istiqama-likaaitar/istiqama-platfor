@@ -56,7 +56,7 @@
         </div>
         <div class="quiz__progress">
           <span>{{ t('student.question', { n: step + 1, total: a.questions.length }) }}
-            <span v-if="theme === 'juniors'" class="xp-chip"><i class="pi pi-clock" /> {{ fmt(elapsed) }} · حتى +{{ 10 + a.questions.length * 5 }} XP</span>
+            <span v-if="theme === 'juniors'" class="xp-chip"><i class="pi pi-clock" /> {{ fmt(elapsed) }}</span>
           </span>
           <div class="bar" :style="{ '--bar-color': 'var(--c)' }"><span :style="{ width: ((step + 1) / a.questions.length) * 100 + '%' }" /></div>
         </div>

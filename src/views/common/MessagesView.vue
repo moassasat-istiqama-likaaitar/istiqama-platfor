@@ -209,10 +209,13 @@ const compose = reactive({ open: false, assignmentId: null, to: null, subject: '
 const myAssignments = computed(() => auth.assignments.map((a) => ({ value: a.id, label: label.full(a) })))
 const canStart = computed(() => compose.to && compose.subject.trim() && compose.body.trim())
 
-async function openCompose() {
+async function openCompose(preset = {}) {
   Object.assign(compose, { open: true, assignmentId: auth.activeAssignmentId, to: null, subject: '', body: '' })
   await loadContacts()
+  if (preset.to) Object.assign(compose, { to: preset.to, subject: preset.subject || '' })
 }
+// فتح رسالة جديدة مباشرة من شاشة أخرى: #/app/messages?to=<personId>&subject=...
+if (route.query.to) openCompose({ to: route.query.to, subject: route.query.subject })
 async function loadContacts() {
   compose.loading = true
   compose.to = null

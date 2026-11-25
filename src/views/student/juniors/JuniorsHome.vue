@@ -31,7 +31,7 @@
         <header class="head"><h2><i class="pi pi-flag" /> مهامي</h2><RouterLink to="/app/my-assignments" class="link">سجل المهام</RouterLink></header>
         <RouterLink v-if="d.continueWith" :to="`/app/lesson/${d.continueWith.lessonId}`" class="quest quest--lesson" :style="{ '--c': d.continueWith.subject.color }">
           <span class="quest__check"><i class="pi pi-play" /></span>
-          <div class="quest__body"><small>استكشف درساً</small><strong>{{ d.continueWith.title }}</strong><span>{{ d.continueWith.subject.name }}</span></div>
+          <div class="quest__body"><small>{{ d.continueWith.fromTeacher ? 'درس الأسبوع من معلمك' : 'استكشف درساً' }}</small><strong>{{ d.continueWith.title }}</strong><span>{{ d.continueWith.subject.name }}</span></div>
           <span class="quest__xp">+20 XP</span>
         </RouterLink>
         <RouterLink v-for="a in d.upcoming" :key="a.id" :to="`/app/activity/${a.id}`" class="quest" :style="{ '--c': a.subject.color }">

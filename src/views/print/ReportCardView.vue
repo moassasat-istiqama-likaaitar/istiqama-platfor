@@ -25,9 +25,9 @@
       <div class="sheet__line" />
 
       <section class="info">
-        <div><span>التلميذ(ة)</span><b>{{ auth.fullName }}</b></div>
-        <div><span>القسم</span><b>{{ auth.active.class?.name }}</b></div>
-        <div><span>المستوى</span><b>{{ auth.active.level?.name }}</b></div>
+        <div><span>التلميذ(ة)</span><b>{{ who.name }}</b></div>
+        <div><span>القسم</span><b>{{ who.className }}</b></div>
+        <div><span>المستوى</span><b>{{ who.levelName }}</b></div>
         <div><span>تاريخ الإصدار</span><b>{{ today }}</b></div>
       </section>
 
@@ -68,7 +68,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import Button from 'primevue/button'
 import InstitutionMark from '@/components/brand/InstitutionMark.vue'
 import SchoolLogo from '@/components/brand/SchoolLogo.vue'
@@ -78,13 +78,18 @@ import * as learning from '@/api/learning'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const brand = useBrandStore()
 const r = ref(null)
 
+// التلميذ يطبع كشفه، والولي يطبع كشف ابنه (?child=)
+const kid = computed(() => (auth.role === 'parent' ? (auth.active.children || []).find((c) => c.id === route.query.child) || auth.active.children?.[0] : null))
+const who = computed(() => (kid.value ? { id: kid.value.id, name: kid.value.name, className: kid.value.className, levelId: kid.value.levelId, levelName: kid.value.levelName } : { id: auth.person.id, name: auth.fullName, className: auth.active.class?.name, levelId: auth.active.level?.id, levelName: auth.active.level?.name }))
 onMounted(async () => {
-  await brand.sync(auth.active)
-  r.value = await learning.progressReport(auth.person.id, auth.active.level.id)
+  if (kid.value) await brand.setChild(kid.value.id, auth.active)
+  else await brand.sync(auth.active)
+  r.value = await learning.progressReport(who.value.id, who.value.levelId)
 })
 
 const vars = computed(() => ({ '--s1': brand.branding?.primary || '#233b85', '--s2': brand.branding?.secondary || '#ffc96b' }))

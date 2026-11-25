@@ -7,7 +7,7 @@
       <div class="mission__bubble">
         <span class="mission__hello">مرحباً يا {{ auth.person.firstName }}!</span>
         <template v-if="d.continueWith">
-          <p>مهمة اليوم: نتعلّم درساً جديداً في <b :style="{ color: d.continueWith.subject.color }">{{ d.continueWith.subject.name }}</b></p>
+          <p>{{ d.continueWith.fromTeacher ? 'معلمك اختار لك درس اليوم في' : 'مهمة اليوم: نتعلّم درساً جديداً في' }} <b :style="{ color: d.continueWith.subject.color }">{{ d.continueWith.subject.name }}</b></p>
           <RouterLink :to="`/app/lesson/${d.continueWith.lessonId}`" class="mission__go" :style="{ '--c': d.continueWith.subject.color }" @click="tap">
             <span class="mission__play"><i class="pi pi-play" /></span>
             <span>{{ d.continueWith.title }}</span>

@@ -2,6 +2,9 @@ import { respond, ApiError, newId } from './client'
 import { subjects, lessons, contents, activities } from '@/mock/content'
 import { progressOf, save, BADGES } from '@/mock/progress'
 import { persons, assignments, classes } from '@/mock/db'
+import { isLessonOpen, weekLessonFor } from './teaching'
+
+const classIdOf = (personId) => assignments.find((x) => x.personId === personId && x.role === 'student')?.classId
 
 const VISIBLE = ['approved', 'temp'] // ما يراه التلميذ: معتمد أو معتمد مؤقتاً
 
@@ -20,7 +23,9 @@ const lessonContents = (lessonId) => contents.filter((c) => c.lessonId === lesso
 function subjectSummary(sub, p, personId) {
   const ls = visibleLessons(sub.id, personId)
   const done = ls.filter((l) => p.done.includes(l.id)).length
-  const next = ls.find((l) => !p.done.includes(l.id)) || null
+  const cid = classIdOf(personId)
+  // الدرس التالي = أول درس غير منجز ومفتوح (حسب خطة المعلم)
+  const next = ls.find((l) => !p.done.includes(l.id) && isLessonOpen(cid, l)) || null
   return {
     ...sub,
     lessonsCount: ls.length,
@@ -77,6 +82,9 @@ export function dashboard(personId, levelId) {
     const acts = activities.filter((a) => a.levelId === levelId && visible.has(a.lessonId)).map((a) => activityView(a, p))
     const upcoming = acts.filter((a) => ['todo', 'late'].includes(a.state)).sort((a, b) => a.due.localeCompare(b.due))
     const continueSub = subs.find((s) => s.next && s.doneCount > 0) || subs.find((s) => s.next)
+    // الدرس المقترح: «درس الأسبوع» الذي حدده المعلم لقسمه أولاً، ثم الدرس التالي حسب تقدّم التلميذ
+    const wl = weekLessonFor(classIdOf(personId), p.done)
+    const wlSub = wl && subs.find((s) => s.id === wl.subjectId)
     const totalLessons = subs.reduce((n, s) => n + s.lessonsCount, 0)
     const doneLessons = subs.reduce((n, s) => n + s.doneCount, 0)
     return {
@@ -85,7 +93,9 @@ export function dashboard(personId, levelId) {
       badges: p.badges.map((b) => ({ id: b, ...BADGES[b] })),
       subjects: subs,
       week: weekPlan(acts),
-      continueWith: continueSub?.next ? { lessonId: continueSub.next.id, title: continueSub.next.title, subject: continueSub } : null,
+      continueWith: wlSub
+        ? { lessonId: wl.id, title: wl.title, subject: wlSub, fromTeacher: true }
+        : continueSub?.next ? { lessonId: continueSub.next.id, title: continueSub.next.title, subject: continueSub, fromTeacher: false } : null,
       upcoming: upcoming.slice(0, 4),
       todoCount: upcoming.length,
       progress: totalLessons ? Math.round((doneLessons / totalLessons) * 100) : 0,
@@ -115,7 +125,8 @@ export function subject(personId, subjectId) {
     const sub = subjects.find((s) => s.id === subjectId)
     if (!sub) throw new ApiError('not_found', 'المادة غير موجودة')
     const ls = visibleLessons(subjectId, personId)
-    const firstOpen = ls.find((l) => !p.done.includes(l.id))
+    const cid = classIdOf(personId)
+    const firstOpen = ls.find((l) => !p.done.includes(l.id) && isLessonOpen(cid, l))
     const axes = [...new Set(ls.map((l) => l.axis))]
     return {
       ...subjectSummary(sub, p, personId),
@@ -125,7 +136,8 @@ export function subject(personId, subjectId) {
       }),
       lessons: ls.map((l) => ({
         id: l.id, title: l.title, label: l.label, axis: l.axis, order: l.order, minutes: l.minutes, gender: l.gender,
-        state: p.done.includes(l.id) ? 'done' : l.id === firstOpen?.id ? 'current' : 'open',
+        // locked = لم يفتحه المعلم بعد لهذا القسم
+        state: p.done.includes(l.id) ? 'done' : !isLessonOpen(cid, l) ? 'locked' : l.id === firstOpen?.id ? 'current' : 'open',
         isNew: !p.viewed.includes(l.id),
         types: Array.from(new Set(lessonContents(l.id).map((c) => c.type))),
         activities: activities.filter((a) => a.lessonId === l.id).length

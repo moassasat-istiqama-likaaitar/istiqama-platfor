@@ -7,8 +7,8 @@
       <SchoolLogo :school="school" :branding="branding" :size="size" />
     </template>
     <div v-if="names" class="pair__names">
-      <small>{{ t('app.name') }}</small>
-      <strong>{{ school?.name || t('app.short') }}</strong>
+      <small>{{ platform.name }}</small>
+      <strong :title="school?.name">{{ school?.short || school?.name || t('app.short') }}</strong>
     </div>
   </div>
 </template>
@@ -17,9 +17,11 @@
 import { useI18n } from 'vue-i18n'
 import InstitutionMark from './InstitutionMark.vue'
 import SchoolLogo from './SchoolLogo.vue'
+import { usePlatformStore } from '@/stores/platform'
 
 defineProps({ school: Object, branding: Object, size: { type: Number, default: 36 }, names: Boolean, tone: { type: String, default: 'dark' } })
 const { t } = useI18n()
+const platform = usePlatformStore()
 </script>
 
 <style scoped>

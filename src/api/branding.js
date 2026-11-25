@@ -12,7 +12,7 @@ import { storage } from '@/utils/storage'
  *  المشرف العام (admin) يطّلع على الطلبات دون صلاحية الاعتماد.
  */
 
-const KEY = 'ist.branding.v1'
+const KEY = 'ist.branding.v2'
 
 const SEED_REQUESTS = [
   {
@@ -20,9 +20,9 @@ const SEED_REQUESTS = [
     schoolId: 's2',
     status: 'pending',
     submittedAt: new Date(Date.now() - 864e5 * 2).toISOString(),
-    submittedBy: 'مدير مدرسة الفتح',
+    submittedBy: 'مدير مدرسة الفرقان',
     note: '',
-    data: { logo: null, primary: '#6d2c91', secondary: '#f7b538', cover: 'pattern:dunes', welcome: 'مرحباً بكم في مدرسة الفتح… خطوة نحو التميّز.' }
+    data: { logo: null, primary: '#6d2c91', secondary: '#f7b538', cover: 'pattern:dunes', welcome: 'مرحباً بكم في مدرسة الفرقان… خطوة نحو التميّز.' }
   }
 ]
 
@@ -35,7 +35,7 @@ function db() {
 }
 const save = (d) => storage.set(KEY, d)
 
-const schoolInfo = (s) => ({ id: s.id, slug: s.slug, name: s.name, commune: s.commune, wilaya: s.wilaya })
+const schoolInfo = (s) => ({ id: s.id, slug: s.slug, code: s.code, name: s.name, short: s.short, commune: s.commune, gender: s.gender })
 
 function view(d, schoolId) {
   const s = schools.find((x) => x.id === schoolId)
@@ -104,6 +104,7 @@ export function listRequests() {
   return respond(() => {
     const d = db()
     return d.requests
+      .filter((r) => schools.some((s) => s.id === r.schoolId))
       .slice()
       .sort((a, b) => b.submittedAt.localeCompare(a.submittedAt))
       .map((r) => ({ ...r, school: schoolInfo(schools.find((s) => s.id === r.schoolId)), current: d.approved[r.schoolId] }))

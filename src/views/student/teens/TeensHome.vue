@@ -33,7 +33,7 @@
 
     <div class="th__grid">
       <RouterLink v-if="d.continueWith" :to="`/app/lesson/${d.continueWith.lessonId}`" class="panel cont" :style="{ '--c': d.continueWith.subject.color }">
-        <small>تابع القراءة</small>
+        <small>{{ d.continueWith.fromTeacher ? 'درس الأسبوع (حدده المعلم)' : 'تابع القراءة' }}</small>
         <strong>{{ d.continueWith.title }}</strong>
         <span class="muted">{{ d.continueWith.subject.name }}</span>
         <div class="bar" :style="{ '--bar-color': d.continueWith.subject.color }"><span :style="{ width: d.continueWith.subject.progress + '%' }" /></div>

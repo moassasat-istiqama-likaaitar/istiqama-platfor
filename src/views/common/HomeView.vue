@@ -1,5 +1,6 @@
 <template>
   <StudentHome v-if="auth.role === 'student'" />
+  <component :is="roleHome" v-else-if="roleHome" />
   <div v-else>
     <section class="hero">
       <div>
@@ -42,6 +43,18 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Message from 'primevue/message'
 import StudentHome from '@/views/student/StudentHome.vue'
+import { defineAsyncComponent } from 'vue'
+
+// لوحة كل دور
+const HOMES = {
+  parent: defineAsyncComponent(() => import('@/views/parent/ParentHome.vue')),
+  teacher: defineAsyncComponent(() => import('@/views/teacher/TeacherHome.vue')),
+  editor: defineAsyncComponent(() => import('@/views/editor/EditorHome.vue')),
+  school_manager: defineAsyncComponent(() => import('@/views/manager/ManagerHome.vue')),
+  admin: defineAsyncComponent(() => import('@/views/admin/AdminHome.vue')),
+  super_admin: defineAsyncComponent(() => import('@/views/admin/AdminHome.vue')),
+  support: defineAsyncComponent(() => import('@/views/support/SupportHome.vue'))
+}
 import { useAuthStore } from '@/stores/auth'
 import { useInboxStore } from '@/stores/inbox'
 import { flatItems, findItem, ROLE_ICONS } from '@/config/menus'
@@ -52,6 +65,7 @@ const auth = useAuthStore()
 const inbox = useInboxStore()
 const label = useAssignmentLabel()
 
+const roleHome = computed(() => HOMES[auth.role] || null)
 const tiles = computed(() => flatItems(auth.role).filter((i) => i.key !== 'home'))
 const homePhase = computed(() => {
   const p = findItem(auth.role, 'home')?.phase

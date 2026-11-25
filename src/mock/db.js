@@ -10,10 +10,35 @@
 
 export const ROLES = ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'student', 'parent', 'support']
 
+/** المدارس — من شيت «الزيارات التربوية — البيانات» (27 مدرسة). s1–s3 فيها حسابات تجريبية */
 export const schools = [
-  { id: 's1', slug: 'nour', name: 'مدرسة النور', wilaya: 'غرداية', commune: 'غرداية', code: 'IST-001', status: 'active' },
-  { id: 's2', slug: 'fath', name: 'مدرسة الفتح', wilaya: 'غرداية', commune: 'بريان', code: 'IST-002', status: 'active' },
-  { id: 's3', slug: 'huda', name: 'مدرسة الهدى', wilaya: 'الجزائر', commune: 'باب الزوار', code: 'IST-003', status: 'active' }
+  { id: 's1', slug: 'nour', code: '4', name: 'النور القرآنية - برج البحري', short: 'النور القرآنية', commune: 'برج البحري', gender: 'mixed', status: 'active' },
+  { id: 's2', slug: 'furqan', code: '3', name: 'الفرقان القرآنية - القبة', short: 'الفرقان القرآنية', commune: 'القبة', gender: 'mixed', status: 'active' },
+  { id: 's3', slug: 'huda', code: '16', name: 'الهدى القرآنية - حي الورود', short: 'الهدى القرآنية', commune: 'حي الورود', gender: 'mixed', status: 'active' },
+  { id: 's4', slug: 'm1', code: '1', name: 'الهداية القرآنية - القصبة', short: 'الهداية القرآنية', commune: 'القصبة', gender: 'mixed', status: 'active' },
+  { id: 's5', slug: 'm2', code: '2', name: 'الرضوان القرآنية - القليعة', short: 'الرضوان القرآنية', commune: 'القليعة', gender: 'mixed', status: 'active' },
+  { id: 's6', slug: 'm5', code: '5', name: 'الإخلاص القرآنية - العالية', short: 'الإخلاص القرآنية', commune: 'العالية', gender: 'mixed', status: 'active' },
+  { id: 's7', slug: 'm6', code: '6', name: 'النور القرآنية - سيدي بنور', short: 'النور القرآنية', commune: 'سيدي بنور', gender: 'mixed', status: 'active' },
+  { id: 's8', slug: 'm7', code: '7', name: 'السلام القرآنية - برج الكيفان', short: 'السلام القرآنية', commune: 'برج الكيفان', gender: 'mixed', status: 'active' },
+  { id: 's9', slug: 'm8', code: '8', name: 'الرشاد القرآنية - الشراقة', short: 'الرشاد القرآنية', commune: 'الشراقة', gender: 'mixed', status: 'active' },
+  { id: 's10', slug: 'm9', code: '9', name: 'ابتدائية المنار القرآنية ذكور - الحميز', short: 'ابتدائية المنار القرآنية ذكور', commune: 'الحميز', gender: 'male', status: 'active' },
+  { id: 's11', slug: 'm10', code: '10', name: 'ابتدائية المنار القرآنية إناث - الحميز', short: 'ابتدائية المنار القرآنية إناث', commune: 'الحميز', gender: 'female', status: 'active' },
+  { id: 's12', slug: 'm11', code: '11', name: 'متوسطة المنار القرآنية ذكور - الحميز', short: 'متوسطة المنار القرآنية ذكور', commune: 'الحميز', gender: 'male', status: 'active' },
+  { id: 's13', slug: 'm12', code: '12', name: 'متوسطة المنار القرآنية إناث - الحميز', short: 'متوسطة المنار القرآنية إناث', commune: 'الحميز', gender: 'female', status: 'active' },
+  { id: 's14', slug: 'm13', code: '13', name: 'الإيمان القرآنية - براقي', short: 'الإيمان القرآنية', commune: 'براقي', gender: 'mixed', status: 'active' },
+  { id: 's15', slug: 'm14', code: '14', name: 'البدر القرآنية - بودواو', short: 'البدر القرآنية', commune: 'بودواو', gender: 'mixed', status: 'active' },
+  { id: 's16', slug: 'm15', code: '15', name: 'دار السلام القرآنية - علي صادق', short: 'دار السلام القرآنية', commune: 'علي صادق', gender: 'mixed', status: 'active' },
+  { id: 's17', slug: 'm17', code: '17', name: 'الإحسان القرآنية - بوفاريك', short: 'الإحسان القرآنية', commune: 'بوفاريك', gender: 'mixed', status: 'active' },
+  { id: 's18', slug: 'm18', code: '18', name: 'الحمد القرآنية - حمادي', short: 'الحمد القرآنية', commune: 'حمادي', gender: 'mixed', status: 'active' },
+  { id: 's19', slug: 'm19', code: '19', name: 'الفلاح القرآنية ذكور - الحميز', short: 'الفلاح القرآنية ذكور', commune: 'الحميز', gender: 'male', status: 'active' },
+  { id: 's20', slug: 'm20', code: '20', name: 'الفلاح القرآنية إناث - الحميز', short: 'الفلاح القرآنية إناث', commune: 'الحميز', gender: 'female', status: 'active' },
+  { id: 's21', slug: 'm21', code: '21', name: 'قباء القرآنية - الدار البيضاء', short: 'قباء القرآنية', commune: 'الدار البيضاء', gender: 'mixed', status: 'active' },
+  { id: 's22', slug: 'm22', code: '22', name: 'الريان القرآنية - حمادي', short: 'الريان القرآنية', commune: 'حمادي', gender: 'mixed', status: 'active' },
+  { id: 's23', slug: 'm23', code: '23', name: 'الرضوان القرآنية - بئر خادم', short: 'الرضوان القرآنية', commune: 'بئر خادم', gender: 'mixed', status: 'active' },
+  { id: 's24', slug: 'm24', code: '24', name: 'نور السلام القرآنية - خميس الخشنة', short: 'نور السلام القرآنية', commune: 'خميس الخشنة', gender: 'mixed', status: 'active' },
+  { id: 's25', slug: 'm25', code: '25', name: 'الرحمن القرآنية - حي اسطنبول', short: 'الرحمن القرآنية', commune: 'حي اسطنبول', gender: 'mixed', status: 'active' },
+  { id: 's26', slug: 'm26', code: '26', name: 'الفردوس القرآنية - الدار البيضاء', short: 'الفردوس القرآنية', commune: 'الدار البيضاء', gender: 'mixed', status: 'active' },
+  { id: 's27', slug: 'm27', code: '27', name: 'دار السلام القرآنية فرع التقوى - بن رضوان', short: 'دار السلام القرآنية فرع التقوى', commune: 'بن رضوان', gender: 'mixed', status: 'active' }
 ]
 
 /**
@@ -23,10 +48,18 @@ export const schools = [
  *  cover: 'pattern:<name>' (زخرفة جاهزة بألوان المدرسة) أو صورة مرفوعة
  */
 export const schoolBranding = {
-  s1: { logo: null, primary: '#0f7b5a', secondary: '#e8b54a', cover: 'pattern:arches', welcome: 'أهلاً بكم في مدرسة النور… نتعلّم لنرتقي.' },
-  s2: { logo: null, primary: '#8e2445', secondary: '#f0a35e', cover: 'pattern:waves', welcome: 'مدرسة الفتح ترحّب بأبنائها.' },
-  s3: { logo: null, primary: '#1f5f8b', secondary: '#f2cf5b', cover: 'pattern:stars', welcome: 'مدرسة الهدى: علمٌ وخُلق.' }
+  s1: { logo: null, primary: '#0f7b5a', secondary: '#e8b54a', cover: 'pattern:arches', welcome: 'أهلاً بكم في مدرسة النور القرآنية… نتعلّم لنرتقي.' },
+  s2: { logo: null, primary: '#8e2445', secondary: '#f0a35e', cover: 'pattern:waves', welcome: 'مدرسة الفرقان ترحّب بأبنائها.' },
+  s3: { logo: null, primary: '#1f5f8b', secondary: '#f2cf5b', cover: 'pattern:stars', welcome: 'مدرسة الهدى القرآنية: علمٌ وخُلق.' }
 }
+// بقية المدارس: هوية افتراضية إلى أن يخصصها مديروها
+const DEFAULT_PAIRS = [['#14213d', '#fca311'], ['#1b4332', '#95d5b2'], ['#6d2c91', '#f7b538'], ['#005f73', '#ee9b00'], ['#7f4f24', '#ddb892'], ['#8e2445', '#f0a35e']]
+const COVERS = ['arches', 'waves', 'stars', 'dunes']
+schools.forEach((sc, i) => {
+  if (schoolBranding[sc.id]) return
+  const [primary, secondary] = DEFAULT_PAIRS[i % DEFAULT_PAIRS.length]
+  schoolBranding[sc.id] = { logo: null, primary, secondary, cover: 'pattern:' + COVERS[i % 4], welcome: `مرحباً بكم في ${sc.short}.` }
+})
 
 // الأطوار: primary | middle | secondary — والترتيب order يحدد ثيم التلميذ (انظر config/theme.js)
 export const levels = [
@@ -72,8 +105,8 @@ export const persons = [
 
 /**
  * الصفات. لاحظ الحالات المتعددة:
- *  - p4 مدير مدرسة النور + ولي إسحاق
- *  - p5 معلم في مدرستين (النور والفتح) + ولي سلمى
+ *  - p4 مدير مدرسة النور (برج البحري) + ولي إسحاق
+ *  - p5 معلم في مدرستين (النور والفرقان) + ولي سلمى
  *  - p11 ولية لثلاثة أبناء في مدرستين (وكل ابن بثيم مختلف حسب طوره)
  */
 export const assignments = [
@@ -82,7 +115,7 @@ export const assignments = [
   { id: 'a3', personId: 'p3', role: 'editor', schoolId: null, subjects: ['الفقه', 'العقيدة'], levelIds: ['M1', 'M4', 'S2'] },
   { id: 'a4', personId: 'p4', role: 'school_manager', schoolId: 's1' },
   { id: 'a5', personId: 'p4', role: 'parent', schoolId: null, childIds: ['p9'] },
-  { id: 'a6', personId: 'p5', role: 'teacher', schoolId: 's1', classIds: ['c1', 'c3'], subjects: ['القرآن الكريم', 'الفقه'] },
+  { id: 'a6', personId: 'p5', role: 'teacher', schoolId: 's1', classIds: ['c1', 'c3'], subjects: ['التربية الإيمانية', 'الفقه'] },
   { id: 'a7', personId: 'p5', role: 'teacher', schoolId: 's2', classIds: ['c2'], subjects: ['الفقه'] },
   { id: 'a8', personId: 'p5', role: 'parent', schoolId: null, childIds: ['p10'] },
   { id: 'a9', personId: 'p6', role: 'teacher', schoolId: 's2', classIds: ['c2', 'c4', 'c5'], subjects: ['اللغة العربية'] },
@@ -100,17 +133,17 @@ const ago = (min) => new Date(now - min * 60000).toISOString()
 
 /** الإشعارات: مرتبطة بالشخص، وموسومة بالصفة (assignmentId) التي تخصها */
 export const notifications = [
-  { id: 'n1', personId: 'p7', assignmentId: 'a10', type: 'lesson', title: 'درس جديد في القرآن الكريم', body: 'سورة الفيل — الحفظ والتجويد', read: false, at: ago(12) },
-  { id: 'n2', personId: 'p7', assignmentId: 'a10', type: 'assignment', title: 'واجب جديد', body: 'تمرين في الحساب: الجمع بالاحتفاظ', read: false, at: ago(90) },
+  { id: 'n1', personId: 'p7', assignmentId: 'a10', type: 'lesson', title: 'درس جديد في التربية الإيمانية', body: 'من وصايا لقمان الحكيم', read: false, at: ago(12) },
+  { id: 'n2', personId: 'p7', assignmentId: 'a10', type: 'assignment', title: 'واجب جديد', body: 'اللغة العربية: التاء المربوطة', read: false, at: ago(90) },
   { id: 'n3', personId: 'p7', assignmentId: 'a10', type: 'result', title: 'نتيجة اختبار', body: 'حصلت على 9/10 في اختبار الإملاء', read: true, at: ago(60 * 26) },
   { id: 'n4', personId: 'p7', assignmentId: null, type: 'announcement', title: 'إعلان عام', body: 'عطلة الشتاء تبدأ يوم الخميس 18 ديسمبر', read: true, at: ago(60 * 50) },
-  { id: 'n5', personId: 'p5', assignmentId: 'a6', type: 'submission', title: 'تسليم جديد', body: 'أنس بلحاج سلّم واجب الحفظ', read: false, at: ago(25) },
+  { id: 'n5', personId: 'p5', assignmentId: 'a6', type: 'submission', title: 'تسليم جديد', body: 'أنس بلحاج سلّم واجب التربية الإيمانية', read: false, at: ago(25) },
   { id: 'n6', personId: 'p5', assignmentId: 'a7', type: 'comment', title: 'تعليق جديد', body: 'المحرر علّق على ملف "أحكام الطهارة"', read: false, at: ago(140) },
   { id: 'n7', personId: 'p5', assignmentId: 'a8', type: 'assignment', title: 'واجب جديد لسلمى', body: 'تلوين الحروف الهجائية', read: false, at: ago(200) },
   { id: 'n8', personId: 'p5', assignmentId: null, type: 'announcement', title: 'إعلان عام', body: 'اجتماع المعلمين يوم السبت', read: true, at: ago(60 * 30) },
-  { id: 'n9', personId: 'p4', assignmentId: 'a4', type: 'content', title: 'محتوى ينتظر المصادقة', body: '3 ملفات جديدة من معلمي مدرسة النور', read: false, at: ago(45) },
+  { id: 'n9', personId: 'p4', assignmentId: 'a4', type: 'content', title: 'محتوى ينتظر المصادقة', body: '3 ملفات جديدة من معلمي مدرستك', read: false, at: ago(45) },
   { id: 'n10', personId: 'p4', assignmentId: 'a5', type: 'result', title: 'نتيجة لإسحاق', body: 'علامة واجب الفقه: 16/20', read: false, at: ago(300) },
-  { id: 'n11', personId: 'p11', assignmentId: 'a14', type: 'lesson', title: 'درس جديد لأنس', body: 'سورة الفيل', read: false, at: ago(12) },
+  { id: 'n11', personId: 'p11', assignmentId: 'a14', type: 'lesson', title: 'درس جديد لأنس', body: 'من وصايا لقمان الحكيم', read: false, at: ago(12) },
   { id: 'n12', personId: 'p11', assignmentId: 'a14', type: 'result', title: 'نتيجة لمريم', body: 'Quiz الفقه: 8/10', read: false, at: ago(180) },
   { id: 'n13', personId: 'p3', assignmentId: 'a3', type: 'content', title: 'ملف ينتظر المراجعة', body: 'أحكام الطهارة — الرابعة متوسط', read: false, at: ago(140) },
   { id: 'n14', personId: 'p1', assignmentId: 'a1', type: 'report', title: 'بلاغ جديد', body: 'عطل في تشغيل الفيديو', read: false, at: ago(35) },
@@ -128,8 +161,8 @@ export const conversations = [
     participants: [{ personId: 'p5', assignmentId: 'a6' }, { personId: 'p11', assignmentId: 'a14' }],
     subject: 'متابعة أنس',
     messages: [
-      { id: 'm1', from: 'p11', body: 'السلام عليكم أستاذ، كيف مستوى أنس في الحفظ؟', at: ago(60 * 20) },
-      { id: 'm2', from: 'p5', body: 'وعليكم السلام، أنس مجتهد ما شاء الله، يحتاج فقط إلى مراجعة سورة قريش.', at: ago(60 * 19) },
+      { id: 'm1', from: 'p11', body: 'السلام عليكم أستاذ، كيف مستوى أنس في الدروس؟', at: ago(60 * 20) },
+      { id: 'm2', from: 'p5', body: 'وعليكم السلام، أنس مجتهد ما شاء الله، يحتاج فقط إلى مراجعة درس التاء المربوطة.', at: ago(60 * 19) },
       { id: 'm3', from: 'p11', body: 'جزاكم الله خيراً، سنراجعها معه في البيت.', at: ago(60 * 18) }
     ]
   },

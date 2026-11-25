@@ -27,7 +27,7 @@
       </button>
       <div v-show="openIdx === i" class="chapter__body">
         <RouterLink v-for="l in lessonsOf(ax.name)" :key="l.id" :to="`/app/lesson/${l.id}`" class="cp" :class="`cp--${l.state}`">
-          <span class="cp__mark"><i :class="l.state === 'done' ? 'pi pi-check' : l.state === 'current' ? 'pi pi-play' : 'pi pi-circle'" /></span>
+          <span class="cp__mark"><i :class="l.state === 'done' ? 'pi pi-check' : l.state === 'current' ? 'pi pi-play' : l.state === 'locked' ? 'pi pi-lock' : 'pi pi-circle'" /></span>
           <div class="cp__body">
             <strong>{{ l.title }}</strong>
             <span class="cp__meta">
@@ -37,7 +37,7 @@
               <span v-if="l.gender === 'female'" class="cp__g">مقرر الإناث</span>
             </span>
           </div>
-          <span class="cp__xp">{{ l.state === 'done' ? 'مكتمل' : '+20 XP' }}</span>
+          <span class="cp__xp">{{ l.state === 'done' ? 'مكتمل' : l.state === 'locked' ? 'لم يُفتح بعد' : '+20 XP' }}</span>
         </RouterLink>
       </div>
     </section>
@@ -55,6 +55,7 @@ const typeIcon = { video: 'pi pi-video', slides: 'pi pi-images', pdf: 'pi pi-fil
 </script>
 
 <style scoped>
+.cp--locked { opacity: 0.5; pointer-events: none; }
 .js { display: flex; flex-direction: column; gap: 0.9rem; }
 .back { color: var(--muted); text-decoration: none; font-weight: 700; display: inline-flex; gap: 0.4rem; align-items: center; }
 .js__head { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 1.4rem; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); border-inline-start: 8px solid var(--c); }

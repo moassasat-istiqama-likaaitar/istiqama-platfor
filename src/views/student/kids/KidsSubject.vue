@@ -15,7 +15,8 @@
       <div class="path">
         <div v-for="(l, i) in ax.lessons" :key="l.id" class="node" :class="`node--${l.state}`" :style="{ '--x': offset(i) }">
           <RouterLink :to="`/app/lesson/${l.id}`" class="node__btn" @click="tap">
-            <i v-if="l.state === 'done'" class="pi pi-star-fill" />
+            <i v-if="l.state === 'locked'" class="pi pi-lock" />
+            <i v-else-if="l.state === 'done'" class="pi pi-star-fill" />
             <i v-else-if="l.state === 'current'" class="pi pi-play" />
             <span v-else>{{ i + 1 }}</span>
           </RouterLink>
@@ -39,6 +40,7 @@ const tap = () => chime('tap', 'kids')
 </script>
 
 <style scoped>
+.node--locked { opacity: 0.45; pointer-events: none; filter: grayscale(0.6); }
 .ks { display: flex; flex-direction: column; gap: 1rem; }
 .ks__head { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 32px; background: var(--c); color: #fff; box-shadow: 0 8px 0 color-mix(in srgb, var(--c) 60%, #000); }
 .ks__back { width: 52px; height: 52px; border-radius: 50%; background: rgba(255, 255, 255, 0.25); color: #fff; display: grid; place-items: center; text-decoration: none; font-size: 1.3rem; }

@@ -20,7 +20,7 @@
         <h1>{{ sb.school.name }}</h1>
         <p v-if="sb.branding.welcome" class="brand__welcome">{{ sb.branding.welcome }}</p>
         <div class="brand__foot">
-          <span><i class="pi pi-map-marker" /> {{ sb.school.commune }} · {{ sb.school.wilaya }}</span>
+          <span><i class="pi pi-map-marker" /> {{ sb.school.commune }}</span>
           <span><i class="pi pi-sitemap" /> {{ t('app.name') }}</span>
         </div>
       </div>
@@ -87,7 +87,7 @@
             </RouterLink>
           </div>
         </div>
-        <p v-if="sb && !groups.length" class="muted demo__empty">لا توجد حسابات تجريبية في هذه المدرسة بعد. جرّب رابط مدرسة النور أو الفتح.</p>
+        <p v-if="sb && !groups.length" class="muted demo__empty">لا توجد حسابات تجريبية في هذه المدرسة بعد. جرّب رابط مدرسة النور أو الفرقان.</p>
         <div v-for="g in groups" :key="g.key" class="demo__group">
           <h4>{{ g.title }}</h4>
           <div class="demo__list">
@@ -160,7 +160,7 @@ watch(() => route.params.slug, async (slug) => {
       slugError.value = e.message
     }
   } else if (!schoolLinks.value.length) {
-    schoolLinks.value = await listSchools()
+    schoolLinks.value = (await listSchools()).slice(0, 3) // المدارس التي فيها حسابات تجريبية
   }
 }, { immediate: true })
 
