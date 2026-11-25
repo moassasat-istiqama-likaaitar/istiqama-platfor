@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <StudentHome v-if="auth.role === 'student'" />
+  <div v-else>
     <section class="hero">
       <div>
         <h1>{{ t('home.greeting', { name: auth.person.firstName }) }}</h1>
@@ -40,6 +41,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Message from 'primevue/message'
+import StudentHome from '@/views/student/StudentHome.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useInboxStore } from '@/stores/inbox'
 import { flatItems, findItem, ROLE_ICONS } from '@/config/menus'

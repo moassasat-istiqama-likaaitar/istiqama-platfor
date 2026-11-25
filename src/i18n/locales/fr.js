@@ -9,7 +9,7 @@ export default {
     super_admin: 'Directeur général', admin: 'Superviseur général', editor: 'Éditeur', school_manager: "Directeur d'école",
     teacher: 'Enseignant', student: 'Élève', parent: 'Parent', support: 'Support technique'
   },
-  themes: { staff: 'Personnel', primary: 'Primaire', middle: 'Moyen', secondary: 'Secondaire' },
+  themes: { staff: 'Personnel', kids: 'Les pousses', juniors: 'Les explorateurs', teens: 'Les jeunes' },
   menu: {
     home: 'Accueil', users: 'Utilisateurs', 'users-list': 'Liste des utilisateurs', 'users-import': 'Import groupé',
     'users-duplicates': 'Comptes en double', 'activity-log': "Journal d'activité", library: 'Bibliothèque',
@@ -87,6 +87,22 @@ export default {
   errors: {
     notFound: 'Page introuvable', notFoundHint: 'Le lien a peut-être changé.',
     forbidden: 'Accès refusé', forbiddenHint: "Cette page n'est pas disponible pour votre rôle.", goHome: "Retour à l'accueil"
+  },
+  student: {
+    nav: { home: 'Accueil', lessons: 'Mes leçons', assignments: 'Mes devoirs', progress: 'Ma progression' },
+    stars: 'étoiles', points: 'points', streak: 'jours de suite', streakShort: 'jours',
+    hello: { kids: 'Bonjour champion !', juniors: 'Salut explorateur !', teens: 'Bon retour' },
+    continue: 'Reprendre là où tu t’es arrêté', mySubjects: 'Mes matières', upcoming: 'À faire', badges: 'Mes badges', todayGoal: "Objectif du jour",
+    types: { video: 'Vidéo', slides: 'Diaporama', pdf: 'Document', image: 'Image', quiz: 'Quiz', homework: 'Devoir' },
+    classification: { main: 'Principal', enrichment: 'Enrichissement', activity: 'Activité' }
+  },
+  library: {
+    title: 'Bibliothèque centrale', subtitle: 'Tous les contenus et activités, classés par niveau, matière et leçon',
+    search: 'Rechercher', level: 'Niveau', subject: 'Matière', type: 'Type', classification: 'Classement', status: 'Statut', all: 'Tout',
+    results: '{n} éléments', empty: 'Aucun résultat', reset: 'Effacer les filtres',
+    statuses: { approved: 'Validé', temp: 'Validé provisoirement', pending: 'En révision', draft: 'Brouillon', rejected: 'Refusé' },
+    stats: { total: 'éléments', videos: 'vidéos', pending: 'en attente' },
+    addToClass: 'Ajouter à ma classe', added: 'Ajouté (démo)', author: 'Auteur', views: '{n} vues', lesson: 'Leçon', preview: 'Aperçu', questions: '{n} questions'
   },
   time: { now: "À l'instant", minutes: 'il y a {n} min', hours: 'il y a {n} h', days: 'il y a {n} j' }
 }

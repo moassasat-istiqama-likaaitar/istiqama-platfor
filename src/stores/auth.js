@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import * as authApi from '@/api/auth'
 import { storage } from '@/utils/storage'
-import { applyTheme } from '@/config/theme'
+import { applyTheme, themeForLevelOrder } from '@/config/theme'
 
 const STAFF_ROLES = ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'parent', 'support']
 
@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', {
     /** الثيم: التلميذ حسب طوره، والبقية ثيم الطاقم */
     themeKey() {
       const a = this.active
-      if (a?.role === 'student') return a.level?.phase || 'primary'
+      if (a?.role === 'student') return themeForLevelOrder(a.level?.order)
       return 'staff'
     }
   },

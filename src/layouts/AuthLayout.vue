@@ -17,9 +17,10 @@ import LangSwitcher from '@/components/LangSwitcher.vue'
   background:
     radial-gradient(circle at 15% 20%, color-mix(in srgb, var(--p-primary-color) 14%, transparent) 0, transparent 45%),
     radial-gradient(circle at 85% 80%, color-mix(in srgb, var(--p-primary-color) 10%, transparent) 0, transparent 40%),
-    var(--p-surface-50);
+    var(--bg);
   display: flex;
   flex-direction: column;
 }
-.auth__top { display: flex; justify-content: flex-end; padding: 0.75rem 1rem; }
+.auth__top { position: absolute; top: 0.75rem; inset-inline-end: 1rem; z-index: 5; background: var(--surface); border-radius: 999px; box-shadow: var(--shadow); }
+.auth { position: relative; }
 </style>

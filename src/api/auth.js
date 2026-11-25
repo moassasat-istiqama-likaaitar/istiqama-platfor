@@ -10,7 +10,7 @@ export function describeAssignment(a) {
     const c = classes.find((x) => x.id === a.classId)
     const lvl = levels.find((l) => l.id === c?.levelId)
     out.class = c ? { id: c.id, name: c.name } : null
-    out.level = lvl ? { id: lvl.id, name: lvl.name, phase: lvl.phase } : null
+    out.level = lvl ? { id: lvl.id, name: lvl.name, phase: lvl.phase, order: lvl.order } : null
   }
   if (a.childIds) {
     out.children = a.childIds.map((cid) => {

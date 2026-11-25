@@ -27,6 +27,16 @@ const routes = [
       { path: 'notifications', name: 'notifications', component: () => import('@/views/common/NotificationsView.vue') },
       { path: 'messages/:id?', name: 'messages', component: () => import('@/views/common/MessagesView.vue') },
       { path: 'feedback', name: 'feedback', component: () => import('@/views/common/FeedbackView.vue') },
+      // ——— فضاء التلميذ ———
+      { path: 'my-lessons', name: 'my-lessons', component: () => import('@/views/student/StudentLessons.vue'), meta: { roles: ['student'] } },
+      { path: 'subject/:id', name: 'subject', component: () => import('@/views/student/StudentSubject.vue'), meta: { roles: ['student'] } },
+      { path: 'lesson/:id', name: 'lesson', component: () => import('@/views/student/LessonView.vue'), meta: { roles: ['student'] } },
+      { path: 'my-assignments', name: 'my-assignments', component: () => import('@/views/student/StudentAssignments.vue'), meta: { roles: ['student'] } },
+      { path: 'activity/:id', name: 'activity', component: () => import('@/views/student/ActivityView.vue'), meta: { roles: ['student'] } },
+      { path: 'my-progress', name: 'my-progress', component: () => import('@/views/student/StudentProgress.vue'), meta: { roles: ['student'] } },
+      // ——— المكتبة المركزية ———
+      { path: 'central-library', name: 'central-library', component: () => import('@/views/library/LibraryView.vue'), meta: { roles: ['teacher', 'editor', 'admin', 'super_admin'] } },
+      { path: 'library-manage', name: 'library-manage', component: () => import('@/views/library/LibraryView.vue'), meta: { roles: ['editor', 'admin', 'super_admin'] } },
       { path: 'forbidden', name: 'forbidden', component: () => import('@/views/errors/ForbiddenView.vue') },
       // كل شاشة لم تُبنَ بعد تفتح صفحة "قيد البناء" إن كانت موجودة في قائمة الدور
       { path: ':key', name: 'screen', component: () => import('@/views/common/PlaceholderView.vue') }
@@ -51,6 +61,8 @@ router.beforeEach(async (to) => {
   if (needsAuth && !to.meta.noRole && !auth.active) return { name: 'choose-role' }
 
   // صلاحية الشاشة حسب الصفة الحالية
+  const roles = to.matched.flatMap((r) => r.meta.roles || [])
+  if (roles.length && !roles.includes(auth.role)) return { name: 'forbidden' }
   if (to.name === 'screen') {
     const key = to.params.key
     if (!COMMON_SCREENS.includes(key) && !findItem(auth.role, key)) return { name: 'forbidden' }

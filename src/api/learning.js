@@ -1,0 +1,289 @@
+import { respond, ApiError, newId } from './client'
+import { subjects, lessons, contents, activities } from '@/mock/content'
+import { progressOf, save, BADGES } from '@/mock/progress'
+import { persons } from '@/mock/db'
+
+const VISIBLE = ['approved', 'temp'] // ما يراه التلميذ: معتمد أو معتمد مؤقتاً
+
+const lessonContents = (lessonId) => contents.filter((c) => c.lessonId === lessonId && VISIBLE.includes(c.status))
+
+function subjectSummary(sub, p) {
+  const ls = lessons.filter((l) => l.subjectId === sub.id)
+  const done = ls.filter((l) => p.done.includes(l.id)).length
+  const next = ls.find((l) => !p.done.includes(l.id)) || null
+  return {
+    ...sub,
+    lessonsCount: ls.length,
+    doneCount: done,
+    progress: ls.length ? Math.round((done / ls.length) * 100) : 0,
+    newCount: ls.filter((l) => !p.viewed.includes(l.id)).length,
+    next: next ? { id: next.id, title: next.title } : null
+  }
+}
+
+function activityView(a, p) {
+  const sub = p.submissions[a.id]
+  const lesson = lessons.find((l) => l.id === a.lessonId)
+  const subject = subjects.find((s) => s.id === a.subjectId)
+  let state = sub?.status || 'todo'
+  if (state === 'todo' && new Date(a.due) < new Date()) state = 'late'
+  return {
+    id: a.id, type: a.type, title: a.title, due: a.due, maxScore: a.maxScore, required: a.required,
+    lesson: lesson && { id: lesson.id, title: lesson.title },
+    subject: subject && { id: subject.id, name: subject.name, color: subject.color, art: subject.art },
+    state, score: sub?.score ?? null, submittedAt: sub?.at || null,
+    questionsCount: a.questions?.length || 0
+  }
+}
+
+function award(p, stars) {
+  p.stars += stars
+  const today = new Date().toDateString()
+  if (p.lastDay !== today) {
+    p.lastDay = today
+  }
+}
+
+function checkBadges(p) {
+  const earned = []
+  const add = (b) => {
+    if (!p.badges.includes(b)) {
+      p.badges.push(b)
+      earned.push({ id: b, ...BADGES[b] })
+    }
+  }
+  if (p.done.length >= 1) add('first-lesson')
+  if (p.viewed.length >= 10) add('curious')
+  if (Object.keys(p.comments).length) add('helper')
+  return earned
+}
+
+/** GET /api/student/dashboard → لوحة التلميذ */
+export function dashboard(personId, levelId) {
+  return respond(() => {
+    const p = progressOf(personId)
+    const subs = subjects.filter((s) => s.levelId === levelId).map((s) => subjectSummary(s, p))
+    const acts = activities.filter((a) => a.levelId === levelId).map((a) => activityView(a, p))
+    const upcoming = acts.filter((a) => ['todo', 'late'].includes(a.state)).sort((a, b) => a.due.localeCompare(b.due))
+    const continueSub = subs.find((s) => s.next && s.doneCount > 0) || subs.find((s) => s.next)
+    const totalLessons = subs.reduce((n, s) => n + s.lessonsCount, 0)
+    const doneLessons = subs.reduce((n, s) => n + s.doneCount, 0)
+    return {
+      stars: p.stars, streak: p.streak,
+      badges: p.badges.map((b) => ({ id: b, ...BADGES[b] })),
+      subjects: subs,
+      continueWith: continueSub?.next ? { lessonId: continueSub.next.id, title: continueSub.next.title, subject: continueSub } : null,
+      upcoming: upcoming.slice(0, 4),
+      todoCount: upcoming.length,
+      progress: totalLessons ? Math.round((doneLessons / totalLessons) * 100) : 0,
+      doneLessons, totalLessons,
+      // هدف اليوم: درسان + نشاط
+      dailyGoal: { target: 3, done: Math.min(3, (p.todayCount || 0)) }
+    }
+  })
+}
+
+/** GET /api/student/subjects/{id} → المادة ودروسها مع حالة كل درس */
+export function subject(personId, subjectId) {
+  return respond(() => {
+    const p = progressOf(personId)
+    const sub = subjects.find((s) => s.id === subjectId)
+    if (!sub) throw new ApiError('not_found', 'المادة غير موجودة')
+    const ls = lessons.filter((l) => l.subjectId === subjectId)
+    const firstOpen = ls.find((l) => !p.done.includes(l.id))
+    return {
+      ...subjectSummary(sub, p),
+      lessons: ls.map((l) => ({
+        id: l.id, title: l.title, order: l.order, minutes: l.minutes,
+        state: p.done.includes(l.id) ? 'done' : l.id === firstOpen?.id ? 'current' : 'open',
+        isNew: !p.viewed.includes(l.id),
+        types: Array.from(new Set(lessonContents(l.id).map((c) => c.type))),
+        activities: activities.filter((a) => a.lessonId === l.id).length
+      }))
+    }
+  })
+}
+
+/** GET /api/student/lessons/{id} → الدرس بمحتواه وأنشطته وتعليقاته */
+export function lesson(personId, lessonId) {
+  return respond(() => {
+    const p = progressOf(personId)
+    const l = lessons.find((x) => x.id === lessonId)
+    if (!l) throw new ApiError('not_found', 'الدرس غير موجود')
+    if (!p.viewed.includes(l.id)) {
+      p.viewed.push(l.id)
+      save()
+    }
+    const sub = subjects.find((s) => s.id === l.subjectId)
+    const siblings = lessons.filter((x) => x.subjectId === l.subjectId)
+    const idx = siblings.findIndex((x) => x.id === l.id)
+    return {
+      ...l,
+      subject: { id: sub.id, name: sub.name, color: sub.color, accent: sub.accent, art: sub.art },
+      done: p.done.includes(l.id),
+      contents: lessonContents(l.id).map((c) => ({ ...c, myRating: p.ratings[c.id] || 0 })),
+      activities: activities.filter((a) => a.lessonId === l.id).map((a) => activityView(a, p)),
+      comments: (p.comments[l.id] || []).concat(SAMPLE_COMMENTS(l)),
+      prev: siblings[idx - 1] ? { id: siblings[idx - 1].id, title: siblings[idx - 1].title } : null,
+      next: siblings[idx + 1] ? { id: siblings[idx + 1].id, title: siblings[idx + 1].title } : null
+    }
+  })
+}
+
+const SAMPLE_COMMENTS = (l) => [
+  { id: `sc-${l.id}`, author: 'الأستاذ عمر', role: 'teacher', body: 'شاهدوا الفيديو ثم حاولوا حل الاختبار، وأنا هنا لأي سؤال.', at: new Date(Date.now() - 86400000 * 2).toISOString() }
+]
+
+/** POST /api/student/lessons/{id}/complete → يمنح نقاطاً وشارات */
+export function completeLesson(personId, lessonId) {
+  return respond(() => {
+    const p = progressOf(personId)
+    let gained = 0
+    if (!p.done.includes(lessonId)) {
+      p.done.push(lessonId)
+      gained = 20
+      award(p, gained)
+      p.todayCount = (p.todayCount || 0) + 1
+      const l = lessons.find((x) => x.id === lessonId)
+      const all = lessons.filter((x) => x.subjectId === l.subjectId)
+      if (all.every((x) => p.done.includes(x.id)) && !p.badges.includes('subject-master')) p.badges.push('subject-master')
+    }
+    const badges = checkBadges(p)
+    save()
+    return { gained, stars: p.stars, badges }
+  }, 300)
+}
+
+/** POST /api/contents/{id}/rating  { stars } */
+export function rateContent(personId, contentId, stars) {
+  return respond(() => {
+    const p = progressOf(personId)
+    p.ratings[contentId] = stars
+    save()
+    return { ok: true }
+  }, 100)
+}
+
+/** POST /api/lessons/{id}/comments  { body } */
+export function addComment(personId, lessonId, body) {
+  return respond(() => {
+    const p = progressOf(personId)
+    const person = persons.find((x) => x.id === personId)
+    const c = { id: newId('cm'), author: person ? person.firstName : 'أنا', role: 'student', mine: true, body, at: new Date().toISOString() }
+    p.comments[lessonId] = [c, ...(p.comments[lessonId] || [])]
+    const badges = checkBadges(p)
+    save()
+    return { comment: c, badges }
+  })
+}
+
+/** GET /api/student/activities → كل أنشطة المستوى مع حالة كل نشاط */
+export function myActivities(personId, levelId) {
+  return respond(() => {
+    const p = progressOf(personId)
+    return activities.filter((a) => a.levelId === levelId).map((a) => activityView(a, p)).sort((a, b) => a.due.localeCompare(b.due))
+  })
+}
+
+/** GET /api/student/activities/{id} */
+export function activity(personId, id) {
+  return respond(() => {
+    const p = progressOf(personId)
+    const a = activities.find((x) => x.id === id)
+    if (!a) throw new ApiError('not_found', 'النشاط غير موجود')
+    const sub = p.submissions[a.id]
+    const view = activityView(a, p)
+    const graded = sub?.status === 'graded'
+    return {
+      ...view,
+      instructions: a.instructions, attachments: a.attachments,
+      // الإجابات الصحيحة لا تُرسل قبل التسليم
+      questions: a.questions?.map((q) => ({ q: q.q, options: q.options, ...(graded ? { answer: q.answer } : {}) })),
+      modelAnswer: graded ? a.modelAnswer : null,
+      submission: sub || null
+    }
+  })
+}
+
+/** POST /api/student/activities/{id}/quiz  { answers[] } → النتيجة (تصحيح آلي) */
+export function submitQuiz(personId, id, answers) {
+  return respond(() => {
+    const p = progressOf(personId)
+    const a = activities.find((x) => x.id === id)
+    const correct = answers.filter((ans, i) => ans === a.questions[i].answer).length
+    const score = Math.round((correct / a.questions.length) * a.maxScore)
+    p.submissions[id] = { status: 'graded', answers, score, at: new Date().toISOString() }
+    const gained = 10 + correct * 5
+    award(p, gained)
+    p.todayCount = (p.todayCount || 0) + 1
+    if (score === a.maxScore && !p.badges.includes('quiz-ace')) p.badges.push('quiz-ace')
+    const badges = checkBadges(p)
+    save()
+    return { score, correct, total: a.questions.length, maxScore: a.maxScore, gained, stars: p.stars, badges }
+  }, 500)
+}
+
+/** POST /api/student/activities/{id}/homework  { text, files[] } */
+export function submitHomework(personId, id, { text, files }) {
+  return respond(() => {
+    if (!text?.trim() && !files?.length) throw new ApiError('required', 'اكتب إجابتك أو أرفق ملفاً')
+    const p = progressOf(personId)
+    p.submissions[id] = { status: 'submitted', text, files, at: new Date().toISOString() }
+    award(p, 15)
+    p.todayCount = (p.todayCount || 0) + 1
+    save()
+    return { ok: true, gained: 15, stars: p.stars }
+  }, 500)
+}
+
+/** GET /api/student/progress → التقرير الشخصي */
+export function progressReport(personId, levelId) {
+  return respond(() => {
+    const p = progressOf(personId)
+    const subs = subjects.filter((s) => s.levelId === levelId).map((s) => {
+      const sum = subjectSummary(s, p)
+      const acts = activities.filter((a) => a.subjectId === s.id)
+      const quizzes = acts.filter((a) => a.type === 'quiz')
+      const graded = acts.filter((a) => p.submissions[a.id]?.status === 'graded')
+      const avg = graded.length ? graded.reduce((n, a) => n + (p.submissions[a.id].score / a.maxScore) * 20, 0) / graded.length : null
+      return {
+        ...sum,
+        quizzesDone: quizzes.filter((a) => p.submissions[a.id]).length,
+        quizzesTotal: quizzes.length,
+        homeworkDone: acts.filter((a) => a.type === 'homework' && p.submissions[a.id]).length,
+        homeworkTotal: acts.filter((a) => a.type === 'homework').length,
+        average: avg === null ? null : Math.round(avg * 10) / 10,
+        comments: Object.entries(p.comments).filter(([lid]) => lid.startsWith(s.id)).reduce((n, [, arr]) => n + arr.length, 0) + Math.floor(sum.doneCount / 2)
+      }
+    })
+    const graded = Object.values(p.submissions).filter((x) => x.status === 'graded')
+    return {
+      stars: p.stars, streak: p.streak, badges: p.badges.map((b) => ({ id: b, ...BADGES[b] })),
+      allBadges: Object.entries(BADGES).map(([id, b]) => ({ id, ...b, earned: p.badges.includes(id) })),
+      subjects: subs,
+      totals: {
+        lessons: subs.reduce((n, s) => n + s.doneCount, 0),
+        lessonsAll: subs.reduce((n, s) => n + s.lessonsCount, 0),
+        activities: Object.keys(p.submissions).length,
+        graded: graded.length
+      }
+    }
+  })
+}
+
+/** GET /api/student/search?q=&type= → البحث في محتوى القسم */
+export function search(levelId, q, type) {
+  return respond(() => {
+    const s = (q || '').trim()
+    return contents
+      .filter((c) => c.levelId === levelId && VISIBLE.includes(c.status))
+      .filter((c) => !type || type === 'all' || c.type === type)
+      .filter((c) => !s || c.title.includes(s) || c.keywords.some((k) => k.includes(s)))
+      .slice(0, 40)
+      .map((c) => {
+        const sub = subjects.find((x) => x.id === c.subjectId)
+        const l = lessons.find((x) => x.id === c.lessonId)
+        return { id: c.id, title: c.title, type: c.type, classification: c.classification, lessonId: c.lessonId, lessonTitle: l?.title, subject: { name: sub.name, color: sub.color, art: sub.art } }
+      })
+  }, 150)
+}

@@ -9,7 +9,7 @@ export default {
     super_admin: 'المدير العام', admin: 'المشرف العام', editor: 'المحرر', school_manager: 'مدير المدرسة',
     teacher: 'معلم', student: 'تلميذ', parent: 'ولي', support: 'الدعم الفني'
   },
-  themes: { staff: 'الطاقم', primary: 'الابتدائي', middle: 'المتوسط', secondary: 'الثانوي' },
+  themes: { staff: 'الطاقم', kids: 'البراعم', juniors: 'المستكشفون', teens: 'الشباب' },
   menu: {
     home: 'الرئيسية', users: 'المستخدمون', 'users-list': 'قائمة المستخدمين', 'users-import': 'الاستيراد الجماعي',
     'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل النشاطات', library: 'المكتبة',
@@ -90,6 +90,43 @@ export default {
   errors: {
     notFound: 'الصفحة غير موجودة', notFoundHint: 'ربما تغيّر الرابط أو حُذفت الصفحة.',
     forbidden: 'لا تملك صلاحية الوصول', forbiddenHint: 'هذه الصفحة غير متاحة لصفتك الحالية.', goHome: 'العودة للرئيسية'
+  },
+  student: {
+    nav: { home: 'الرئيسية', lessons: 'دروسي', assignments: 'واجباتي', progress: 'تقدّمي' },
+    stars: 'نجمة', points: 'نقطة', streak: 'يوم متتالي', streakShort: 'أيام',
+    hello: { kids: 'مرحباً يا بطل!', juniors: 'أهلاً أيها المستكشف!', teens: 'أهلاً بعودتك' },
+    helloName: 'مرحباً {name}', todayGoal: 'هدف اليوم', goalHint: 'درسان ونشاط واحد', goalDone: 'أنجزت هدف اليوم! رائع',
+    continue: 'تابع من حيث توقفت', start: 'ابدأ', resume: 'تابع', mySubjects: 'موادي', seeAll: 'عرض الكل',
+    upcoming: 'ينتظرك', noUpcoming: 'لا واجبات حالياً، أحسنت!', badges: 'شاراتي', overall: 'تقدّمك العام',
+    lessonsDone: '{done} من {total} درس', newLessons: '{n} جديد', lessonsCount: '{n} دروس',
+    searchPlaceholder: 'ابحث في دروسك: فيديو، عرض، صورة...', searchEmpty: 'لم نجد شيئاً، جرّب كلمة أخرى',
+    path: 'رحلة الدرس', lesson: 'الدرس {n}', minutes: '{n} د', done: 'مكتمل', current: 'أنت هنا', open: 'مفتوح', new: 'جديد',
+    types: { video: 'فيديو', slides: 'عرض', pdf: 'مذكرة', image: 'صورة', quiz: 'اختبار', homework: 'واجب' },
+    classification: { main: 'أساسي', enrichment: 'إثرائي', activity: 'نشاط' },
+    markDone: 'أكملت الدرس', alreadyDone: 'درس مكتمل', prev: 'الدرس السابق', next: 'الدرس التالي',
+    lessonContent: 'محتوى الدرس', lessonActivities: 'أنشطة الدرس', comments: 'التعليقات', commentPlaceholder: 'اكتب سؤالك أو تعليقك...',
+    rate: 'ما مدى استفادتك؟', report: 'إبلاغ', reportSent: 'شكراً، وصل بلاغك', thanksRating: 'شكراً على تقييمك',
+    gained: '+{n}', bravo: { kids: 'رائع يا بطل!', juniors: 'إنجاز رائع!', teens: 'أحسنت!' }, newBadge: 'شارة جديدة!',
+    tabs: { todo: 'للإنجاز', submitted: 'مُسلّمة', graded: 'مصحّحة' },
+    state: { todo: 'للإنجاز', late: 'متأخر', submitted: 'بانتظار التصحيح', graded: 'مصحّح' },
+    due: 'آخر أجل: {d}', dueIn: 'باقي {n} يوم', dueToday: 'اليوم', overdue: 'تأخّر {n} يوم', required: 'إلزامي',
+    startQuiz: 'ابدأ الاختبار', question: 'السؤال {n} من {total}', check: 'تحقّق', nextQ: 'التالي', finish: 'إنهاء',
+    correct: 'إجابة صحيحة!', wrong: 'ليست هذه', score: 'علامتك', yourAnswer: 'إجابتك', rightAnswer: 'الإجابة الصحيحة',
+    viewResult: 'عرض النتيجة', backToAssignments: 'العودة إلى واجباتي', retryLater: 'راجع الدرس',
+    instructions: 'التعليمات', attachments: 'المرفقات', myAnswer: 'إجابتي', writeAnswer: 'اكتب إجابتك هنا...',
+    attachFile: 'أرفق صورة أو ملفاً', submit: 'تسليم الواجب', submitted: 'تم التسليم! سيصححه معلمك قريباً',
+    teacherNote: 'ملاحظة المعلم', modelAnswer: 'الإجابة النموذجية', submittedAt: 'سُلّم {d}',
+    report_: { title: 'تقريري الشخصي', lessons: 'دروس مكتملة', activities: 'أنشطة منجزة', average: 'المعدل', quizzes: 'الاختبارات',
+      homework: 'الواجبات', interactions: 'التفاعلات', bySubject: 'حسب المادة', allBadges: 'كل الشارات', locked: 'لم تُفتح بعد' }
+  },
+  library: {
+    title: 'المكتبة المركزية', subtitle: 'كل المحتوى والأنشطة المرفوعة، مصنّفة حسب المستوى والمادة والدرس',
+    search: 'ابحث بالعنوان أو الكلمات المفتاحية', level: 'المستوى', subject: 'المادة', type: 'النوع', classification: 'التصنيف',
+    status: 'الحالة', all: 'الكل', results: '{n} عنصر', empty: 'لا توجد نتائج بهذه المرشحات', reset: 'مسح المرشحات',
+    statuses: { approved: 'معتمد', temp: 'معتمد مؤقتاً', pending: 'قيد المراجعة', draft: 'مسودة', rejected: 'غير معتمد' },
+    stats: { total: 'عنصر في المكتبة', videos: 'فيديو', pending: 'بانتظار المراجعة' },
+    addToClass: 'أدرج في قسمي', added: 'أُدرج في القسم (تجريبي)', author: 'المؤلف', views: '{n} مشاهدة', lesson: 'الدرس',
+    preview: 'معاينة', questions: '{n} أسئلة', grid: 'شبكة', listView: 'قائمة'
   },
   time: { now: 'الآن', minutes: 'منذ {n} د', hours: 'منذ {n} سا', days: 'منذ {n} يوم' }
 }

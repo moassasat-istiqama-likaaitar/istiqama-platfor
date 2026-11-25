@@ -21,12 +21,15 @@ export function respond(producer, latency = LATENCY) {
     setTimeout(() => {
       try {
         const value = typeof producer === 'function' ? producer() : producer
-        resolve(value === undefined ? undefined : structuredClone(value))
+        resolve(value === undefined ? undefined : clone(value))
       } catch (err) {
         reject(err)
       }
     }, latency)
   })
 }
+
+// نسخة مستقلة (مثل ما يحدث عند عبور البيانات عبر الشبكة)
+const clone = (v) => JSON.parse(JSON.stringify(v))
 
 export const newId = (prefix) => `${prefix}${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`

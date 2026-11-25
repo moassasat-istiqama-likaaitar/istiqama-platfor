@@ -1,5 +1,12 @@
 <template>
-  <div class="shell">
+  <StudentShell v-if="auth.role === 'student'">
+    <RouterView v-slot="{ Component, route }">
+      <Transition name="fade" mode="out-in">
+        <component :is="Component" :key="route.fullPath + auth.activeAssignmentId" />
+      </Transition>
+    </RouterView>
+  </StudentShell>
+  <div v-else class="shell">
     <!-- القائمة الجانبية (سطح المكتب) -->
     <aside class="shell__aside">
       <div class="brand">
@@ -58,6 +65,7 @@ import LangSwitcher from '@/components/LangSwitcher.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
 import RoleSwitcher from '@/components/RoleSwitcher.vue'
 import UserMenu from '@/components/UserMenu.vue'
+import StudentShell from '@/layouts/StudentShell.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useInboxStore } from '@/stores/inbox'
 

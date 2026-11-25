@@ -16,14 +16,20 @@ export const schools = [
   { id: 's3', name: 'مدرسة الهدى', wilaya: 'الجزائر', commune: 'باب الزوار', code: 'IST-003', status: 'active' }
 ]
 
-// الأطوار: primary | middle | secondary  (تحدد ثيم التلميذ)
+// الأطوار: primary | middle | secondary — والترتيب order يحدد ثيم التلميذ (انظر config/theme.js)
 export const levels = [
   { id: 'P1', name: 'الأولى ابتدائي', phase: 'primary', order: 1 },
+  { id: 'P2', name: 'الثانية ابتدائي', phase: 'primary', order: 2 },
   { id: 'P3', name: 'الثالثة ابتدائي', phase: 'primary', order: 3 },
+  { id: 'P4', name: 'الرابعة ابتدائي', phase: 'primary', order: 4 },
   { id: 'P5', name: 'الخامسة ابتدائي', phase: 'primary', order: 5 },
   { id: 'M1', name: 'الأولى متوسط', phase: 'middle', order: 6 },
+  { id: 'M2', name: 'الثانية متوسط', phase: 'middle', order: 7 },
+  { id: 'M3', name: 'الثالثة متوسط', phase: 'middle', order: 8 },
   { id: 'M4', name: 'الرابعة متوسط', phase: 'middle', order: 9 },
-  { id: 'S2', name: 'الثانية ثانوي', phase: 'secondary', order: 11 }
+  { id: 'S1', name: 'الأولى ثانوي', phase: 'secondary', order: 10 },
+  { id: 'S2', name: 'الثانية ثانوي', phase: 'secondary', order: 11 },
+  { id: 'S3', name: 'الثالثة ثانوي', phase: 'secondary', order: 12 }
 ]
 
 export const seasons = [{ id: 'y2026', name: '2026 / 2027', start: '2026-09-13', end: '2027-06-30', status: 'active' }]
@@ -48,6 +54,7 @@ export const persons = [
   { id: 'p9', username: 'ishaq', email: '', password: '1234', lastName: 'بن عيسى', firstName: 'إسحاق', gender: 'male', birthDate: '2009-01-20', status: 'active' },
   { id: 'p10', username: 'salma', email: '', password: '1234', lastName: 'باعمر', firstName: 'سلمى', gender: 'female', birthDate: '2020-05-14', status: 'active' },
   { id: 'p11', username: 'khadija', email: 'khadija@mail.dz', password: '1234', lastName: 'بلحاج', firstName: 'خديجة', gender: 'female', phone: '0660 11 22 33', status: 'active' },
+  { id: 'p13', username: 'yahya', email: '', password: '1234', lastName: 'بلحاج', firstName: 'يحيى', gender: 'male', birthDate: '2014-09-30', status: 'active' },
   { id: 'p12', username: 'support', email: 'support@istiqama.dz', password: '1234', lastName: 'أولاد سعيد', firstName: 'سليمان', gender: 'male', phone: '0550 00 00 12', status: 'active' }
 ]
 
@@ -55,7 +62,7 @@ export const persons = [
  * الصفات. لاحظ الحالات المتعددة:
  *  - p4 مدير مدرسة النور + ولي إسحاق
  *  - p5 معلم في مدرستين (النور والفتح) + ولي سلمى
- *  - p11 ولية لابنين في مدرستين مختلفتين
+ *  - p11 ولية لثلاثة أبناء في مدرستين (وكل ابن بثيم مختلف حسب طوره)
  */
 export const assignments = [
   { id: 'a1', personId: 'p1', role: 'super_admin', schoolId: null },
@@ -71,7 +78,8 @@ export const assignments = [
   { id: 'a11', personId: 'p8', role: 'student', schoolId: 's2', classId: 'c2' },
   { id: 'a12', personId: 'p9', role: 'student', schoolId: 's1', classId: 'c3' },
   { id: 'a13', personId: 'p10', role: 'student', schoolId: 's2', classId: 'c4' },
-  { id: 'a14', personId: 'p11', role: 'parent', schoolId: null, childIds: ['p7', 'p8'] },
+  { id: 'a14', personId: 'p11', role: 'parent', schoolId: null, childIds: ['p7', 'p13', 'p8'] },
+  { id: 'a16', personId: 'p13', role: 'student', schoolId: 's2', classId: 'c5' },
   { id: 'a15', personId: 'p12', role: 'support', schoolId: null }
 ]
 

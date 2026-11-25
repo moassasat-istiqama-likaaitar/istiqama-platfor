@@ -9,7 +9,7 @@ export default {
     super_admin: 'Director General', admin: 'General Supervisor', editor: 'Editor', school_manager: 'School Manager',
     teacher: 'Teacher', student: 'Student', parent: 'Parent', support: 'Technical Support'
   },
-  themes: { staff: 'Staff', primary: 'Primary', middle: 'Middle', secondary: 'Secondary' },
+  themes: { staff: 'Staff', kids: 'Little ones', juniors: 'Explorers', teens: 'Youth' },
   menu: {
     home: 'Home', users: 'Users', 'users-list': 'User list', 'users-import': 'Bulk import',
     'users-duplicates': 'Duplicate accounts', 'activity-log': 'Activity log', library: 'Library',
@@ -87,6 +87,22 @@ export default {
   errors: {
     notFound: 'Page not found', notFoundHint: 'The link may have changed.',
     forbidden: 'Access denied', forbiddenHint: 'This page is not available for your current role.', goHome: 'Back to home'
+  },
+  student: {
+    nav: { home: 'Home', lessons: 'My lessons', assignments: 'My assignments', progress: 'My progress' },
+    stars: 'stars', points: 'points', streak: 'day streak', streakShort: 'days',
+    hello: { kids: 'Hello champion!', juniors: 'Hi explorer!', teens: 'Welcome back' },
+    continue: 'Continue where you left off', mySubjects: 'My subjects', upcoming: 'Up next', badges: 'My badges', todayGoal: "Today's goal",
+    types: { video: 'Video', slides: 'Slides', pdf: 'Document', image: 'Image', quiz: 'Quiz', homework: 'Homework' },
+    classification: { main: 'Core', enrichment: 'Enrichment', activity: 'Activity' }
+  },
+  library: {
+    title: 'Central library', subtitle: 'All content and activities by level, subject and lesson',
+    search: 'Search', level: 'Level', subject: 'Subject', type: 'Type', classification: 'Category', status: 'Status', all: 'All',
+    results: '{n} items', empty: 'No results', reset: 'Clear filters',
+    statuses: { approved: 'Approved', temp: 'Temporarily approved', pending: 'In review', draft: 'Draft', rejected: 'Rejected' },
+    stats: { total: 'items', videos: 'videos', pending: 'pending review' },
+    addToClass: 'Add to my class', added: 'Added (demo)', author: 'Author', views: '{n} views', lesson: 'Lesson', preview: 'Preview', questions: '{n} questions'
   },
   time: { now: 'Just now', minutes: '{n} min ago', hours: '{n} h ago', days: '{n} d ago' }
 }

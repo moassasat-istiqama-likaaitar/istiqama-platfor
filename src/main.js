@@ -7,6 +7,8 @@ import Tooltip from 'primevue/tooltip'
 import '@fontsource/cairo/400.css'
 import '@fontsource/cairo/600.css'
 import '@fontsource/cairo/700.css'
+import '@fontsource/baloo-bhaijaan-2/500.css'
+import '@fontsource/baloo-bhaijaan-2/700.css'
 import 'primeicons/primeicons.css'
 import './styles/main.css'
 
