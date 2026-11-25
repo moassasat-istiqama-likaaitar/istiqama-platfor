@@ -3,7 +3,7 @@ import confetti from 'canvas-confetti'
 /** احتفال بصري (قصاصات ملونة) — أكثر حماساً للصغار */
 export function celebrate(theme = 'staff') {
   const colors = { kids: ['#ff6b4a', '#ffc93c', '#3ec1f3', '#4cd07d', '#9b6bff'], juniors: ['#0a9bdc', '#8ac926', '#ff8a3d', '#ffc93c'], teens: ['#6550e0', '#2dd4bf', '#ff7a8a'] }[theme] || ['#3159e8', '#ffb020']
-  const count = theme === 'kids' ? 160 : theme === 'juniors' ? 120 : 70
+  const count = theme === 'kids' ? 160 : theme === 'juniors' ? 110 : 40
   try {
     confetti({ particleCount: count, spread: 80, startVelocity: 38, origin: { y: 0.65 }, colors, disableForReducedMotion: true })
   } catch {

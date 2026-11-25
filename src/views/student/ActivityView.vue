@@ -1,5 +1,5 @@
 <template>
-  <div v-if="a" class="av" :style="{ '--c': a.subject?.color || 'var(--brand)' }">
+  <div v-if="a" class="av" :class="`av--${theme}`" :style="{ '--c': a.subject?.color || 'var(--brand)' }">
     <RouterLink to="/app/my-assignments" class="back"><i class="pi pi-arrow-right flip" /> {{ t('student.backToAssignments') }}</RouterLink>
 
     <header class="av__head">
@@ -42,28 +42,38 @@
 
       <!-- البداية -->
       <section v-else-if="step === -1" class="card intro">
-        <div class="intro__mascot"><Mascot mood="think" bounce :color="'#ffd54a'" :accent="'var(--c)'" /></div>
+        <div v-if="theme === 'kids'" class="intro__mascot"><Mascot mood="think" bounce :color="'#ffd54a'" :accent="'var(--c)'" /></div>
         <h2>{{ a.questions.length }} {{ t('student.types.quiz') }} · {{ a.maxScore }} {{ t('student.points') }}</h2>
         <Button :label="t('student.startQuiz')" icon="pi pi-play" size="large" class="big" @click="step = 0" />
       </section>
 
       <!-- الأسئلة -->
       <section v-else class="card quiz">
+        <!-- الشباب: شبكة التنقل بين الأسئلة -->
+        <div v-if="theme === 'teens'" class="qnav">
+          <button v-for="(qq, i) in a.questions" :key="i" type="button" :class="{ on: i === step, ans: answers[i] !== undefined, flag: flags[i] }" @click="step = i">{{ i + 1 }}</button>
+          <button type="button" class="qnav__flag" :class="{ on: flags[step] }" @click="flags[step] = !flags[step]"><i class="pi pi-flag" /> مراجعة لاحقاً</button>
+        </div>
         <div class="quiz__progress">
-          <span>{{ t('student.question', { n: step + 1, total: a.questions.length }) }}</span>
+          <span>{{ t('student.question', { n: step + 1, total: a.questions.length }) }}
+            <span v-if="theme === 'juniors'" class="xp-chip"><i class="pi pi-clock" /> {{ fmt(elapsed) }} · حتى +{{ 10 + a.questions.length * 5 }} XP</span>
+          </span>
           <div class="bar" :style="{ '--bar-color': 'var(--c)' }"><span :style="{ width: ((step + 1) / a.questions.length) * 100 + '%' }" /></div>
         </div>
         <Transition name="q" mode="out-in">
           <div :key="step">
             <h2 class="quiz__q">{{ q.q }}</h2>
             <div class="opts" :class="{ 'opts--two': q.options.length === 2 }">
-              <button v-for="(o, k) in q.options" :key="k" type="button" class="opt" :class="{ on: answers[step] === k }" @click="pick(k)">
+              <button v-for="(o, k) in q.options" :key="k" type="button" class="opt" :class="[`opt--${k}`, { on: answers[step] === k, right: feedback && feedback.answer === k, wrong: feedback && !feedback.correct && answers[step] === k }]" :disabled="!!feedback" @click="pick(k)">
                 <span class="opt__k">{{ letters[k] }}</span><span>{{ o }}</span>
               </button>
             </div>
           </div>
         </Transition>
-        <div class="quiz__nav">
+        <div v-if="feedback" class="fb" :class="feedback.correct ? 'fb--ok' : 'fb--ko'">
+          <i :class="feedback.correct ? 'pi pi-check-circle' : 'pi pi-heart'" /> {{ feedback.correct ? 'أحسنت! إجابة صحيحة' : 'لا بأس، الإجابة الصحيحة ملوّنة بالأخضر' }}
+        </div>
+        <div v-if="theme !== 'kids'" class="quiz__nav">
           <Button v-if="step > 0" :label="t('common.back')" text severity="secondary" @click="step--" />
           <span />
           <Button v-if="step < a.questions.length - 1" :label="t('student.nextQ')" icon="pi pi-arrow-left flip" icon-pos="right" :disabled="answers[step] === undefined" @click="step++" />
@@ -121,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
@@ -149,6 +159,17 @@ const files = ref([])
 const sending = ref(false)
 const error = ref('')
 const letters = ['أ', 'ب', 'ج', 'د']
+const theme = computed(() => student.theme)
+const feedback = ref(null)
+const flags = ref([])
+const elapsed = ref(0)
+let clock
+const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+watch(step, (v) => {
+  feedback.value = null
+  if (v === 0 && !clock) clock = setInterval(() => elapsed.value++, 1000)
+})
+onBeforeUnmount(() => clearInterval(clock))
 
 const q = computed(() => a.value?.questions?.[step.value] || { q: '', options: [] })
 const due = computed(() => dueInfo(a.value.due, t))
@@ -162,13 +183,21 @@ async function load(id) {
   a.value = await learning.activity(student.personId, id)
   step.value = -1
   answers.value = []
+  feedback.value = null
 }
 watch(() => route.params.id, (id) => id && load(id), { immediate: true })
 
-function pick(k) {
+async function pick(k) {
   answers.value[step.value] = k
   answers.value = [...answers.value]
-  chime('tap', student.theme)
+  if (theme.value !== 'kids') return chime('tap', theme.value)
+  // البراعم: تصحيح فوري لكل سؤال، ثم الانتقال تلقائياً
+  feedback.value = await learning.checkAnswer(a.value.id, step.value, k)
+  chime(feedback.value.correct ? 'success' : 'error', 'kids')
+  setTimeout(() => {
+    if (step.value < a.value.questions.length - 1) step.value++
+    else sendQuiz()
+  }, 1400)
 }
 async function sendQuiz() {
   sending.value = true
@@ -231,6 +260,34 @@ const soon = () => toast.add({ severity: 'info', summary: t('common.comingSoon')
 .opt.on { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, #fff); box-shadow: 0 4px 0 color-mix(in srgb, var(--c) 45%, #fff); }
 .opt__k { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--bg); font-weight: 800; flex-shrink: 0; }
 .opt.on .opt__k { background: var(--c); color: #fff; }
+.qnav { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1rem; padding-bottom: 0.9rem; border-bottom: 1px solid var(--line); }
+.qnav button { min-width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font: inherit; font-weight: 700; cursor: pointer; color: var(--ink); }
+.qnav button.ans { background: color-mix(in srgb, var(--c) 12%, #fff); border-color: var(--c); }
+.qnav button.on { outline: 2px solid var(--c); }
+.qnav button.flag { border-color: #f59e0b; color: #b45309; }
+.qnav__flag { margin-inline-start: auto; padding: 0 0.7rem; font-size: 0.8rem !important; }
+.qnav__flag.on { background: #fff7e6 !important; border-color: #f59e0b !important; }
+.xp-chip { margin-inline-start: 0.6rem; font-size: 0.75rem; background: #effad9; color: #5f9a12; padding: 0.1rem 0.6rem; border-radius: 999px; }
+.fb { margin-top: 1rem; padding: 0.9rem 1.1rem; border-radius: var(--radius); font-weight: 800; font-size: 1.15rem; display: flex; gap: 0.5rem; align-items: center; animation: bounce 0.4s; }
+.fb--ok { background: #dcf7e3; color: #15803d; }
+.fb--ko { background: #fff1e6; color: #c2520c; }
+@keyframes bounce { 0% { transform: scale(0.9); } 60% { transform: scale(1.04); } 100% { transform: scale(1); } }
+.opt.right { border-color: #22a35a !important; background: #dcf7e3 !important; box-shadow: 0 4px 0 #9fdcb4 !important; }
+.opt.wrong { border-color: #ef4444 !important; background: #ffe7e7 !important; animation: shake 0.35s; }
+@keyframes shake { 25% { transform: translateX(6px); } 75% { transform: translateX(-6px); } }
+/* البراعم: خيارات ملوّنة كبيرة */
+.av--kids .opts { grid-template-columns: 1fr 1fr; }
+.av--kids .opt { flex-direction: column; justify-content: center; text-align: center; min-height: 120px; font-size: 1.35rem; color: #fff; border: 0; border-radius: 28px; font-family: var(--font-display); }
+.av--kids .opt__k { display: none; }
+.av--kids .opt--0 { background: #ff6b4a; box-shadow: 0 7px 0 #c94a2e; }
+.av--kids .opt--1 { background: #3ec1f3; box-shadow: 0 7px 0 #1f93c2; }
+.av--kids .opt--2 { background: #9b6bff; box-shadow: 0 7px 0 #6d3fe0; }
+.av--kids .opt--3 { background: #4cd07d; box-shadow: 0 7px 0 #2e9e58; }
+.av--kids .opt.right { color: #15803d; }
+.av--kids .opt.wrong { color: #b91c1c; }
+.av--kids .quiz__q { text-align: center; font-size: 1.9rem !important; }
+.av--teens .card { border-radius: 14px; box-shadow: none; border: 1px solid var(--line); }
+.av--teens .opt { box-shadow: none; border-width: 1.5px; border-radius: 10px; font-size: 1rem; }
 .quiz__nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
 .q-enter-active, .q-leave-active { transition: all 0.25s; }
 .q-enter-from { opacity: 0; transform: translateX(-24px); }

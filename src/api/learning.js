@@ -1,14 +1,24 @@
 import { respond, ApiError, newId } from './client'
 import { subjects, lessons, contents, activities } from '@/mock/content'
 import { progressOf, save, BADGES } from '@/mock/progress'
-import { persons } from '@/mock/db'
+import { persons, assignments, classes } from '@/mock/db'
 
 const VISIBLE = ['approved', 'temp'] // ما يراه التلميذ: معتمد أو معتمد مؤقتاً
 
+/** جنس قسم التلميذ: لإظهار مقررات الإناث أو الذكور فقط حيث يلزم */
+function genderOf(personId) {
+  const a = assignments.find((x) => x.personId === personId && x.role === 'student')
+  return classes.find((c) => c.id === a?.classId)?.gender || 'mixed'
+}
+const visibleLessons = (subjectId, personId) => {
+  const g = genderOf(personId)
+  return lessons.filter((l) => l.subjectId === subjectId && (!l.gender || l.gender === g))
+}
+
 const lessonContents = (lessonId) => contents.filter((c) => c.lessonId === lessonId && VISIBLE.includes(c.status))
 
-function subjectSummary(sub, p) {
-  const ls = lessons.filter((l) => l.subjectId === sub.id)
+function subjectSummary(sub, p, personId) {
+  const ls = visibleLessons(sub.id, personId)
   const done = ls.filter((l) => p.done.includes(l.id)).length
   const next = ls.find((l) => !p.done.includes(l.id)) || null
   return {
@@ -30,7 +40,7 @@ function activityView(a, p) {
   return {
     id: a.id, type: a.type, title: a.title, due: a.due, maxScore: a.maxScore, required: a.required,
     lesson: lesson && { id: lesson.id, title: lesson.title },
-    subject: subject && { id: subject.id, name: subject.name, color: subject.color, art: subject.art },
+    subject: subject && { id: subject.id, name: subject.name, color: subject.color, art: subject.art, icon: subject.icon },
     state, score: sub?.score ?? null, submittedAt: sub?.at || null,
     questionsCount: a.questions?.length || 0
   }
@@ -62,16 +72,19 @@ function checkBadges(p) {
 export function dashboard(personId, levelId) {
   return respond(() => {
     const p = progressOf(personId)
-    const subs = subjects.filter((s) => s.levelId === levelId).map((s) => subjectSummary(s, p))
-    const acts = activities.filter((a) => a.levelId === levelId).map((a) => activityView(a, p))
+    const subs = subjects.filter((s) => s.levelId === levelId).map((s) => subjectSummary(s, p, personId))
+    const visible = new Set(subs.flatMap((sb) => visibleLessons(sb.id, personId).map((l) => l.id)))
+    const acts = activities.filter((a) => a.levelId === levelId && visible.has(a.lessonId)).map((a) => activityView(a, p))
     const upcoming = acts.filter((a) => ['todo', 'late'].includes(a.state)).sort((a, b) => a.due.localeCompare(b.due))
     const continueSub = subs.find((s) => s.next && s.doneCount > 0) || subs.find((s) => s.next)
     const totalLessons = subs.reduce((n, s) => n + s.lessonsCount, 0)
     const doneLessons = subs.reduce((n, s) => n + s.doneCount, 0)
     return {
       stars: p.stars, streak: p.streak,
+      xp: { level: Math.floor(p.stars / 100) + 1, inLevel: p.stars % 100, next: 100 },
       badges: p.badges.map((b) => ({ id: b, ...BADGES[b] })),
       subjects: subs,
+      week: weekPlan(acts),
       continueWith: continueSub?.next ? { lessonId: continueSub.next.id, title: continueSub.next.title, subject: continueSub } : null,
       upcoming: upcoming.slice(0, 4),
       todoCount: upcoming.length,
@@ -83,18 +96,35 @@ export function dashboard(personId, levelId) {
   })
 }
 
+// مهام الأسبوع: الأنشطة غير المنجزة موزّعة على الأيام السبعة القادمة
+function weekPlan(acts) {
+  const days = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date()
+    d.setDate(d.getDate() + i)
+    const key = d.toDateString()
+    days.push({ date: d.toISOString(), items: acts.filter((a) => ['todo', 'late'].includes(a.state) && new Date(a.due).toDateString() === key) })
+  }
+  return days
+}
+
 /** GET /api/student/subjects/{id} → المادة ودروسها مع حالة كل درس */
 export function subject(personId, subjectId) {
   return respond(() => {
     const p = progressOf(personId)
     const sub = subjects.find((s) => s.id === subjectId)
     if (!sub) throw new ApiError('not_found', 'المادة غير موجودة')
-    const ls = lessons.filter((l) => l.subjectId === subjectId)
+    const ls = visibleLessons(subjectId, personId)
     const firstOpen = ls.find((l) => !p.done.includes(l.id))
+    const axes = [...new Set(ls.map((l) => l.axis))]
     return {
-      ...subjectSummary(sub, p),
+      ...subjectSummary(sub, p, personId),
+      axes: axes.map((ax) => {
+        const al = ls.filter((l) => l.axis === ax)
+        return { name: ax, total: al.length, done: al.filter((l) => p.done.includes(l.id)).length }
+      }),
       lessons: ls.map((l) => ({
-        id: l.id, title: l.title, order: l.order, minutes: l.minutes,
+        id: l.id, title: l.title, label: l.label, axis: l.axis, order: l.order, minutes: l.minutes, gender: l.gender,
         state: p.done.includes(l.id) ? 'done' : l.id === firstOpen?.id ? 'current' : 'open',
         isNew: !p.viewed.includes(l.id),
         types: Array.from(new Set(lessonContents(l.id).map((c) => c.type))),
@@ -115,12 +145,13 @@ export function lesson(personId, lessonId) {
       save()
     }
     const sub = subjects.find((s) => s.id === l.subjectId)
-    const siblings = lessons.filter((x) => x.subjectId === l.subjectId)
+    const siblings = visibleLessons(l.subjectId, personId)
     const idx = siblings.findIndex((x) => x.id === l.id)
     return {
       ...l,
-      subject: { id: sub.id, name: sub.name, color: sub.color, accent: sub.accent, art: sub.art },
+      subject: { id: sub.id, name: sub.name, color: sub.color, accent: sub.accent, art: sub.art, icon: sub.icon },
       done: p.done.includes(l.id),
+      note: p.notes?.[l.id] || '',
       contents: lessonContents(l.id).map((c) => ({ ...c, myRating: p.ratings[c.id] || 0 })),
       activities: activities.filter((a) => a.lessonId === l.id).map((a) => activityView(a, p)),
       comments: (p.comments[l.id] || []).concat(SAMPLE_COMMENTS(l)),
@@ -128,6 +159,26 @@ export function lesson(personId, lessonId) {
       next: siblings[idx + 1] ? { id: siblings[idx + 1].id, title: siblings[idx + 1].title } : null
     }
   })
+}
+
+/** PUT /api/student/lessons/{id}/note  { text } — ملاحظات التلميذ الشخصية */
+export function saveNote(personId, lessonId, text) {
+  return respond(() => {
+    const p = progressOf(personId)
+    p.notes = p.notes || {}
+    p.notes[lessonId] = text
+    save()
+    return { ok: true, savedAt: new Date().toISOString() }
+  }, 150)
+}
+
+/** POST /api/student/activities/{id}/check  { index, answer } → صحيحة أم لا (وضع التغذية الفورية للصغار) */
+export function checkAnswer(id, index, answer) {
+  return respond(() => {
+    const a = activities.find((x) => x.id === id)
+    const q = a.questions[index]
+    return { correct: q.answer === answer, answer: q.answer }
+  }, 120)
 }
 
 const SAMPLE_COMMENTS = (l) => [
@@ -145,7 +196,7 @@ export function completeLesson(personId, lessonId) {
       award(p, gained)
       p.todayCount = (p.todayCount || 0) + 1
       const l = lessons.find((x) => x.id === lessonId)
-      const all = lessons.filter((x) => x.subjectId === l.subjectId)
+      const all = visibleLessons(l.subjectId, personId)
       if (all.every((x) => p.done.includes(x.id)) && !p.badges.includes('subject-master')) p.badges.push('subject-master')
     }
     const badges = checkBadges(p)
@@ -181,7 +232,8 @@ export function addComment(personId, lessonId, body) {
 export function myActivities(personId, levelId) {
   return respond(() => {
     const p = progressOf(personId)
-    return activities.filter((a) => a.levelId === levelId).map((a) => activityView(a, p)).sort((a, b) => a.due.localeCompare(b.due))
+    const visible = new Set(subjects.filter((x) => x.levelId === levelId).flatMap((sb) => visibleLessons(sb.id, personId).map((l) => l.id)))
+    return activities.filter((a) => a.levelId === levelId && visible.has(a.lessonId)).map((a) => activityView(a, p)).sort((a, b) => a.due.localeCompare(b.due))
   })
 }
 
@@ -241,7 +293,7 @@ export function progressReport(personId, levelId) {
   return respond(() => {
     const p = progressOf(personId)
     const subs = subjects.filter((s) => s.levelId === levelId).map((s) => {
-      const sum = subjectSummary(s, p)
+      const sum = subjectSummary(s, p, personId)
       const acts = activities.filter((a) => a.subjectId === s.id)
       const quizzes = acts.filter((a) => a.type === 'quiz')
       const graded = acts.filter((a) => p.submissions[a.id]?.status === 'graded')
@@ -259,6 +311,8 @@ export function progressReport(personId, levelId) {
     const graded = Object.values(p.submissions).filter((x) => x.status === 'graded')
     return {
       stars: p.stars, streak: p.streak, badges: p.badges.map((b) => ({ id: b, ...BADGES[b] })),
+      xp: { level: Math.floor(p.stars / 100) + 1, inLevel: p.stars % 100, next: 100 },
+      history: gradeHistory(p),
       allBadges: Object.entries(BADGES).map(([id, b]) => ({ id, ...b, earned: p.badges.includes(id) })),
       subjects: subs,
       totals: {
@@ -269,6 +323,17 @@ export function progressReport(personId, levelId) {
       }
     }
   })
+}
+
+function gradeHistory(p) {
+  return Object.entries(p.submissions)
+    .filter(([, x]) => x.status === 'graded')
+    .map(([id, x]) => {
+      const a = activities.find((y) => y.id === id)
+      return a ? { id, title: a.title, at: x.at, score20: Math.round((x.score / a.maxScore) * 200) / 10, subjectId: a.subjectId } : null
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.at.localeCompare(b.at))
 }
 
 /** GET /api/student/search?q=&type= → البحث في محتوى القسم */
@@ -283,7 +348,7 @@ export function search(levelId, q, type) {
       .map((c) => {
         const sub = subjects.find((x) => x.id === c.subjectId)
         const l = lessons.find((x) => x.id === c.lessonId)
-        return { id: c.id, title: c.title, type: c.type, classification: c.classification, lessonId: c.lessonId, lessonTitle: l?.title, subject: { name: sub.name, color: sub.color, art: sub.art } }
+        return { id: c.id, title: c.title, type: c.type, classification: c.classification, lessonId: c.lessonId, lessonTitle: l?.title, subject: { name: sub.name, color: sub.color, art: sub.art, icon: sub.icon } }
       })
   }, 150)
 }

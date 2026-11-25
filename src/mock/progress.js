@@ -5,7 +5,7 @@
 import { lessons, activities, subjects } from './content'
 import { storage } from '@/utils/storage'
 
-const KEY = 'ist.progress.v2'
+const KEY = 'ist.progress.v4'
 
 export const BADGES = {
   'first-lesson': { icon: 'pi pi-flag', title: 'الخطوة الأولى', hint: 'أكملت أول درس' },
@@ -17,13 +17,13 @@ export const BADGES = {
   'subject-master': { icon: 'pi pi-trophy', title: 'بطل المادة', hint: 'أكملت كل دروس مادة' }
 }
 
-// [عدد الدروس المنجزة لكل مادة بالترتيب]، النقاط، المواظبة
+// نسبة الدروس المنجزة في كل مادة، النقاط، المواظبة، جنس القسم (لمقررات الإناث/الذكور)
 const SEEDS = {
-  p7: { level: 'P3', done: [2, 2, 1, 2, 1], stars: 140, streak: 4, badges: ['first-lesson', 'streak-3', 'quiz-ace'] },
-  p10: { level: 'P1', done: [1, 1, 1, 0], stars: 60, streak: 2, badges: ['first-lesson'] },
-  p13: { level: 'M1', done: [2, 1, 2, 1, 1], stars: 210, streak: 7, badges: ['first-lesson', 'streak-3', 'streak-7', 'curious'] },
-  p8: { level: 'M4', done: [2, 2, 3, 1, 1], stars: 320, streak: 12, badges: ['first-lesson', 'streak-3', 'streak-7', 'quiz-ace', 'helper'] },
-  p9: { level: 'S2', done: [1, 2, 1, 2], stars: 280, streak: 3, badges: ['first-lesson', 'streak-3', 'curious'] }
+  p7: { level: 'P3', done: [0.4, 0.3], gender: 'mixed', stars: 140, streak: 4, badges: ['first-lesson', 'streak-3', 'quiz-ace'] },
+  p10: { level: 'P1', done: [0.2, 0.15], gender: 'mixed', stars: 60, streak: 2, badges: ['first-lesson'] },
+  p13: { level: 'M1', done: [0.35, 0.3, 0.4, 0.25], gender: 'mixed', stars: 230, streak: 7, badges: ['first-lesson', 'streak-3', 'streak-7', 'curious'] },
+  p8: { level: 'M4', done: [0.4, 0.35, 0.3, 0.45], gender: 'female', stars: 320, streak: 12, badges: ['first-lesson', 'streak-3', 'streak-7', 'quiz-ace', 'helper'] },
+  p9: { level: 'S2', done: [0.3, 0.25, 0.35], gender: 'male', stars: 280, streak: 3, badges: ['first-lesson', 'streak-3', 'curious'] }
 }
 
 const iso = (daysAgo, h = 18) => {
@@ -35,11 +35,12 @@ const iso = (daysAgo, h = 18) => {
 
 function seedFor(personId) {
   const s = SEEDS[personId]
-  if (!s) return { done: [], viewed: [], stars: 0, streak: 0, badges: [], submissions: {}, ratings: {}, comments: {} }
+  if (!s) return { done: [], viewed: [], stars: 0, streak: 0, badges: [], submissions: {}, ratings: {}, comments: {}, notes: {} }
   const levelSubjects = subjects.filter((x) => x.levelId === s.level)
   const done = []
   levelSubjects.forEach((sub, i) => {
-    lessons.filter((l) => l.subjectId === sub.id).slice(0, s.done[i] || 0).forEach((l) => done.push(l.id))
+    const ls = lessons.filter((l) => l.subjectId === sub.id && (!l.gender || l.gender === s.gender))
+    ls.slice(0, Math.round(ls.length * (s.done[i] || 0))).forEach((l) => done.push(l.id))
   })
   // التسليمات: أنشطة الدروس المنجزة تُعتبر مُنجزة؛ بعضها مصحّح وبعضها بانتظار التصحيح
   const submissions = {}
@@ -56,7 +57,7 @@ function seedFor(personId) {
         submissions[a.id] = { status: 'submitted', text: 'تم الحل، الصورة مرفقة.', files: ['واجب.jpg'], at: iso(i) }
       }
     })
-  return { done, viewed: [...done], stars: s.stars, streak: s.streak, badges: [...s.badges], submissions, ratings: {}, comments: {} }
+  return { done, viewed: [...done], stars: s.stars, streak: s.streak, badges: [...s.badges], submissions, ratings: {}, comments: {}, notes: {} }
 }
 
 let db = storage.get(KEY, {})
