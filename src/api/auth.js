@@ -18,7 +18,7 @@ export function describeAssignment(a) {
       const sa = assignments.find((x) => x.personId === cid && x.role === 'student')
       const c = classes.find((x) => x.id === sa?.classId)
       const s = schools.find((x) => x.id === sa?.schoolId)
-      return { id: cid, name: `${p.firstName} ${p.lastName}`, className: c?.name, schoolName: s?.name }
+      return { id: cid, name: `${p.firstName} ${p.lastName}`, className: c?.name, schoolId: s?.id, schoolName: s?.name }
     })
   }
   return out
@@ -72,7 +72,9 @@ export function demoAccounts() {
     persons.map((p) => ({
       username: p.username,
       name: `${p.firstName} ${p.lastName}`,
-      roles: assignments.filter((a) => a.personId === p.id).map((a) => a.role)
+      roles: assignments.filter((a) => a.personId === p.id).map((a) => a.role),
+      // المدارس المرتبطة بالحساب (مباشرة أو عبر الأبناء) — لتصفية الحسابات في صفحة دخول المدرسة
+      schoolIds: [...new Set(assignments.filter((a) => a.personId === p.id).flatMap((a) => [a.schoolId, ...(a.childIds || []).map((c) => assignments.find((x) => x.personId === c && x.role === 'student')?.schoolId)]).filter(Boolean))]
     })),
     0
   )

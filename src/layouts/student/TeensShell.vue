@@ -2,7 +2,7 @@
   <!-- الشباب: مساحة دراسة بشريط جانبي (التنقل + المواد) وبحث دائم في الأعلى -->
   <div class="t-shell">
     <aside class="t-side" :class="{ open: drawer }">
-      <RouterLink :to="{ name: 'home' }" class="t-logo"><span class="t-logo__mark">ا</span>{{ t('app.short') }}</RouterLink>
+      <RouterLink :to="{ name: 'home' }" class="t-logo"><BrandPair :school="brand.school" :branding="brand.branding" :size="34" tone="light" names /></RouterLink>
       <nav class="t-nav">
         <RouterLink v-for="n in nav" :key="n.key" :to="n.to" class="t-nav__a" :class="{ on: isActive(n) }" @click="drawer = false">
           <i :class="n.icon" /> {{ n.label }}
@@ -22,6 +22,7 @@
     <div v-if="drawer" class="t-scrim" @click="drawer = false" />
 
     <div class="t-main">
+      <div class="school-ribbon" />
       <header class="t-top">
         <button type="button" class="t-burger" @click="drawer = true"><i class="pi pi-bars" /></button>
         <form class="t-search" @submit.prevent="search">
@@ -47,6 +48,8 @@ import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import LangSwitcher from '@/components/LangSwitcher.vue'
 import RoleSwitcher from '@/components/RoleSwitcher.vue'
+import BrandPair from '@/components/brand/BrandPair.vue'
+import { useBrandStore } from '@/stores/brand'
 import UserMenu from '@/components/UserMenu.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useInboxStore } from '@/stores/inbox'
@@ -57,6 +60,7 @@ const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const brand = useBrandStore()
 const inbox = useInboxStore()
 const student = useStudentStore()
 const drawer = ref(false)

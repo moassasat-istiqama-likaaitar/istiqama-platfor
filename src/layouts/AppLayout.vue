@@ -9,12 +9,9 @@
   <div v-else class="shell">
     <!-- القائمة الجانبية (سطح المكتب) -->
     <aside class="shell__aside">
+      <div class="school-ribbon" />
       <div class="brand">
-        <span class="brand__logo">ا</span>
-        <div class="brand__text">
-          <strong>{{ t('app.short') }}</strong>
-          <small>{{ t('themes.' + auth.themeKey) }}</small>
-        </div>
+        <BrandPair :school="brand.school" :branding="brand.branding" :size="38" names />
       </div>
       <div class="shell__nav"><SideNav /></div>
       <div class="shell__demo"><i class="pi pi-eye" /> {{ t('layout.demoMode') }}</div>
@@ -54,6 +51,8 @@
 </template>
 
 <script setup>
+import BrandPair from '@/components/brand/BrandPair.vue'
+import { useBrandStore } from '@/stores/brand'
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
@@ -71,6 +70,7 @@ import { useInboxStore } from '@/stores/inbox'
 
 const { t, locale } = useI18n()
 const auth = useAuthStore()
+const brand = useBrandStore()
 const inbox = useInboxStore()
 const drawer = ref(false)
 const isRtl = computed(() => locale.value === 'ar')

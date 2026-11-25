@@ -1,5 +1,6 @@
 <template>
   <div v-if="d" class="jh">
+    <SchoolBanner :school="brand.school" :branding="brand.branding" variant="juniors" class="jh__banner" />
     <div class="jh__grid">
       <!-- بطاقة المستكشف -->
       <section class="card explorer">
@@ -68,6 +69,8 @@
 </template>
 
 <script setup>
+import SchoolBanner from '@/components/brand/SchoolBanner.vue'
+import { useBrandStore } from '@/stores/brand'
 import { ref, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -76,6 +79,7 @@ import { dueInfo } from '@/utils/due'
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const brand = useBrandStore()
 const student = useStudentStore()
 const d = ref(null)
 const due = (a) => dueInfo(a.due, t)
@@ -83,6 +87,7 @@ onMounted(async () => (d.value = await student.refresh()))
 </script>
 
 <style scoped>
+.jh__banner { margin-bottom: 1.25rem; }
 .jh { display: flex; flex-direction: column; gap: 1.25rem; }
 .jh__grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.25rem; align-items: start; }
 .card { background: var(--surface); border-radius: var(--radius-lg); padding: 1.2rem; box-shadow: var(--shadow); }

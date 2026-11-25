@@ -154,3 +154,6 @@ a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ——— هوية المدرسة: شريط رفيع بلوني المدرسة (مساحة المدرسة، مستقلة عن الثيم) ——— */
+.school-ribbon { height: 4px; background: linear-gradient(90deg, var(--school-1, transparent), var(--school-2, transparent)); }

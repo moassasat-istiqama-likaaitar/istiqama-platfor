@@ -11,10 +11,22 @@
 export const ROLES = ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'student', 'parent', 'support']
 
 export const schools = [
-  { id: 's1', name: 'مدرسة النور', wilaya: 'غرداية', commune: 'غرداية', code: 'IST-001', status: 'active' },
-  { id: 's2', name: 'مدرسة الفتح', wilaya: 'غرداية', commune: 'بريان', code: 'IST-002', status: 'active' },
-  { id: 's3', name: 'مدرسة الهدى', wilaya: 'الجزائر', commune: 'باب الزوار', code: 'IST-003', status: 'active' }
+  { id: 's1', slug: 'nour', name: 'مدرسة النور', wilaya: 'غرداية', commune: 'غرداية', code: 'IST-001', status: 'active' },
+  { id: 's2', slug: 'fath', name: 'مدرسة الفتح', wilaya: 'غرداية', commune: 'بريان', code: 'IST-002', status: 'active' },
+  { id: 's3', slug: 'huda', name: 'مدرسة الهدى', wilaya: 'الجزائر', commune: 'باب الزوار', code: 'IST-003', status: 'active' }
 ]
+
+/**
+ * هوية كل مدرسة المعتمدة (يعدّلها مدير المدرسة ويعتمدها المدير العام — انظر api/branding.js)
+ *  logo: صورة (dataURL/رابط) أو null فيُرسم حرف أول المدرسة
+ *  primary / secondary: لونا المدرسة — يُستعملان في مساحات محددة فقط ولا يغيّران ثيم الطور
+ *  cover: 'pattern:<name>' (زخرفة جاهزة بألوان المدرسة) أو صورة مرفوعة
+ */
+export const schoolBranding = {
+  s1: { logo: null, primary: '#0f7b5a', secondary: '#e8b54a', cover: 'pattern:arches', welcome: 'أهلاً بكم في مدرسة النور… نتعلّم لنرتقي.' },
+  s2: { logo: null, primary: '#8e2445', secondary: '#f0a35e', cover: 'pattern:waves', welcome: 'مدرسة الفتح ترحّب بأبنائها.' },
+  s3: { logo: null, primary: '#1f5f8b', secondary: '#f2cf5b', cover: 'pattern:stars', welcome: 'مدرسة الهدى: علمٌ وخُلق.' }
+}
 
 // الأطوار: primary | middle | secondary — والترتيب order يحدد ثيم التلميذ (انظر config/theme.js)
 export const levels = [

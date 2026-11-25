@@ -1,11 +1,13 @@
 <template>
   <!-- البراعم: شريط علوي بسيط + لوحة أزرار سفلية كبيرة (مثل تطبيقات اللوحات) -->
   <div class="k-shell">
+    <div class="school-ribbon" />
     <header class="k-top">
       <RouterLink :to="{ name: 'profile' }" class="k-me">
         <span class="k-me__av">{{ auth.initials }}</span>
         <span class="k-me__name">{{ auth.person.firstName }}</span>
       </RouterLink>
+      <BrandPair v-if="brand.school" :school="brand.school" :branding="brand.branding" :size="34" class="k-brand" />
       <div class="k-top__mid">
         <span class="k-pill k-pill--star"><i class="pi pi-star-fill" /> {{ student.stars }}</span>
         <span class="k-pill k-pill--fire"><i class="pi pi-bolt" /> {{ student.streak }}</span>
@@ -37,6 +39,8 @@
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import RoleSwitcher from '@/components/RoleSwitcher.vue'
+import BrandPair from '@/components/brand/BrandPair.vue'
+import { useBrandStore } from '@/stores/brand'
 import UserMenu from '@/components/UserMenu.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useInboxStore } from '@/stores/inbox'
@@ -46,6 +50,7 @@ import { chime } from '@/utils/celebrate'
 const { t } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
+const brand = useBrandStore()
 const inbox = useInboxStore()
 const student = useStudentStore()
 
@@ -94,4 +99,6 @@ const tap = () => chime('tap', 'kids')
   .k-dock__btn { min-width: 60px; font-size: 0.8rem; }
   .k-dock__icon { width: 54px; height: 54px; }
 }
+.k-brand { background: #fff; padding: 4px 10px; border-radius: 999px; box-shadow: 0 3px 0 rgba(0,0,0,.06); color: #1a1f36; }
+@media (max-width: 640px) { .k-brand { display: none; } }
 </style>

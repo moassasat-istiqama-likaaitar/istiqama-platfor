@@ -22,7 +22,7 @@ export default {
     'import-export': 'Import / Export', tickets: 'Tickets', 'quiz-builder': 'Quiz builder',
     'editor-reports': 'Reports', teachers: 'Teachers', students: 'Students', parents: 'Parents',
     activation: 'Account activation', 'school-classes': 'Classes', 'teacher-files-review': 'Teacher files review',
-    'content-follow': 'Content follow-up', performance: 'Performance reports', 'school-notice': 'School notice',
+    'content-follow': 'Content follow-up', performance: 'Performance reports', 'school-notice': 'School notice', 'school-identity': 'School identity', 'branding-requests': 'Identity approvals',
     'my-classes': 'My classes', 'class-library': 'Class library', submissions: 'Submissions & grading',
     'central-library': 'Central library', 'upload-content': 'Upload content', 'new-homework': 'New homework',
     'my-files': 'My files', 'offline-tests': 'In-class tests', 'my-lessons': 'My lessons',

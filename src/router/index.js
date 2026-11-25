@@ -12,6 +12,8 @@ const routes = [
     children: [
       { path: '', redirect: '/login' },
       { path: 'login', name: 'login', component: () => import('@/views/auth/LoginView.vue'), meta: { guest: true } },
+      // صفحة دخول خاصة بكل مدرسة: #/s/nour
+      { path: 's/:slug', name: 'school-login', component: () => import('@/views/auth/LoginView.vue'), meta: { guest: true } },
       { path: 'forgot-password', name: 'forgot', component: () => import('@/views/auth/ForgotPasswordView.vue'), meta: { guest: true } },
       { path: 'choose-role', name: 'choose-role', component: () => import('@/views/auth/ChooseRoleView.vue'), meta: { auth: true, noRole: true } }
     ]
@@ -37,11 +39,16 @@ const routes = [
       // ——— المكتبة المركزية ———
       { path: 'central-library', name: 'central-library', component: () => import('@/views/library/LibraryView.vue'), meta: { roles: ['teacher', 'editor', 'admin', 'super_admin'] } },
       { path: 'library-manage', name: 'library-manage', component: () => import('@/views/library/LibraryView.vue'), meta: { roles: ['editor', 'admin', 'super_admin'] } },
+      // ——— هوية المدارس ———
+      { path: 'school-identity', name: 'school-identity', component: () => import('@/views/branding/SchoolIdentityView.vue'), meta: { roles: ['school_manager'] } },
+      { path: 'branding-requests', name: 'branding-requests', component: () => import('@/views/branding/BrandingRequestsView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       { path: 'forbidden', name: 'forbidden', component: () => import('@/views/errors/ForbiddenView.vue') },
       // كل شاشة لم تُبنَ بعد تفتح صفحة "قيد البناء" إن كانت موجودة في قائمة الدور
       { path: ':key', name: 'screen', component: () => import('@/views/common/PlaceholderView.vue') }
     ]
   },
+  // صفحات الطباعة (خارج القالب)
+  { path: '/print/report-card', name: 'report-card', component: () => import('@/views/print/ReportCardView.vue'), meta: { auth: true, roles: ['student'] } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/errors/NotFoundView.vue') }
 ]
 

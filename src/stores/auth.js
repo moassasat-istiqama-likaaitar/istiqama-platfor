@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import * as authApi from '@/api/auth'
 import { storage } from '@/utils/storage'
 import { applyTheme, themeForLevelOrder } from '@/config/theme'
+import { useBrandStore } from '@/stores/brand'
 
 const STAFF_ROLES = ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'parent', 'support']
 
@@ -97,6 +98,8 @@ export const useAuthStore = defineStore('auth', {
     },
     _applyTheme() {
       applyTheme(this.themeKey)
+      // هوية المدرسة تتبع الصفة النشطة (لا تغيّر الثيم)
+      useBrandStore().sync(this.active)
     }
   }
 })

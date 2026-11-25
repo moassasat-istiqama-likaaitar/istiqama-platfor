@@ -38,6 +38,7 @@ const adminMenu = [
     item('subjects', 'pi pi-list', ['AD11'], 7),
     item('permissions', 'pi pi-lock', ['AD12'], 7),
     item('customization', 'pi pi-palette', ['AD13'], 7),
+    item('branding-requests', 'pi pi-verified', ['AD19'], 6),
     item('announcements', 'pi pi-megaphone', ['AD14'], 7),
     item('calendar', 'pi pi-calendar-plus', ['AD15'], 7),
     item('communication', 'pi pi-comments', ['AD16'], 7),
@@ -79,6 +80,7 @@ export const MENUS = {
     ]),
     item('performance', 'pi pi-chart-bar', ['SM09'], 6),
     item('school-notice', 'pi pi-megaphone', ['SM10'], 6),
+    item('school-identity', 'pi pi-palette', ['SM11'], 6),
     feedback
   ],
 

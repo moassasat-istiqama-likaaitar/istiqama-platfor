@@ -1,8 +1,8 @@
 <template>
   <div class="login">
     <!-- اللوحة الترحيبية: حيادية لكل الفئات -->
-    <section class="brand">
-      <svg class="pattern" aria-hidden="true">
+    <section class="brand" :class="{ 'brand--school': sb }" :style="sb ? { backgroundImage: coverCss(sb.branding), '--sp': sb.branding.primary } : null">
+      <svg v-if="!sb" class="pattern" aria-hidden="true">
         <defs>
           <pattern id="star8" width="72" height="72" patternUnits="userSpaceOnUse">
             <g fill="none" stroke="rgba(255,255,255,0.10)" stroke-width="1.2">
@@ -14,8 +14,18 @@
         </defs>
         <rect width="200%" height="200%" fill="url(#star8)" class="pattern__move" />
       </svg>
-      <div class="brand__inner">
-        <div class="brand__logo"><span class="brand__mark">ا</span>{{ t('app.name') }}</div>
+      <!-- صفحة دخول المدرسة: غلافها + الشعاران + رسالتها -->
+      <div v-if="sb" class="brand__inner">
+        <BrandPair :school="sb.school" :branding="sb.branding" :size="56" tone="light" />
+        <h1>{{ sb.school.name }}</h1>
+        <p v-if="sb.branding.welcome" class="brand__welcome">{{ sb.branding.welcome }}</p>
+        <div class="brand__foot">
+          <span><i class="pi pi-map-marker" /> {{ sb.school.commune }} · {{ sb.school.wilaya }}</span>
+          <span><i class="pi pi-sitemap" /> {{ t('app.name') }}</span>
+        </div>
+      </div>
+      <div v-else class="brand__inner">
+        <div class="brand__logo"><InstitutionMark :size="46" tone="light" />{{ t('app.name') }}</div>
         <h1>فضاء تعليمي واحد<br /><span>لكل المدارس والأطوار</span></h1>
         <p>{{ t('app.tagline') }}</p>
 
@@ -37,8 +47,10 @@
     <!-- النموذج -->
     <section class="form-side">
       <div class="card">
-        <h2>{{ t('auth.welcome') }} 👋</h2>
+        <h2 v-if="sb">مرحباً بكم في {{ sb.school.name }}</h2>
+        <h2 v-else>{{ t('auth.welcome') }} 👋</h2>
         <p class="muted">{{ t('auth.loginHint') }}</p>
+        <Message v-if="slugError" severity="warn" size="small">{{ slugError }}</Message>
 
         <form class="form" @submit.prevent="submit">
           <label class="field">
@@ -60,11 +72,22 @@
           <Button type="submit" :label="t('auth.submit')" icon="pi pi-arrow-left flip" icon-pos="right" :loading="loading" fluid size="large" />
           <Button type="button" :label="t('auth.google')" icon="pi pi-google" severity="secondary" outlined fluid @click="google" />
         </form>
+        <RouterLink v-if="sb" :to="{ name: 'login' }" class="other-school"><i class="pi pi-arrow-right flip" /> ليست مدرستك؟ الصفحة العامة للمؤسسة</RouterLink>
       </div>
 
       <!-- وضع العرض: خاص بالنموذج التجريبي -->
       <div class="demo">
         <div class="demo__head"><i class="pi pi-eye" /> {{ t('auth.demoTitle') }} <small>{{ t('auth.demoHint') }}</small></div>
+        <div v-if="!sb" class="demo__group">
+          <h4>صفحات دخول المدارس (رابط خاص بكل مدرسة)</h4>
+          <div class="demo__list">
+            <RouterLink v-for="s in schoolLinks" :key="s.school.id" :to="`/s/${s.school.slug}`" class="acc acc--school">
+              <SchoolLogo :school="s.school" :branding="s.branding" :size="34" />
+              <span class="acc__info"><strong>{{ s.school.name }}</strong><small dir="ltr">#/s/{{ s.school.slug }}</small></span>
+            </RouterLink>
+          </div>
+        </div>
+        <p v-if="sb && !groups.length" class="muted demo__empty">لا توجد حسابات تجريبية في هذه المدرسة بعد. جرّب رابط مدرسة النور أو الفتح.</p>
         <div v-for="g in groups" :key="g.key" class="demo__group">
           <h4>{{ g.title }}</h4>
           <div class="demo__list">
@@ -83,7 +106,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter, useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
@@ -96,6 +119,11 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useAuthStore } from '@/stores/auth'
 import { demoAccounts } from '@/api/auth'
+import { getBySlug, listSchools } from '@/api/branding'
+import { coverCss } from '@/utils/coverPatterns'
+import BrandPair from '@/components/brand/BrandPair.vue'
+import SchoolLogo from '@/components/brand/SchoolLogo.vue'
+import InstitutionMark from '@/components/brand/InstitutionMark.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -114,9 +142,27 @@ const loading = ref(false)
 const error = ref('')
 const demo = ref([])
 
+const sb = ref(null) // هوية المدرسة عند الدخول من رابطها
+const slugError = ref('')
+const schoolLinks = ref([])
+
 onMounted(async () => {
   demo.value = await demoAccounts()
 })
+// نفس الصفحة تخدم الرابط العام وروابط المدارس، فنتابع تغيّر الرابط
+watch(() => route.params.slug, async (slug) => {
+  sb.value = null
+  slugError.value = ''
+  if (slug) {
+    try {
+      sb.value = await getBySlug(slug)
+    } catch (e) {
+      slugError.value = e.message
+    }
+  } else if (!schoolLinks.value.length) {
+    schoolLinks.value = await listSchools()
+  }
+}, { immediate: true })
 
 // تعليق توضيحي لكل حساب تجريبي
 const CAPTIONS = {
@@ -125,12 +171,14 @@ const CAPTIONS = {
 }
 const groups = computed(() => {
   const roleCaption = (a) => a.roles.map((r) => t(`roles.${r}`)).join(' + ')
-  const pick = (fn) => demo.value.filter(fn).map((a) => ({ ...a, caption: CAPTIONS[a.username]?.[0] || roleCaption(a), color: CAPTIONS[a.username]?.[1] || '#3159e8' }))
+  const inSchool = (a) => !sb.value || a.schoolIds.includes(sb.value.school.id)
+  const pick = (fn) => demo.value.filter((a) => inSchool(a) && fn(a)).map((a) => ({ ...a, caption: CAPTIONS[a.username]?.[0] || roleCaption(a), color: CAPTIONS[a.username]?.[1] || '#3159e8' }))
   return [
     { key: 's', title: 'التلاميذ', items: pick((a) => a.roles.includes('student')) },
-    { key: 'p', title: 'الأولياء والمعلمون', items: pick((a) => !a.roles.includes('student') && a.roles.some((r) => ['parent', 'teacher'].includes(r))) },
+    { key: 'p', title: 'الأولياء والمعلمون', items: pick((a) => !a.roles.includes('student') && !a.roles.includes('school_manager') && a.roles.some((r) => ['parent', 'teacher'].includes(r))) },
+    { key: 'm', title: 'إدارة المدرسة', items: pick((a) => a.roles.includes('school_manager')) },
     { key: 'a', title: 'الإدارة والدعم', items: pick((a) => a.roles.some((r) => ['super_admin', 'admin', 'editor', 'support'].includes(r)) && !a.roles.includes('parent')) }
-  ]
+  ].filter((g) => g.items.length)
 })
 
 async function submit() {
@@ -142,6 +190,9 @@ async function submit() {
   loading.value = true
   try {
     await auth.login(form.login, form.password, form.remember)
+    // الدخول من رابط مدرسة: تُختار صفة تلك المدرسة مباشرة (مثلاً معلم يدرّس في مدرستين)
+    const match = sb.value && auth.assignments.find((a) => a.school?.id === sb.value.school.id)
+    if (match) auth.selectAssignment(match.id)
     if (auth.active) router.push(route.query.next || { name: 'home' })
     else router.push({ name: 'choose-role' })
   } catch (e) {
@@ -171,6 +222,17 @@ function google() {
 .brand::after { content: ''; position: absolute; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 196, 80, 0.22), transparent 65%); bottom: -200px; inset-inline-end: -160px; }
 .brand__inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; padding: clamp(1.5rem, 4vw, 3rem); gap: 1rem; }
 .brand__logo { display: flex; align-items: center; gap: 0.7rem; font-weight: 700; font-size: 1.1rem; }
+.brand--school { background-color: var(--sp); background-size: cover; background-position: center; }
+.brand--school::before { content: ''; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.6)); }
+.brand--school::after { display: none; }
+.brand--school .brand__inner { justify-content: flex-end; }
+@media (min-width: 901px) { .brand--school { position: sticky; top: 0; height: 100vh; align-self: start; } }
+.brand--school h1 { margin-top: 0.5rem; }
+.brand__welcome { font-size: 1.2rem !important; opacity: 0.95 !important; }
+.demo__empty { font-size: 0.85rem; }
+.other-school { display: block; margin-top: 1rem; text-align: center; font-size: 0.86rem; color: var(--p-text-muted-color); text-decoration: none; }
+.other-school:hover { color: var(--brand); }
+.acc--school { text-decoration: none; color: inherit; }
 .brand__mark { width: 46px; height: 46px; border-radius: 14px; background: #fff; color: #233b85; display: grid; place-items: center; font-size: 1.5rem; font-weight: 800; }
 .brand h1 { font-size: clamp(1.9rem, 3.8vw, 3rem); line-height: 1.25; margin: 1.5rem 0 0; }
 .brand h1 span { color: #ffc96b; }

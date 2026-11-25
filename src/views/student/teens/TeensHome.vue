@@ -1,5 +1,6 @@
 <template>
   <div v-if="d" class="th">
+    <SchoolBanner :school="brand.school" :branding="brand.branding" variant="teens" />
     <header class="th__head">
       <div>
         <h1>{{ greeting }}، {{ auth.person.firstName }}</h1>
@@ -56,6 +57,8 @@
 </template>
 
 <script setup>
+import SchoolBanner from '@/components/brand/SchoolBanner.vue'
+import { useBrandStore } from '@/stores/brand'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -65,6 +68,7 @@ import { gregorian, hijri, weekday } from '@/utils/dates'
 
 const { locale } = useI18n()
 const auth = useAuthStore()
+const brand = useBrandStore()
 const student = useStudentStore()
 const d = ref(null)
 const all = ref([])

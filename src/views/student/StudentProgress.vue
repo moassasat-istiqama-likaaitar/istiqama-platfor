@@ -26,7 +26,7 @@
 
     <!-- ================= المستكشفون: طريق المستويات ================= -->
     <template v-else-if="theme === 'juniors'">
-      <h1>إنجازاتي</h1>
+      <div class="sp-head"><h1>إنجازاتي</h1><RouterLink :to="{ name: 'report-card' }" class="print-btn"><i class="pi pi-print" /> كشف النقاط</RouterLink></div>
       <section class="j-road card">
         <div class="j-road__head"><span class="j-lvl">{{ r.xp.level }}</span><div><strong>مستوى المستكشف {{ r.xp.level }}</strong><small>{{ r.xp.inLevel }}/{{ r.xp.next }} XP للمستوى التالي</small></div></div>
         <div class="j-road__track">
@@ -56,7 +56,7 @@
 
     <!-- ================= الشباب: لوحة تحليلات ================= -->
     <template v-else>
-      <h1>التحليلات</h1>
+      <div class="sp-head"><h1>التحليلات</h1><RouterLink :to="{ name: 'report-card' }" class="print-btn"><i class="pi pi-print" /> كشف النقاط للطباعة</RouterLink></div>
       <div class="t-kpis">
         <div><small>الدروس المكتملة</small><b>{{ r.totals.lessons }}<span>/{{ r.totals.lessonsAll }}</span></b></div>
         <div><small>الأعمال المنجزة</small><b>{{ r.totals.activities }}</b></div>
@@ -123,6 +123,10 @@ const linePts = computed(() => pts.value.map((p) => p.join(',')).join(' '))
 </script>
 
 <style scoped>
+.sp-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.sp-head h1 { margin: 0 !important; }
+.print-btn { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.95rem; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface, #fff); color: var(--ink); font-weight: 700; font-size: 0.88rem; text-decoration: none; }
+.print-btn:hover { border-color: var(--brand); color: var(--brand); }
 .sp { display: flex; flex-direction: column; gap: 1.1rem; }
 .sp h1 { margin: 0; font-size: 1.8rem; }
 .card { background: var(--surface); border-radius: var(--radius-lg); padding: 1.1rem; box-shadow: var(--shadow); }

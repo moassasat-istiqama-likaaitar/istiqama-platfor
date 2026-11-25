@@ -3,7 +3,7 @@
   <div class="j-shell">
     <header class="j-top">
       <div class="j-top__row">
-        <RouterLink :to="{ name: 'home' }" class="j-logo"><span class="j-logo__mark"><i class="pi pi-compass" /></span>{{ t('app.short') }}</RouterLink>
+        <RouterLink :to="{ name: 'home' }" class="j-logo"><BrandPair :school="brand.school" :branding="brand.branding" :size="36" tone="light" names /></RouterLink>
         <div class="j-level" v-tooltip.bottom="`${student.stars} XP`">
           <span class="j-level__badge">{{ level }}</span>
           <div class="j-level__info">
@@ -25,6 +25,7 @@
           <i :class="n.icon" /><span>{{ n.label }}</span>
         </RouterLink>
       </nav>
+      <div class="school-ribbon" />
     </header>
     <main class="j-main"><slot /></main>
   </div>
@@ -36,6 +37,8 @@ import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import LangSwitcher from '@/components/LangSwitcher.vue'
 import RoleSwitcher from '@/components/RoleSwitcher.vue'
+import BrandPair from '@/components/brand/BrandPair.vue'
+import { useBrandStore } from '@/stores/brand'
 import UserMenu from '@/components/UserMenu.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useInboxStore } from '@/stores/inbox'
@@ -45,6 +48,7 @@ import { chime } from '@/utils/celebrate'
 const { t } = useI18n()
 const route = useRoute()
 const auth = useAuthStore()
+const brand = useBrandStore()
 const inbox = useInboxStore()
 const student = useStudentStore()
 const level = computed(() => Math.floor(student.stars / 100) + 1)
@@ -85,6 +89,7 @@ const tap = () => chime('tap', 'juniors')
 @media (max-width: 760px) {
   .j-level__bar, .j-level__info, .hide-sm { display: none; }
   .j-logo { font-size: 1rem; }
+  .j-logo :deep(.pair__names) { display: none; }
   .j-top__row { gap: 0.5rem; }
   .j-tab span { font-size: 0.82rem; }
 }

@@ -1,5 +1,6 @@
 <template>
   <div v-if="d" class="kh">
+    <SchoolBanner :school="brand.school" :branding="brand.branding" variant="kids" class="kh__banner" />
     <!-- نور تقدّم مهمة اليوم -->
     <section class="mission">
       <div class="mission__mascot"><Mascot bounce :mood="d.continueWith ? 'normal' : 'happy'" :color="'#ffd54a'" :accent="'#ff6b4a'" /></div>
@@ -43,6 +44,8 @@
 </template>
 
 <script setup>
+import SchoolBanner from '@/components/brand/SchoolBanner.vue'
+import { useBrandStore } from '@/stores/brand'
 import { ref, onMounted } from 'vue'
 import Mascot from '@/components/art/Mascot.vue'
 import { useAuthStore } from '@/stores/auth'
@@ -50,6 +53,7 @@ import { useStudentStore } from '@/stores/student'
 import { chime } from '@/utils/celebrate'
 
 const auth = useAuthStore()
+const brand = useBrandStore()
 const student = useStudentStore()
 const d = ref(null)
 const tap = () => chime('tap', 'kids')
@@ -57,6 +61,7 @@ onMounted(async () => (d.value = await student.refresh()))
 </script>
 
 <style scoped>
+.kh__banner { margin-bottom: 1.25rem; }
 .kh { display: flex; flex-direction: column; gap: 1.25rem; }
 .mission { display: flex; align-items: center; gap: 1rem; }
 .mission__mascot { width: clamp(110px, 18vw, 170px); flex-shrink: 0; aspect-ratio: 1; }
