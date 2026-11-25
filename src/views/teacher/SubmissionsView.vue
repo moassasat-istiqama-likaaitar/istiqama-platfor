@@ -14,12 +14,26 @@
       <template #actions="{ row }"><Button :label="row.status === 'submitted' ? 'صحّح' : 'عرض'" size="small" :outlined="row.status !== 'submitted'" @click="open(row)" /></template>
     </RecordTable>
 
-    <Dialog v-model:visible="dlg" modal :header="cur ? `${cur.student} — ${cur.title}` : ''" :style="{ width: 'min(620px, 95vw)' }">
+    <Dialog v-model:visible="dlg" modal :header="cur ? `${cur.student} — ${cur.title}` : ''" :style="{ width: 'min(760px, 96vw)' }">
       <div v-if="cur" class="gd">
         <p class="muted">{{ cur.className }} · {{ cur.subjectName }} · سُلّم {{ new Date(cur.at).toLocaleString('ar-DZ') }}</p>
         <div v-if="cur.text" class="ans"><small>إجابة التلميذ</small><p>{{ cur.text }}</p></div>
         <div v-if="cur.files?.length" class="files"><span v-for="f in cur.files" :key="f" class="chip"><i class="pi pi-image" /> {{ f }}</span></div>
-        <p v-if="cur.type === 'quiz'" class="muted"><i class="pi pi-bolt" /> اختبار مصحَّح آلياً — يمكنك تعديل العلامة إن لزم.</p>
+        <template v-if="cur.type === 'quiz' && cur.perQuestion">
+          <p class="muted"><i class="pi pi-bolt" /> صُحّح آلياً {{ autoSum }} ن. {{ manualIdx.length ? `صحّح ${manualIdx.length} سؤالاً يدوياً:` : 'يمكنك تعديل العلامة النهائية إن لزم.' }}</p>
+          <ol class="pq">
+            <li v-for="(q, i) in cur.questions" :key="i" :class="{ man: cur.perQuestion[i]?.manual || cur.perQuestion[i]?.gradedByTeacher }">
+              <div class="pq__h"><b>{{ q.q }}</b><small class="muted">{{ QTYPES[qtype(q)].label }}</small></div>
+              <div class="pq__a">إجابته: <b>{{ answerText(q, cur.answers?.[i]) }}</b></div>
+              <template v-if="manualIdx.includes(i)">
+                <div class="pq__m muted">النموذج: {{ correctText(q) }}</div>
+                <div class="pq__s"><InputNumber v-model="manual[i]" :min="0" :max="cur.perQuestion[i].max" :step="0.5" show-buttons button-layout="horizontal" input-class="sm" /> <small>/ {{ cur.perQuestion[i].max }}</small></div>
+              </template>
+              <div v-else class="pq__s auto" :class="{ ok: cur.perQuestion[i].correct }">{{ cur.perQuestion[i].score }} / {{ cur.perQuestion[i].max }}</div>
+            </li>
+          </ol>
+        </template>
+        <p v-else-if="cur.type === 'quiz'" class="muted"><i class="pi pi-bolt" /> اختبار مصحَّح آلياً — يمكنك تعديل العلامة إن لزم.</p>
         <label class="f"><span>العلامة (من {{ cur.maxScore }})</span>
           <div class="score">
             <InputNumber v-model="score" :min="0" :max="cur.maxScore" show-buttons button-layout="horizontal" :step="0.5" />
@@ -31,7 +45,7 @@
       </div>
       <template #footer>
         <Button label="إلغاء" text severity="secondary" @click="dlg = false" />
-        <Button label="حفظ التصحيح" icon="pi pi-check" :loading="busy" :disabled="score === null" @click="save" />
+        <Button label="حفظ التصحيح" icon="pi pi-check" :loading="busy" :disabled="score === null || manualIdx.some((i) => manual[i] === null || manual[i] === undefined)" @click="save" />
       </template>
     </Dialog>
   </div>
@@ -49,6 +63,8 @@ import PageHeader from '@/components/PageHeader.vue'
 import RecordTable from '@/components/ui/RecordTable.vue'
 import { useAuthStore } from '@/stores/auth'
 import { submissions, grade } from '@/api/teaching'
+import { QTYPES, qtype, answerText, correctText } from '@/utils/quiz'
+import { watch } from 'vue'
 
 const auth = useAuthStore()
 const route = useRoute()
@@ -62,6 +78,14 @@ const cur = ref(null)
 const score = ref(null)
 const note = ref('')
 const busy = ref(false)
+const manual = ref({})
+// الأسئلة التي تحتاج تصحيحاً يدوياً (مقالي، قصير بلا كلمات مفتاحية) أو صحّحها المعلم سابقاً
+const manualIdx = computed(() => (cur.value?.perQuestion || []).map((r, i) => (r.manual || r.gradedByTeacher ? i : -1)).filter((i) => i >= 0))
+const autoSum = computed(() => (cur.value?.perQuestion || []).reduce((n, r, i) => n + (manualIdx.value.includes(i) ? 0 : r.score), 0))
+// المجموع = الآلي + اليدوي
+watch(manual, (m) => {
+  if (manualIdx.value.length) score.value = Math.round((autoSum.value + manualIdx.value.reduce((n, i) => n + (Number(m[i]) || 0), 0)) * 10) / 10
+}, { deep: true })
 
 async function load() {
   loading.value = true
@@ -83,12 +107,13 @@ function open(r) {
   cur.value = r
   score.value = r.score
   note.value = r.note || ''
+  manual.value = Object.fromEntries((r.perQuestion || []).map((x, i) => [i, x.gradedByTeacher ? x.score : x.manual ? null : undefined]).filter(([, v]) => v !== undefined))
   dlg.value = true
 }
 async function save() {
   busy.value = true
   try {
-    await grade(cur.value.id, score.value, note.value)
+    await grade(cur.value.id, score.value, note.value, manualIdx.value.length ? Object.fromEntries(manualIdx.value.map((i) => [i, Number(manual.value[i]) || 0])) : null)
     toast.add({ severity: 'success', summary: 'حُفظ التصحيح', detail: `${cur.value.student}: ${score.value}/${cur.value.maxScore}`, life: 2500 })
     dlg.value = false
     await load()
@@ -113,5 +138,13 @@ async function save() {
 .f { display: flex; flex-direction: column; gap: 0.3rem; }
 .f > span { font-weight: 700; font-size: 0.88rem; }
 .score { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+.pq { margin: 0; padding-inline-start: 1.2rem; display: flex; flex-direction: column; gap: 0.6rem; max-height: 45vh; overflow: auto; }
+.pq li { padding: 0.5rem 0.6rem; border-radius: 10px; background: var(--bg); }
+.pq li.man { background: #fff8e6; }
+.pq__h { display: flex; justify-content: space-between; gap: 0.5rem; }
+.pq__a, .pq__m { font-size: 0.86rem; margin-top: 0.2rem; }
+.pq__s { margin-top: 0.3rem; display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
+.pq__s.auto { color: #b42318; font-weight: 700; } .pq__s.auto.ok { color: #17733f; }
+.pq :deep(.sm) { width: 3.5rem; text-align: center; }
 .q { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 0.35rem 0.7rem; cursor: pointer; font: inherit; }
 </style>

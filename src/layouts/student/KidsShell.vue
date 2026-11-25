@@ -58,6 +58,7 @@ const nav = [
   { key: 'home', to: '/app/home', icon: 'pi pi-home', label: 'بيتي', match: ['/app/home'] },
   { key: 'lessons', to: '/app/my-lessons', icon: 'pi pi-book', label: 'دروسي', match: ['/app/my-lessons', '/app/subject', '/app/lesson'] },
   { key: 'tasks', to: '/app/my-assignments', icon: 'pi pi-flag', label: 'تحدياتي', match: ['/app/my-assignments', '/app/activity'] },
+  { key: 'library', to: '/app/my-library', icon: 'pi pi-images', label: 'مكتبتي', match: ['/app/my-library'] },
   { key: 'stars', to: '/app/my-progress', icon: 'pi pi-star', label: 'نجومي', match: ['/app/my-progress'] }
 ]
 const isActive = (n) => n.match.some((m) => route.path.startsWith(m))
@@ -91,6 +92,7 @@ const tap = () => chime('tap', 'kids')
 .k-dock__btn--home { --btn: #ff6b4a; --btn-soft: #ffe6df; }
 .k-dock__btn--lessons { --btn: #3ec1f3; --btn-soft: #ddf4fd; }
 .k-dock__btn--tasks { --btn: #9b6bff; --btn-soft: #eee6ff; }
+.k-dock__btn--library { --btn: #20b486; --btn-soft: #dcf6ec; }
 .k-dock__btn--stars { --btn: #f5a400; --btn-soft: #fff3cc; }
 @media (max-width: 560px) {
   .k-me { display: none; }

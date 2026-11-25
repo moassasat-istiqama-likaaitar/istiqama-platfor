@@ -54,7 +54,7 @@
           <div class="teachers">
             <div v-for="tc in teachers" :key="tc.id" class="tc">
               <span class="tc__av">{{ tc.name.charAt(0) }}</span>
-              <div><b>{{ tc.gender === 'female' ? 'الأستاذة' : 'الأستاذ' }} {{ tc.name }}</b><small>{{ tc.subjects.join('، ') }}</small></div>
+              <div><b>{{ tc.gender === 'female' ? 'المعلمة' : 'المعلم' }} {{ tc.name }}</b><small>{{ tc.subjects.join('، ') }}</small></div>
               <RouterLink v-if="tc.canMessage" :to="{ name: 'messages', query: { to: tc.id, subject: `متابعة ${child.firstName}` } }" class="tc__msg"><i class="pi pi-envelope" /> مراسلة</RouterLink>
             </div>
           </div>

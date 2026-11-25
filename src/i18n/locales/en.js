@@ -11,6 +11,7 @@ export default {
   },
   themes: { staff: 'Staff', kids: 'Little ones', juniors: 'Explorers', teens: 'Youth' },
   menu: {
+    teaching: 'My classes', 'my-library': 'Class library',
     home: 'Home', users: 'Users', 'users-list': 'User list', 'users-import': 'Bulk import',
     'users-duplicates': 'Duplicate accounts', 'activity-log': 'Activity log', library: 'Library',
     'library-manage': 'Digital content', 'library-review': 'Review & approval', activities: 'Activities & assessments',

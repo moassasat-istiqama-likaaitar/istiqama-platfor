@@ -83,9 +83,10 @@
       </div>
       <template #footer>
         <Button :label="t('common.close')" text severity="secondary" @click="preview.open = false" />
-        <Button v-if="auth.role === 'teacher'" :label="t('library.addToClass')" icon="pi pi-plus" @click="add" />
+        <Button v-if="['teacher', 'editor'].includes(auth.role) && ['approved', 'temp'].includes(preview.item.status)" :label="t('library.addToClass')" icon="pi pi-plus" @click="add" />
       </template>
     </Dialog>
+    <LinkDialog v-model:visible="linkOpen" :item="linkItem" :kind="linkItem && ['quiz', 'homework'].includes(linkItem.type) ? 'activity' : 'content'" />
   </div>
 </template>
 
@@ -104,6 +105,7 @@ import ContentViewer from '@/components/viewers/ContentViewer.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import * as libraryApi from '@/api/library'
 import { useAuthStore } from '@/stores/auth'
+import LinkDialog from '@/components/library/LinkDialog.vue'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -141,9 +143,13 @@ function open(c) {
   preview.item = c
   preview.open = true
 }
+// الإدراج في القسم: يسأل في أي قسم وأي درس
+const linkOpen = ref(false)
+const linkItem = ref(null)
 function add() {
-  toast.add({ severity: 'success', summary: t('library.added'), life: 2000 })
+  linkItem.value = { ...preview.item, levelId: preview.item.level.id, subjectId: preview.item.subject.id, lessonId: preview.item.lesson.id, levelName: preview.item.level.name }
   preview.open = false
+  linkOpen.value = true
 }
 
 onMounted(async () => {

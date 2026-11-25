@@ -36,21 +36,22 @@ const routes = [
       { path: 'my-assignments', name: 'my-assignments', component: () => import('@/views/student/StudentAssignments.vue'), meta: { roles: ['student'] } },
       { path: 'activity/:id', name: 'activity', component: () => import('@/views/student/ActivityView.vue'), meta: { roles: ['student'] } },
       { path: 'my-progress', name: 'my-progress', component: () => import('@/views/student/StudentProgress.vue'), meta: { roles: ['student'] } },
+      { path: 'my-library', name: 'my-library', component: () => import('@/views/student/StudentLibrary.vue'), meta: { roles: ['student'] } },
       // ——— فضاء الولي ———
       { path: 'children', name: 'children', component: () => import('@/views/parent/ChildrenView.vue'), meta: { roles: ['parent'] } },
       { path: 'child-report', name: 'child-report', component: () => import('@/views/parent/ChildReportView.vue'), meta: { roles: ['parent'] } },
       // ——— فضاء المعلم ———
-      { path: 'my-classes', name: 'my-classes', component: () => import('@/views/teacher/MyClassesView.vue'), meta: { roles: ['teacher'] } },
-      { path: 'class-library', name: 'class-library', component: () => import('@/views/teacher/ClassLibraryView.vue'), meta: { roles: ['teacher'] } },
-      { path: 'submissions', name: 'submissions', component: () => import('@/views/teacher/SubmissionsView.vue'), meta: { roles: ['teacher'] } },
-      { path: 'upload-content', name: 'upload-content', component: () => import('@/views/teacher/UploadContentView.vue'), meta: { roles: ['teacher'] } },
-      { path: 'new-homework', name: 'new-homework', component: () => import('@/views/teacher/NewHomeworkView.vue'), meta: { roles: ['teacher'] } },
+      { path: 'my-classes', name: 'my-classes', component: () => import('@/views/teacher/MyClassesView.vue'), meta: { roles: ['teacher', 'editor'] } },
+      { path: 'class-library', name: 'class-library', component: () => import('@/views/teacher/ClassLibraryView.vue'), meta: { roles: ['teacher', 'editor'] } },
+      { path: 'submissions', name: 'submissions', component: () => import('@/views/teacher/SubmissionsView.vue'), meta: { roles: ['teacher', 'editor'] } },
+      { path: 'upload-content', name: 'upload-content', component: () => import('@/views/teacher/UploadContentView.vue'), meta: { roles: ['teacher', 'editor'] } },
+      { path: 'new-homework', name: 'new-homework', component: () => import('@/views/teacher/NewHomeworkView.vue'), meta: { roles: ['teacher', 'editor'] } },
       { path: 'quiz-builder', name: 'quiz-builder', component: () => import('@/views/teacher/QuizBuilderView.vue'), meta: { roles: ['teacher', 'editor'] } },
-      { path: 'my-files', name: 'my-files', component: () => import('@/views/teacher/MyFilesView.vue'), meta: { roles: ['teacher'] } },
-      { path: 'offline-tests', name: 'offline-tests', component: () => import('@/views/teacher/OfflineTestsView.vue'), meta: { roles: ['teacher'] } },
+      { path: 'my-files', name: 'my-files', component: () => import('@/views/teacher/MyFilesView.vue'), meta: { roles: ['teacher', 'editor'] } },
+      { path: 'offline-tests', name: 'offline-tests', component: () => import('@/views/teacher/OfflineTestsView.vue'), meta: { roles: ['teacher', 'editor'] } },
       // ——— التحرير ———
       { path: 'library-review', name: 'library-review', component: () => import('@/views/editor/ReviewView.vue'), meta: { roles: ['editor', 'admin', 'super_admin'] } },
-      { path: 'activities', name: 'activities', component: () => import('@/views/editor/ActivitiesView.vue'), meta: { roles: ['editor', 'admin', 'super_admin'] } },
+      { path: 'activities', name: 'activities', component: () => import('@/views/library/ActivitiesBankView.vue'), meta: { roles: ['teacher', 'editor', 'admin', 'super_admin'] } },
       { path: 'editor-reports', name: 'editor-reports', component: () => import('@/views/editor/EditorReports.vue'), meta: { roles: ['editor'] } },
       // ——— مدير المدرسة ———
       { path: 'teachers', name: 'teachers', component: () => import('@/views/users/UsersView.vue'), props: { role: 'teacher', title: 'المعلمون', subtitle: 'معلمو المدرسة وأقسامهم وموادهم.' }, meta: { roles: ['school_manager'] } },
@@ -98,7 +99,7 @@ const routes = [
     ]
   },
   // صفحات الطباعة (خارج القالب)
-  { path: '/print/offline-test/:id', name: 'offline-print', component: () => import('@/views/print/OfflineTestPrint.vue'), meta: { auth: true, roles: ['teacher'] } },
+  { path: '/print/offline-test/:id', name: 'offline-print', component: () => import('@/views/print/OfflineTestPrint.vue'), meta: { auth: true, roles: ['teacher', 'editor'] } },
   { path: '/print/report-card', name: 'report-card', component: () => import('@/views/print/ReportCardView.vue'), meta: { auth: true, roles: ['student', 'parent'] } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/errors/NotFoundView.vue') }
 ]

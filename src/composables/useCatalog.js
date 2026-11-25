@@ -7,7 +7,11 @@ export function useCatalog() {
   const subjectOptions = (levelId) => subjects.filter((s) => !levelId || s.levelId === levelId).map((s) => ({ label: levelId ? s.name : `${s.name} — ${levels.find((l) => l.id === s.levelId)?.name}`, value: s.id }))
   const subjectNames = [...new Set(subjects.map((s) => s.name))].map((n) => ({ label: n, value: n }))
   const lessonOptions = (subjectId) => lessons.filter((l) => l.subjectId === subjectId).map((l) => ({ label: `${l.label ? l.label + ': ' : ''}${l.title}`, value: l.id }))
-  const classOptions = (ids) => classes.filter((c) => !ids || ids.includes(c.id)).map((c) => ({ label: c.name, value: c.id }))
+  const classOptions = (ids) => {
+    const list = classes.filter((c) => !ids || ids.includes(c.id))
+    const multi = new Set(list.map((c) => c.schoolId)).size > 1
+    return list.map((c) => ({ label: multi ? `${c.name} — ${schools.find((s) => s.id === c.schoolId)?.short}` : c.name, value: c.id }))
+  }
   const schoolOptions = schools.map((s) => ({ label: s.name, value: s.id }))
   const levelOfClass = (id) => classes.find((c) => c.id === id)?.levelId
   const TYPE_OPTIONS = [

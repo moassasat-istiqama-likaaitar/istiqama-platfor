@@ -5,7 +5,12 @@ import { persons, assignments, schools, classes, levels } from '@/mock/db'
 export function describeAssignment(a) {
   const school = schools.find((s) => s.id === a.schoolId) || null
   const out = { ...a, school: school ? { id: school.id, name: school.name } : null }
-  if (a.classIds) out.classes = classes.filter((c) => a.classIds.includes(c.id)).map((c) => ({ id: c.id, name: c.name }))
+  // المحرر: نطاقه مستويات (ومواد)، ويدخل كل أقسام مستوياته في كل المدارس
+  if (a.role === 'editor') {
+    out.classIds = classes.filter((c) => (a.levelIds || []).includes(c.levelId)).map((c) => c.id)
+    out.levels = (a.levelIds || []).map((id) => ({ id, name: levels.find((l) => l.id === id)?.name }))
+  }
+  if (out.classIds) out.classes = classes.filter((c) => out.classIds.includes(c.id)).map((c) => ({ id: c.id, name: c.name }))
   if (a.classId) {
     const c = classes.find((x) => x.id === a.classId)
     const lvl = levels.find((l) => l.id === c?.levelId)

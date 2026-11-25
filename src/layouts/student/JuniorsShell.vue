@@ -57,6 +57,7 @@ const nav = [
   { key: 'home', to: '/app/home', icon: 'pi pi-map', label: 'لوحة المهام', match: ['/app/home'] },
   { key: 'lessons', to: '/app/my-lessons', icon: 'pi pi-compass', label: 'المواد', match: ['/app/my-lessons', '/app/subject', '/app/lesson'] },
   { key: 'tasks', to: '/app/my-assignments', icon: 'pi pi-list-check', label: 'سجل المهام', match: ['/app/my-assignments', '/app/activity'] },
+  { key: 'library', to: '/app/my-library', icon: 'pi pi-folder-open', label: 'مكتبة القسم', match: ['/app/my-library'] },
   { key: 'progress', to: '/app/my-progress', icon: 'pi pi-trophy', label: 'إنجازاتي', match: ['/app/my-progress'] }
 ]
 const isActive = (n) => n.match.some((m) => route.path.startsWith(m))

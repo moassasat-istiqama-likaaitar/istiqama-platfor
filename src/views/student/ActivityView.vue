@@ -24,17 +24,21 @@
             <div class="result__score"><b>{{ a.submission.score }}</b><small>/ {{ a.maxScore }}</small></div>
           </ProgressRing>
           <div>
-            <h2>{{ t('student.score') }}</h2>
+            <h2>{{ a.submission.status === 'submitted' ? 'النتيجة الأولية' : t('student.score') }}</h2>
             <p class="muted">{{ correctCount }} / {{ a.questions.length }} ✓</p>
+            <p v-if="a.submission.status === 'submitted'" class="waiting"><i class="pi pi-clock" /> بعض الأسئلة بانتظار تصحيح المعلم</p>
+            <p v-else-if="a.submission.note" class="muted">ملاحظة المعلم: {{ a.submission.note }}</p>
             <RouterLink v-if="a.lesson" :to="`/app/lesson/${a.lesson.id}`"><Button :label="t('student.retryLater')" icon="pi pi-replay" severity="secondary" outlined size="small" /></RouterLink>
           </div>
         </div>
         <ol class="review">
-          <li v-for="(q, i) in a.questions" :key="i" :class="a.submission.answers[i] === q.answer ? 'ok' : 'ko'">
-            <div class="review__q"><i :class="a.submission.answers[i] === q.answer ? 'pi pi-check-circle' : 'pi pi-times-circle'" /> {{ q.q }}</div>
+          <li v-for="(q, i) in a.questions" :key="i" :class="reviewState(i)">
+            <div class="review__q"><i :class="{ ok: 'pi pi-check-circle', ko: 'pi pi-times-circle', part: 'pi pi-minus-circle', wait: 'pi pi-clock' }[reviewState(i)]" /> <span>{{ q.q }}</span><small class="pts">{{ ptsText(i) }}</small></div>
             <div class="review__a">
-              <span>{{ t('student.yourAnswer') }}: <b>{{ q.options[a.submission.answers[i]] }}</b></span>
-              <span v-if="a.submission.answers[i] !== q.answer">{{ t('student.rightAnswer') }}: <b>{{ q.options[q.answer] }}</b></span>
+              <span>{{ t('student.yourAnswer') }}: <b>{{ answerText(q, a.submission.answers[i]) }}</b></span>
+              <span v-if="reviewState(i) !== 'ok' && reviewState(i) !== 'wait'">{{ t('student.rightAnswer') }}: <b>{{ correctText(q) }}</b></span>
+              <span v-if="reviewState(i) === 'wait'">بانتظار تصحيح المعلم</span>
+              <span v-if="q.explain" class="exp">💡 {{ q.explain }}</span>
             </div>
           </li>
         </ol>
@@ -51,7 +55,7 @@
       <section v-else class="card quiz">
         <!-- الشباب: شبكة التنقل بين الأسئلة -->
         <div v-if="theme === 'teens'" class="qnav">
-          <button v-for="(qq, i) in a.questions" :key="i" type="button" :class="{ on: i === step, ans: answers[i] !== undefined, flag: flags[i] }" @click="step = i">{{ i + 1 }}</button>
+          <button v-for="(qq, i) in a.questions" :key="i" type="button" :class="{ on: i === step, ans: isAnswered(i), flag: flags[i] }" @click="step = i">{{ i + 1 }}</button>
           <button type="button" class="qnav__flag" :class="{ on: flags[step] }" @click="flags[step] = !flags[step]"><i class="pi pi-flag" /> مراجعة لاحقاً</button>
         </div>
         <div class="quiz__progress">
@@ -63,7 +67,8 @@
         <Transition name="q" mode="out-in">
           <div :key="step">
             <h2 class="quiz__q">{{ q.q }}</h2>
-            <div class="opts" :class="{ 'opts--two': q.options.length === 2 }">
+            <QuestionField v-if="!isChoice(q)" v-model="answers[step]" :q="q" class="qfield" />
+            <div v-else class="opts" :class="{ 'opts--two': q.options.length === 2 }">
               <button v-for="(o, k) in q.options" :key="k" type="button" class="opt" :class="[`opt--${k}`, { on: answers[step] === k, right: feedback && feedback.answer === k, wrong: feedback && !feedback.correct && answers[step] === k }]" :disabled="!!feedback" @click="pick(k)">
                 <span class="opt__k">{{ letters[k] }}</span><span>{{ o }}</span>
               </button>
@@ -73,11 +78,11 @@
         <div v-if="feedback" class="fb" :class="feedback.correct ? 'fb--ok' : 'fb--ko'">
           <i :class="feedback.correct ? 'pi pi-check-circle' : 'pi pi-heart'" /> {{ feedback.correct ? 'أحسنت! إجابة صحيحة' : 'لا بأس، الإجابة الصحيحة ملوّنة بالأخضر' }}
         </div>
-        <div v-if="theme !== 'kids'" class="quiz__nav">
+        <div v-if="theme !== 'kids' || !isChoice(q)" class="quiz__nav">
           <Button v-if="step > 0" :label="t('common.back')" text severity="secondary" @click="step--" />
           <span />
-          <Button v-if="step < a.questions.length - 1" :label="t('student.nextQ')" icon="pi pi-arrow-left flip" icon-pos="right" :disabled="answers[step] === undefined" @click="step++" />
-          <Button v-else :label="t('student.finish')" icon="pi pi-check" :disabled="answers.length < a.questions.length || answers.includes(undefined)" :loading="sending" @click="sendQuiz" />
+          <Button v-if="step < a.questions.length - 1" :label="t('student.nextQ')" icon="pi pi-arrow-left flip" icon-pos="right" :disabled="!isAnswered(step)" @click="step++" />
+          <Button v-else :label="t('student.finish')" icon="pi pi-check" :disabled="!a.questions.every((_, i) => isAnswered(i))" :loading="sending" @click="sendQuiz" />
         </div>
       </section>
     </template>
@@ -145,6 +150,8 @@ import { useStudentStore } from '@/stores/student'
 import { dueInfo } from '@/utils/due'
 import { gregorian } from '@/utils/dates'
 import { chime } from '@/utils/celebrate'
+import QuestionField from '@/components/quiz/QuestionField.vue'
+import { qtype, answerText, correctText } from '@/utils/quiz'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -173,7 +180,31 @@ onBeforeUnmount(() => clearInterval(clock))
 
 const q = computed(() => a.value?.questions?.[step.value] || { q: '', options: [] })
 const due = computed(() => dueInfo(a.value.due, t))
-const correctCount = computed(() => a.value?.questions?.filter((x, i) => a.value.submission?.answers[i] === x.answer).length || 0)
+const pq = (i) => a.value?.submission?.perQuestion?.[i]
+const correctCount = computed(() => a.value?.questions?.filter((x, i) => (pq(i) ? pq(i).correct : a.value.submission?.answers[i] === x.answer)).length || 0)
+const isChoice = (x) => ['mcq', 'tf'].includes(qtype(x))
+function isAnswered(i) {
+  const v = answers.value[i]
+  const x = a.value?.questions?.[i]
+  if (v === undefined || v === null || v === '') return false
+  if (Array.isArray(v)) {
+    if (qtype(x) === 'multi') return v.length > 0
+    const n = x.lefts?.length || x.items?.length || x.blanks || v.length
+    return v.filter((y) => y !== undefined && y !== null && y !== '').length >= n
+  }
+  return true
+}
+function reviewState(i) {
+  const r = pq(i)
+  if (!r) return a.value.submission.answers[i] === a.value.questions[i].answer ? 'ok' : 'ko'
+  if (r.manual) return 'wait'
+  return r.correct ? 'ok' : r.score > 0 ? 'part' : 'ko'
+}
+function ptsText(i) {
+  const r = pq(i)
+  if (!r) return ''
+  return r.manual ? `— / ${r.max}` : `${r.score} / ${r.max}`
+}
 const scoreColor = computed(() => {
   const r = a.value.submission.score / a.value.maxScore
   return r >= 0.8 ? '#16a34a' : r >= 0.5 ? '#f59e0b' : '#ef4444'
@@ -301,6 +332,14 @@ const soon = () => toast.add({ severity: 'info', summary: t('common.comingSoon')
 .review li { padding: 0.8rem 1rem; border-radius: var(--radius); border-inline-start: 5px solid; }
 .review li.ok { background: #effbf2; border-color: #22a35a; }
 .review li.ko { background: #fff2f2; border-color: #ef4444; }
+.review li.part { background: #fff8e6; border-color: #e0a100; }
+.review li.wait { background: #f4f5f8; border-color: #94a3b8; }
+.part .review__q i { color: #e0a100; margin-top: 0.3rem; }
+.wait .review__q i { color: #64748b; margin-top: 0.3rem; }
+.review__q span { flex: 1; }
+.review__q .pts { font-weight: 700; color: var(--muted); white-space: nowrap; }
+.review__a .exp { color: inherit; margin-top: 0.2rem; }
+.qfield { margin-top: 0.5rem; }
 .review__q { font-weight: 800; display: flex; gap: 0.5rem; align-items: flex-start; }
 .ok .review__q i { color: #22a35a; margin-top: 0.3rem; }
 .ko .review__q i { color: #ef4444; margin-top: 0.3rem; }

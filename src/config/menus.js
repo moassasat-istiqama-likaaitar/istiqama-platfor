@@ -55,11 +55,19 @@ export const MENUS = {
     item('home', 'pi pi-home', ['ED01'], 5),
     group('library', 'pi pi-book', [
       item('library-manage', 'pi pi-folder-open', ['ED02'], 5),
-      item('library-review', 'pi pi-check-square', ['ED03', 'ED04'], 5)
+      item('library-review', 'pi pi-check-square', ['ED03', 'ED04'], 5),
+      item('upload-content', 'pi pi-upload', ['TE13'], 4)
     ]),
     group('activities-group', 'pi pi-pencil', [
-      item('activities', 'pi pi-pencil', ['ED05'], 5),
-      item('quiz-builder', 'pi pi-question-circle', ['TE15'], 4)
+      item('activities', 'pi pi-database', ['ED05'], 5),
+      item('quiz-builder', 'pi pi-question-circle', ['TE15'], 4),
+      item('new-homework', 'pi pi-file-edit', ['TE14'], 4)
+    ]),
+    // المحرر يأخذ دور المعلم في أقسام مستوياته (والمستوى كقسم واحد)
+    group('teaching', 'pi pi-th-large', [
+      item('my-classes', 'pi pi-th-large', ['TE02', 'TE03'], 4),
+      item('class-library', 'pi pi-bookmark', ['TE04', 'TE05'], 4),
+      item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4)
     ]),
     item('editor-reports', 'pi pi-chart-bar', ['ED06'], 5),
     feedback
@@ -91,6 +99,7 @@ export const MENUS = {
     item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4),
     group('library', 'pi pi-book', [
       item('central-library', 'pi pi-search', ['TE11', 'TE12'], 4),
+      item('activities', 'pi pi-database', ['ED05'], 4),
       item('upload-content', 'pi pi-upload', ['TE13'], 4),
       item('new-homework', 'pi pi-file-edit', ['TE14'], 4),
       item('quiz-builder', 'pi pi-question-circle', ['TE15'], 4),
@@ -103,6 +112,7 @@ export const MENUS = {
   student: [
     item('home', 'pi pi-home', ['ST01'], 2),
     item('my-lessons', 'pi pi-book', ['ST02', 'ST03', 'ST04', 'ST05'], 2),
+    item('my-library', 'pi pi-bookmark', ['ST05'], 2),
     item('my-assignments', 'pi pi-pencil', ['ST06', 'ST07', 'ST08', 'ST09'], 2),
     item('my-progress', 'pi pi-chart-line', ['ST10'], 2),
     feedback

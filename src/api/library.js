@@ -1,6 +1,7 @@
 import { respond, ApiError } from './client'
 import { subjects, lessons, contents, activities } from '@/mock/content'
 import { levels } from '@/mock/db'
+import { uploads, teacherActs, normUpload, normActivity } from './bank'
 
 const decorate = (c) => {
   const sub = subjects.find((s) => s.id === c.subjectId)
@@ -8,9 +9,9 @@ const decorate = (c) => {
   const level = levels.find((l) => l.id === c.levelId)
   return {
     ...c,
-    subject: { id: sub.id, key: sub.key, name: sub.name, color: sub.color, accent: sub.accent, art: sub.art },
-    lesson: { id: lesson.id, title: lesson.title },
-    level: { id: level.id, name: level.name }
+    subject: sub ? { id: sub.id, key: sub.key, name: sub.name, color: sub.color, accent: sub.accent, art: sub.art } : { id: null, name: '—', color: '#3159e8', accent: '#ffc23c', art: 'book' },
+    lesson: lesson ? { id: lesson.id, title: lesson.title } : { id: null, title: 'بلا درس' },
+    level: level ? { id: level.id, name: level.name } : { id: null, name: '—' }
   }
 }
 
@@ -26,8 +27,14 @@ export function list(filters = {}) {
       keywords: [a.title], authorId: a.authorId, authorName: a.authorName,
       createdAt: contents.find((c) => c.lessonId === a.lessonId)?.createdAt || a.due, rating: 4.2, views: 0, payload: { questions: a.questions, instructions: a.instructions }
     }))
+    // ما رفعه المعلمون واعتمده المحرر أصبح جزءاً من المكتبة المركزية
+    const fromTeachers = uploads().all().filter((u) => u.status === 'approved').map((u) => ({ ...normUpload(u), classification: u.classification || u.proposedClass }))
+    const teacherQuizzes = teacherActs().all().filter((a) => a.status === 'approved').map(normActivity).map((a) => ({
+      id: a.id, lessonId: a.lessonId, subjectId: a.subjectId, levelId: a.levelId, type: a.type, classification: 'activity', status: 'approved', title: a.title,
+      keywords: [a.title], authorId: a.authorId, authorName: a.authorName, createdAt: a.at, rating: 4.4, views: 0, payload: { questions: a.questions, instructions: a.instructions }
+    }))
     const q = (filters.q || '').trim()
-    return [...contents, ...acts]
+    return [...fromTeachers, ...teacherQuizzes, ...contents, ...acts]
       .filter((c) => !filters.level || c.levelId === filters.level)
       .filter((c) => !filters.subjectKey || subjects.find((s) => s.id === c.subjectId)?.name === filters.subjectKey)
       .filter((c) => !filters.type || c.type === filters.type)

@@ -1,7 +1,7 @@
 <template>
   <!-- TE01: لوحة المعلم — ما ينتظرني اليوم -->
   <div v-if="d">
-    <PageHeader :title="`السلام عليكم، ${auth.person.gender === 'female' ? 'الأستاذة' : 'الأستاذ'} ${auth.person.firstName}`" :subtitle="`${auth.active.school?.name} — ${d.classes.length} أقسام`" />
+    <PageHeader :title="`السلام عليكم، ${auth.person.gender === 'female' ? 'المعلمة' : 'المعلم'} ${auth.person.firstName}`" :subtitle="`${auth.active.school?.name} — ${d.classes.length} أقسام`" />
     <StatTiles :items="[
       { label: 'أقسامي', value: d.classes.length, icon: 'pi pi-th-large', to: { name: 'screen', params: { key: 'my-classes' } } },
       { label: 'تلاميذي', value: d.students, icon: 'pi pi-users', tone: 'purple' },

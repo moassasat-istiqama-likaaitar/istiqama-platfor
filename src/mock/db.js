@@ -112,7 +112,7 @@ export const persons = [
 export const assignments = [
   { id: 'a1', personId: 'p1', role: 'super_admin', schoolId: null },
   { id: 'a2', personId: 'p2', role: 'admin', schoolId: null },
-  { id: 'a3', personId: 'p3', role: 'editor', schoolId: null, subjects: ['الفقه', 'العقيدة'], levelIds: ['M1', 'M4', 'S2'] },
+  { id: 'a3', personId: 'p3', role: 'editor', schoolId: null, subjects: ['الفقه', 'التربية الإيمانية'], levelIds: ['M1', 'M4', 'S2'] },
   { id: 'a4', personId: 'p4', role: 'school_manager', schoolId: 's1' },
   { id: 'a5', personId: 'p4', role: 'parent', schoolId: null, childIds: ['p9'] },
   { id: 'a6', personId: 'p5', role: 'teacher', schoolId: 's1', classIds: ['c1', 'c3'], subjects: ['التربية الإيمانية', 'الفقه'] },
@@ -149,7 +149,7 @@ export const notifications = [
   { id: 'n14', personId: 'p1', assignmentId: 'a1', type: 'report', title: 'بلاغ جديد', body: 'عطل في تشغيل الفيديو', read: false, at: ago(35) },
   { id: 'n15', personId: 'p12', assignmentId: 'a15', type: 'report', title: 'بلاغ جديد', body: 'عطل في تشغيل الفيديو', read: false, at: ago(35) },
   { id: 'n16', personId: 'p8', assignmentId: 'a11', type: 'assignment', title: 'Quiz جديد', body: 'الفقه: أحكام الطهارة', read: false, at: ago(70) },
-  { id: 'n17', personId: 'p9', assignmentId: 'a12', type: 'message', title: 'رسالة من الأستاذ عمر', body: 'أحسنت في العرض الأخير', read: false, at: ago(400) },
+  { id: 'n17', personId: 'p9', assignmentId: 'a12', type: 'message', title: 'رسالة من المعلم عمر', body: 'أحسنت في العرض الأخير', read: false, at: ago(400) },
   { id: 'n18', personId: 'p6', assignmentId: 'a9', type: 'submission', title: 'تسليم جديد', body: 'مريم بلحاج سلّمت التعبير الكتابي', read: false, at: ago(55) },
   { id: 'n19', personId: 'p2', assignmentId: 'a2', type: 'report', title: 'مقترح جديد', body: 'إضافة وضع ليلي للمنصة', read: false, at: ago(500) }
 ]
@@ -161,7 +161,7 @@ export const conversations = [
     participants: [{ personId: 'p5', assignmentId: 'a6' }, { personId: 'p11', assignmentId: 'a14' }],
     subject: 'متابعة أنس',
     messages: [
-      { id: 'm1', from: 'p11', body: 'السلام عليكم أستاذ، كيف مستوى أنس في الدروس؟', at: ago(60 * 20) },
+      { id: 'm1', from: 'p11', body: 'السلام عليكم يا معلم، كيف مستوى أنس في الدروس؟', at: ago(60 * 20) },
       { id: 'm2', from: 'p5', body: 'وعليكم السلام، أنس مجتهد ما شاء الله، يحتاج فقط إلى مراجعة درس التاء المربوطة.', at: ago(60 * 19) },
       { id: 'm3', from: 'p11', body: 'جزاكم الله خيراً، سنراجعها معه في البيت.', at: ago(60 * 18) }
     ]
@@ -171,7 +171,7 @@ export const conversations = [
     participants: [{ personId: 'p5', assignmentId: 'a6' }, { personId: 'p9', assignmentId: 'a12' }],
     subject: 'العرض الأخير',
     messages: [
-      { id: 'm4', from: 'p9', body: 'أستاذ، هل يمكنني إعادة رفع العرض بعد التصحيح؟', at: ago(500) },
+      { id: 'm4', from: 'p9', body: 'يا معلم، هل يمكنني إعادة رفع العرض بعد التصحيح؟', at: ago(500) },
       { id: 'm5', from: 'p5', body: 'أحسنت في العرض الأخير، نعم يمكنك ذلك قبل الخميس.', at: ago(400) }
     ]
   },
@@ -179,13 +179,13 @@ export const conversations = [
     id: 'cv3',
     participants: [{ personId: 'p4', assignmentId: 'a4' }, { personId: 'p5', assignmentId: 'a6' }],
     subject: 'ملفات الفقه',
-    messages: [{ id: 'm6', from: 'p4', body: 'أستاذ عمر، رفعتَ ملفين للفقه؛ سأصادق عليهما اليوم إن شاء الله.', at: ago(90) }]
+    messages: [{ id: 'm6', from: 'p4', body: 'المعلم عمر، رفعتَ ملفين للفقه؛ سأصادق عليهما اليوم إن شاء الله.', at: ago(90) }]
   },
   {
     id: 'cv4',
     participants: [{ personId: 'p6', assignmentId: 'a9' }, { personId: 'p8', assignmentId: 'a11' }],
     subject: 'التعبير الكتابي',
-    messages: [{ id: 'm7', from: 'p8', body: 'أستاذة، أرسلت التعبير الكتابي، هل وصلك؟', at: ago(56) }]
+    messages: [{ id: 'm7', from: 'p8', body: 'يا معلمة، أرسلت التعبير الكتابي، هل وصلك؟', at: ago(56) }]
   }
 ]
 

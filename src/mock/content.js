@@ -191,3 +191,12 @@ Object.entries(CURRICULUM).forEach(([levelId, rows]) => {
 })
 
 export const AUTHORS_LIST = AUTHORS
+
+/** محتوى معاينة لما يرفعه المعلمون (في الإنتاج: الملف الفعلي) */
+export function makePayload(type, title, subjectName) {
+  const kind = SUBJECT_KINDS[subjectName] || { art: 'book' }
+  if (type === 'video') return { duration: 120, scenes: genericSlides(title, kind.art, subjectName) }
+  if (type === 'slides') return { slides: genericSlides(title, kind.art, subjectName) }
+  if (type === 'image') return { art: kind.art, caption: title }
+  return { pages: genericPdf(title, subjectName) }
+}

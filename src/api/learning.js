@@ -3,8 +3,12 @@ import { subjects, lessons, contents, activities } from '@/mock/content'
 import { progressOf, save, BADGES } from '@/mock/progress'
 import { persons, assignments, classes } from '@/mock/db'
 import { isLessonOpen, weekLessonFor } from './teaching'
+import { classActivityItems, classContentItems, findActivity } from './bank'
+import { gradeQuiz, gradeQuestion, publicQuestion } from '@/utils/quiz'
 
 const classIdOf = (personId) => assignments.find((x) => x.personId === personId && x.role === 'student')?.classId
+/** أنشطة قسم التلميذ (أنشطة المنصة + ما ربطه المعلم أو المحرر بآخر أجله) */
+const studentActs = (personId) => classActivityItems(classIdOf(personId)).filter((a) => a.due)
 
 const VISIBLE = ['approved', 'temp'] // ما يراه التلميذ: معتمد أو معتمد مؤقتاً
 
@@ -79,7 +83,7 @@ export function dashboard(personId, levelId) {
     const p = progressOf(personId)
     const subs = subjects.filter((s) => s.levelId === levelId).map((s) => subjectSummary(s, p, personId))
     const visible = new Set(subs.flatMap((sb) => visibleLessons(sb.id, personId).map((l) => l.id)))
-    const acts = activities.filter((a) => a.levelId === levelId && visible.has(a.lessonId)).map((a) => activityView(a, p))
+    const acts = studentActs(personId).filter((a) => !a.lessonId || visible.has(a.lessonId)).map((a) => activityView(a, p))
     const upcoming = acts.filter((a) => ['todo', 'late'].includes(a.state)).sort((a, b) => a.due.localeCompare(b.due))
     const continueSub = subs.find((s) => s.next && s.doneCount > 0) || subs.find((s) => s.next)
     // الدرس المقترح: «درس الأسبوع» الذي حدده المعلم لقسمه أولاً، ثم الدرس التالي حسب تقدّم التلميذ
@@ -140,7 +144,7 @@ export function subject(personId, subjectId) {
         state: p.done.includes(l.id) ? 'done' : !isLessonOpen(cid, l) ? 'locked' : l.id === firstOpen?.id ? 'current' : 'open',
         isNew: !p.viewed.includes(l.id),
         types: Array.from(new Set(lessonContents(l.id).map((c) => c.type))),
-        activities: activities.filter((a) => a.lessonId === l.id).length
+        activities: studentActs(personId).filter((a) => a.lessonId === l.id).length
       }))
     }
   })
@@ -164,8 +168,9 @@ export function lesson(personId, lessonId) {
       subject: { id: sub.id, name: sub.name, color: sub.color, accent: sub.accent, art: sub.art, icon: sub.icon },
       done: p.done.includes(l.id),
       note: p.notes?.[l.id] || '',
-      contents: lessonContents(l.id).map((c) => ({ ...c, myRating: p.ratings[c.id] || 0 })),
-      activities: activities.filter((a) => a.lessonId === l.id).map((a) => activityView(a, p)),
+      // محتوى الدرس في قسم التلميذ: الأساسي + ما ربطه المعلم/المحرر + ما رفعه معلمه واعتُمد
+      contents: classContentItems(classIdOf(personId)).filter((c) => c.lessonId === l.id).map((c) => ({ ...c, myRating: p.ratings[c.id] || 0 })),
+      activities: studentActs(personId).filter((a) => a.lessonId === l.id).map((a) => activityView(a, p)),
       comments: (p.comments[l.id] || []).concat(SAMPLE_COMMENTS(l)),
       prev: siblings[idx - 1] ? { id: siblings[idx - 1].id, title: siblings[idx - 1].title } : null,
       next: siblings[idx + 1] ? { id: siblings[idx + 1].id, title: siblings[idx + 1].title } : null
@@ -187,14 +192,14 @@ export function saveNote(personId, lessonId, text) {
 /** POST /api/student/activities/{id}/check  { index, answer } → صحيحة أم لا (وضع التغذية الفورية للصغار) */
 export function checkAnswer(id, index, answer) {
   return respond(() => {
-    const a = activities.find((x) => x.id === id)
-    const q = a.questions[index]
-    return { correct: q.answer === answer, answer: q.answer }
+    const q = findActivity(id).questions[index]
+    const r = gradeQuestion(q, answer)
+    return { correct: r.correct, answer: q.answer }
   }, 120)
 }
 
 const SAMPLE_COMMENTS = (l) => [
-  { id: `sc-${l.id}`, author: 'الأستاذ عمر', role: 'teacher', body: 'شاهدوا الفيديو ثم حاولوا حل الاختبار، وأنا هنا لأي سؤال.', at: new Date(Date.now() - 86400000 * 2).toISOString() }
+  { id: `sc-${l.id}`, author: 'المعلم عمر', role: 'teacher', body: 'شاهدوا الفيديو ثم حاولوا حل الاختبار، وأنا هنا لأي سؤال.', at: new Date(Date.now() - 86400000 * 2).toISOString() }
 ]
 
 /** POST /api/student/lessons/{id}/complete → يمنح نقاطاً وشارات */
@@ -245,7 +250,7 @@ export function myActivities(personId, levelId) {
   return respond(() => {
     const p = progressOf(personId)
     const visible = new Set(subjects.filter((x) => x.levelId === levelId).flatMap((sb) => visibleLessons(sb.id, personId).map((l) => l.id)))
-    return activities.filter((a) => a.levelId === levelId && visible.has(a.lessonId)).map((a) => activityView(a, p)).sort((a, b) => a.due.localeCompare(b.due))
+    return studentActs(personId).filter((a) => !a.lessonId || visible.has(a.lessonId)).map((a) => activityView(a, p)).sort((a, b) => a.due.localeCompare(b.due))
   })
 }
 
@@ -253,17 +258,17 @@ export function myActivities(personId, levelId) {
 export function activity(personId, id) {
   return respond(() => {
     const p = progressOf(personId)
-    const a = activities.find((x) => x.id === id)
+    const a = studentActs(personId).find((x) => x.id === id) || findActivity(id)
     if (!a) throw new ApiError('not_found', 'النشاط غير موجود')
     const sub = p.submissions[a.id]
     const view = activityView(a, p)
-    const graded = sub?.status === 'graded'
+    const done = !!sub
     return {
       ...view,
-      instructions: a.instructions, attachments: a.attachments,
-      // الإجابات الصحيحة لا تُرسل قبل التسليم
-      questions: a.questions?.map((q) => ({ q: q.q, options: q.options, ...(graded ? { answer: q.answer } : {}) })),
-      modelAnswer: graded ? a.modelAnswer : null,
+      instructions: a.instructions, attachments: a.attachments, minutes: a.minutes,
+      // الإجابات الصحيحة لا تُرسل قبل التسليم؛ بعده تُرسل كاملة للمراجعة
+      questions: a.questions?.map((q, i) => (done ? { ...q, type: q.type || (q.options?.length === 2 ? 'tf' : 'mcq') } : publicQuestion(q, i + personId.length))),
+      modelAnswer: sub?.status === 'graded' ? a.modelAnswer : null,
       submission: sub || null
     }
   })
@@ -273,17 +278,19 @@ export function activity(personId, id) {
 export function submitQuiz(personId, id, answers) {
   return respond(() => {
     const p = progressOf(personId)
-    const a = activities.find((x) => x.id === id)
-    const correct = answers.filter((ans, i) => ans === a.questions[i].answer).length
-    const score = Math.round((correct / a.questions.length) * a.maxScore)
-    p.submissions[id] = { status: 'graded', answers, score, at: new Date().toISOString() }
+    const a = findActivity(id)
+    // تصحيح آلي لكل الأنواع؛ الأسئلة المفتوحة تنتظر المعلم (الحالة: بانتظار التصحيح)
+    const g = gradeQuiz(a.questions, answers)
+    const correct = g.perQuestion.filter((r) => r.correct).length
+    const score = Math.round((g.auto / g.max) * a.maxScore * 10) / 10
+    p.submissions[id] = { status: g.needsManual ? 'submitted' : 'graded', answers, score, perQuestion: g.perQuestion, at: new Date().toISOString() }
     const gained = 10 + correct * 5
     award(p, gained)
     p.todayCount = (p.todayCount || 0) + 1
     if (score === a.maxScore && !p.badges.includes('quiz-ace')) p.badges.push('quiz-ace')
     const badges = checkBadges(p)
     save()
-    return { score, correct, total: a.questions.length, maxScore: a.maxScore, gained, stars: p.stars, badges }
+    return { score, correct, total: a.questions.length, maxScore: a.maxScore, gained, stars: p.stars, badges, pending: g.needsManual }
   }, 500)
 }
 
@@ -306,7 +313,7 @@ export function progressReport(personId, levelId) {
     const p = progressOf(personId)
     const subs = subjects.filter((s) => s.levelId === levelId).map((s) => {
       const sum = subjectSummary(s, p, personId)
-      const acts = activities.filter((a) => a.subjectId === s.id)
+      const acts = studentActs(personId).filter((a) => a.subjectId === s.id)
       const quizzes = acts.filter((a) => a.type === 'quiz')
       const graded = acts.filter((a) => p.submissions[a.id]?.status === 'graded')
       const avg = graded.length ? graded.reduce((n, a) => n + (p.submissions[a.id].score / a.maxScore) * 20, 0) / graded.length : null
@@ -341,7 +348,7 @@ function gradeHistory(p) {
   return Object.entries(p.submissions)
     .filter(([, x]) => x.status === 'graded')
     .map(([id, x]) => {
-      const a = activities.find((y) => y.id === id)
+      const a = findActivity(id)
       return a ? { id, title: a.title, at: x.at, score20: Math.round((x.score / a.maxScore) * 200) / 10, subjectId: a.subjectId } : null
     })
     .filter(Boolean)

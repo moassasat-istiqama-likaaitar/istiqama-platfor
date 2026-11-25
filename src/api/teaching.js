@@ -4,6 +4,8 @@ import { subjects, lessons, contents, activities } from '@/mock/content'
 import { progressOf, save as saveProgress } from '@/mock/progress'
 import { collection } from '@/mock/collections'
 import { personOf, fullName, studentSnapshot, classInfo } from './people'
+import { uploads, teacherActs, findActivity, classActivityItems, normActivity, linkSync } from './bank'
+import { gradeQuiz, isManual } from '@/utils/quiz'
 
 /**
  * فضاء المعلم: خطة القسم (فتح الدروس + درس الأسبوع)، التسليمات والتصحيح، المحتوى والواجبات والاختبارات.
@@ -11,8 +13,6 @@ import { personOf, fullName, studentSnapshot, classInfo } from './people'
 
 const plans = collection('classPlans', [])
 const grades = collection('grades', [])
-const uploads = collection('uploads', () => SEED_UPLOADS())
-const myActs = collection('teacherActivities', [])
 const offline = collection('offlineTests', [])
 
 const classStudentIds = (classId) => assignments.filter((a) => a.role === 'student' && a.classId === classId).map((a) => a.personId)
@@ -84,16 +84,17 @@ export function teacherHome(assignment) {
       .filter((x) => x.s.progress < 30 || x.s.late >= 3)
       .slice(0, 6)
       .map((x) => ({ id: x.sid, name: fullName(personOf(x.sid)), className: classes.find((c) => c.id === x.cid)?.name, progress: x.s.progress, late: x.s.late }))
-    const mine = uploads.all().filter((u) => u.authorId === assignment.personId)
+    const mine = uploads().all().filter((u) => u.authorId === assignment.personId)
+    const upcoming = (assignment.classIds || []).flatMap((cid) => classActivityItems(cid).map((a) => ({ ...a, className: classes.find((c) => c.id === cid)?.name })))
+      .filter((a) => a.due && new Date(a.due) > new Date()).sort((a, b) => a.due.localeCompare(b.due)).slice(0, 5)
     return {
       classes: cls,
       students: cls.reduce((n, c) => n + c.students, 0),
       pendingCount: pending.length,
       pending: pending.slice(0, 5),
       atRisk,
-      uploads: { total: mine.length, review: mine.filter((u) => u.status === 'review').length },
-      upcoming: activities.filter((a) => cls.some((c) => c.levelId === a.levelId) && new Date(a.due) > new Date()).sort((a, b) => a.due.localeCompare(b.due)).slice(0, 5)
-        .map((a) => ({ id: a.id, title: a.title, type: a.type, due: a.due, className: cls.find((c) => c.levelId === a.levelId)?.name }))
+      uploads: { total: mine.length, review: mine.filter((u) => ['review', 'temp'].includes(u.status)).length, drafts: mine.filter((u) => u.status === 'draft').length },
+      upcoming: upcoming.map((a) => ({ id: a.id, title: a.title, type: a.type, due: a.due, className: a.className }))
     }
   })
 }
@@ -106,27 +107,33 @@ function hashN(s) {
   return h
 }
 
-/** كل تسليمات أقسام المعلم: الحقيقية (من تقدّم التلاميذ) + المولَّدة */
+/** كل تسليمات الأقسام: الحقيقية (من تقدّم التلاميذ) + المولَّدة لأنشطة المنصة */
 function collectSubmissions(classIds) {
   const out = []
   classIds.forEach((cid) => {
     const c = classes.find((x) => x.id === cid)
-    const acts = activities.filter((a) => a.levelId === c.levelId && new Date(a.due) < new Date(Date.now() + 6 * 864e5)).slice(0, 8)
+    if (!c) return
+    const acts = classActivityItems(cid).filter((a) => !a.due || new Date(a.due) < new Date(Date.now() + 6 * 864e5))
+    const platform = acts.filter((a) => a.origin === 'platform').slice(0, 8)
+    const linked = acts.filter((a) => a.origin === 'teacher')
     classStudentIds(cid).forEach((sid) => {
       const p = personOf(sid)
-      acts.forEach((a) => {
+      ;[...linked, ...platform].forEach((a) => {
         const key = `${a.id}:${sid}`
         const g = grades.find(key)
-        let status, score = null, at = null, text = '', files = [], note = ''
+        let status, score = null, at = null, text = '', files = [], note = '', answers = null, perQuestion = null
         if (!p.generated) {
           const sub = progressOf(sid).submissions[a.id]
           if (!sub) return
           ;({ status, text = '', files = [], note = '' } = sub)
           score = sub.score ?? null
           at = sub.at
+          answers = sub.answers || null
+          perQuestion = sub.perQuestion || null
         } else {
+          if (a.origin === 'teacher') return // أنشطة المعلمين الجديدة: لا تسليمات مولَّدة
           const h = hashN(key) % 10
-          if (h < 2) return // لم يسلّم بعد
+          if (h < 2) return
           status = g ? 'graded' : a.type === 'quiz' || h > 6 ? 'graded' : 'submitted'
           score = g ? g.score : status === 'graded' ? Math.round(a.maxScore * (0.45 + (h % 6) / 10)) : null
           at = new Date(Date.now() - (h + 1) * 36e5 * 7).toISOString()
@@ -137,7 +144,7 @@ function collectSubmissions(classIds) {
         out.push({
           id: key, activityId: a.id, studentId: sid, student: fullName(p), classId: cid, className: c.name,
           title: a.title, type: a.type, subjectName: subjects.find((s) => s.id === a.subjectId)?.name, maxScore: a.maxScore,
-          status, score, at, text, files, note, late: at && new Date(at) > new Date(a.due)
+          status, score, at, text, files, note, answers, perQuestion, questions: a.questions || [], late: a.due && at && new Date(at) > new Date(a.due)
         })
       })
     })
@@ -150,16 +157,19 @@ export function submissions(classIds) {
   return respond(() => collectSubmissions(classIds))
 }
 
-/** POST /api/teacher/submissions/:id/grade { score, note } — يظهر للتلميذ ووليه */
-export function grade(id, score, note) {
+/** POST /api/teacher/submissions/:id/grade { score, note, manualScores } — يظهر للتلميذ ووليه */
+export function grade(id, score, note, manualScores = null) {
   return respond(() => {
     const [activityId, studentId] = id.split(':')
-    const a = activities.find((x) => x.id === activityId)
+    const a = findActivity(activityId)
     if (score < 0 || score > a.maxScore) throw new ApiError('invalid', `العلامة بين 0 و${a.maxScore}`)
     const p = personOf(studentId)
     if (!p.generated) {
       const pr = progressOf(studentId)
-      pr.submissions[activityId] = { ...pr.submissions[activityId], status: 'graded', score, note }
+      const sub = pr.submissions[activityId] || {}
+      let perQuestion = sub.perQuestion
+      if (manualScores && perQuestion) perQuestion = perQuestion.map((r, i) => (manualScores[i] !== undefined ? { ...r, score: manualScores[i], manual: false, correct: manualScores[i] >= r.max, gradedByTeacher: true } : r))
+      pr.submissions[activityId] = { ...sub, status: 'graded', score, note, perQuestion }
       saveProgress()
     } else if (grades.find(id)) grades.update(id, { score, note })
     else grades.insert({ id, score, note })
@@ -167,61 +177,56 @@ export function grade(id, score, note) {
   }, 350)
 }
 
-/* ——— المحتوى ——— */
-
-function SEED_UPLOADS() {
-  const now = Date.now()
-  return [
-    { id: 'up1', authorId: 'p5', authorName: 'عمر باعمر', title: 'خريطة ذهنية: البيع في الإسلام', type: 'image', levelId: 'S2', subjectName: 'الفقه', classIds: ['c3'], target: 'library', status: 'review', note: '', at: new Date(now - 2 * 864e5).toISOString() },
-    { id: 'up2', authorId: 'p5', authorName: 'عمر باعمر', title: 'ملخص أحكام الطهارة', type: 'pdf', levelId: 'M4', subjectName: 'الفقه', classIds: ['c2'], target: 'class', status: 'approved', note: '', at: new Date(now - 6 * 864e5).toISOString() },
-    { id: 'up3', authorId: 'p6', authorName: 'عائشة الشيخ', title: 'بطاقات التاء المربوطة والمفتوحة', type: 'slides', levelId: 'P1', subjectName: 'اللغة العربية', classIds: ['c4'], target: 'library', status: 'review', note: '', at: new Date(now - 864e5).toISOString() },
-    { id: 'up4', authorId: 'p6', authorName: 'عائشة الشيخ', title: 'فيديو: قراءة جماعية', type: 'video', levelId: 'M1', subjectName: 'اللغة العربية', classIds: ['c5'], target: 'class', status: 'rejected', note: 'جودة الصوت ضعيفة، يرجى إعادة التسجيل.', at: new Date(now - 9 * 864e5).toISOString() },
-    { id: 'up6', authorId: 'p5', authorName: 'عمر باعمر', title: 'بطاقات مراجعة: أحكام البيع', type: 'slides', levelId: 'S2', subjectName: 'الفقه', classIds: ['c3'], target: 'class', status: 'review', note: '', at: new Date(now - 5 * 36e5).toISOString() },
-    { id: 'up5', authorId: 'g1003', authorName: 'معلم مدرسة النور', title: 'تمارين تطبيقية في التجويد', type: 'pdf', levelId: 'M1', subjectName: 'أحكام التجويد', classIds: [], target: 'library', status: 'review', note: '', at: new Date(now - 3 * 864e5).toISOString() }
-  ]
-}
-
-/** GET /api/teacher/class-library?classIds= → المحتوى المتاح لأقسام المعلم (معتمد + ما رفعه) */
-export function classLibrary(classIds) {
-  return respond(() => {
-    const lvls = [...new Set(classIds.map(levelOfClass))]
-    const central = contents.filter((c) => lvls.includes(c.levelId) && ['approved', 'temp'].includes(c.status)).slice(0, 60).map((c) => ({
-      id: c.id, title: c.title, type: c.type, status: c.status, source: 'central', lessonTitle: lessons.find((l) => l.id === c.lessonId)?.title,
-      subjectName: subjects.find((s) => s.id === c.subjectId)?.name, levelName: levels.find((l) => l.id === c.levelId)?.name, views: c.views
-    }))
-    const own = uploads.all().filter((u) => u.classIds.some((id) => classIds.includes(id)) && u.status === 'approved').map((u) => ({ ...u, source: 'mine', levelName: levels.find((l) => l.id === u.levelId)?.name, views: 0 }))
-    return [...own, ...central]
-  })
-}
+/* ——— المحتوى: كل ما يرفعه المعلم هدفه المكتبة المركزية ——— */
 
 /** GET /api/teacher/uploads?authorId= */
 export function myUploads(authorId) {
-  return respond(() => uploads.all().filter((u) => u.authorId === authorId).map((u) => ({ ...u, levelName: levels.find((l) => l.id === u.levelId)?.name })))
+  return respond(() => uploads().all().filter((u) => u.authorId === authorId).map((u) => ({ ...u, levelName: levels.find((l) => l.id === u.levelId)?.name })))
 }
 
-/** POST /api/teacher/uploads — target: class (يظهر لأقسامي بعد مصادقة المدير) | library (يُقترح للمكتبة المركزية ← المحرر) */
-export function createUpload(author, data) {
-  return respond(() => uploads.insert({ id: newId('up'), authorId: author.id, authorName: fullName(author), status: 'review', note: '', at: new Date().toISOString(), ...data }), 500)
+/** POST /api/teacher/uploads — submit=false: مسودة عند المعلم؛ submit=true: قيد المراجعة */
+export function createUpload(author, data, submit = true) {
+  return respond(() => {
+    if (data.id && uploads().find(data.id)) return uploads().update(data.id, { ...data, status: submit ? 'review' : 'draft', at: new Date().toISOString() })
+    return uploads().insert({ id: newId('up'), authorId: author.id, authorName: fullName(author), note: '', classification: null, essential: false, ...data, status: submit ? 'review' : 'draft', at: new Date().toISOString() })
+  }, 450)
+}
+/** POST /api/teacher/uploads/:id/submit — إرسال مسودة (أو بعد طلب تعديل) للمراجعة */
+export function submitUpload(id) {
+  return respond(() => uploads().update(id, { status: 'review', at: new Date().toISOString() }))
 }
 export function removeUpload(id) {
-  return respond(() => uploads.remove(id))
+  return respond(() => uploads().remove(id))
 }
 
-/** POST /api/teacher/activities — واجب أو اختبار ينشئه المعلم لأقسامه */
-export function createActivity(author, data) {
-  return respond(() => myActs.insert({ id: newId('ta'), authorId: author.id, authorName: fullName(author), at: new Date().toISOString(), status: 'published', ...data }), 400)
+/* ——— الأنشطة (واجبات واختبارات) ——— */
+
+/**
+ * POST /api/teacher/activities — يُنشر لأقسام المعلم فوراً (targets) بآخر أجل،
+ * ويُرسل للمكتبة المركزية للمراجعة (submit) أو يبقى مسودة.
+ */
+export function createActivity(author, data, { targets = [], due = null, submit = true, byRole = 'teacher' } = {}) {
+  return respond(() => {
+    const row = teacherActs().insert({ id: newId('ta'), authorId: author.id, authorName: fullName(author), at: new Date().toISOString(), note: '', ...data, status: byRole === 'editor' ? 'approved' : submit ? 'review' : 'draft' })
+    let reached = 0
+    if (targets.length) reached = linkSync(author, byRole, { itemKind: 'activity', itemId: row.id, targets, lessonId: data.lessonId || null, due }).classes
+    return { id: row.id, reached }
+  }, 450)
 }
 export function listMyActivities(authorId) {
-  return respond(() => myActs.all().filter((a) => a.authorId === authorId))
+  return respond(() => teacherActs().all().filter((a) => a.authorId === authorId))
+}
+export function submitActivity(id) {
+  return respond(() => teacherActs().update(id, { status: 'review' }))
 }
 
-/** بنك الأسئلة: أسئلة اختبارات المنصة لمستوى ومادة (لبناء اختبار أو ورقة حضورية) */
+/** بنك الأسئلة: أسئلة اختبارات المنصة والمعتمدة من المعلمين لمستوى ومادة */
 export function questionBank(levelId, subjectId) {
-  return respond(() =>
-    activities
-      .filter((a) => a.type === 'quiz' && a.levelId === levelId && (!subjectId || a.subjectId === subjectId))
-      .flatMap((a) => a.questions.map((q, i) => ({ id: `${a.id}#${i}`, ...q, lessonTitle: lessons.find((l) => l.id === a.lessonId)?.title })))
-  )
+  return respond(() => {
+    const plat = activities.filter((a) => a.type === 'quiz' && a.levelId === levelId && (!subjectId || a.subjectId === subjectId))
+    const mine = teacherActs().all().filter((a) => a.kind === 'quiz' && a.status === 'approved').map(normActivity).filter((a) => a.levelId === levelId && (!subjectId || a.subjectId === subjectId))
+    return [...mine, ...plat].flatMap((a) => (a.questions || []).map((q, i) => ({ id: `${a.id}#${i}`, ...q, lessonTitle: lessons.find((l) => l.id === a.lessonId)?.title || a.title })))
+  })
 }
 
 export function listOfflineTests(authorId) {
@@ -234,10 +239,18 @@ export function getOfflineTest(id) {
   return respond(() => offline.find(id))
 }
 
-/* ——— للمحرر ومدير المدرسة: مراجعة ما رفعه المعلمون ——— */
-export function uploadsQueue({ target, schoolTeacherIds } = {}) {
-  return respond(() => uploads.all().filter((u) => (!target || u.target === target) && (!schoolTeacherIds || schoolTeacherIds.includes(u.authorId))).map((u) => ({ ...u, levelName: levels.find((l) => l.id === u.levelId)?.name })))
+/* ——— مدير المدرسة: يصادق فقط (← معتمد مؤقتاً لأقسام المعلم)، ولا يرفض ولا يطلب تعديلاً ——— */
+export function managerQueue(schoolTeacherIds) {
+  return respond(() => [
+    ...uploads().all().filter((u) => schoolTeacherIds.includes(u.authorId) && u.status !== 'draft').map((u) => ({ ...u, kind: 'upload', levelName: levels.find((l) => l.id === u.levelId)?.name })),
+    ...teacherActs().all().filter((a) => schoolTeacherIds.includes(a.authorId) && a.status !== 'draft').map((a) => ({ ...normActivity(a), kind: 'activity', type: a.kind === 'quiz' ? 'quiz' : 'homework', subjectName: subjects.find((s) => s.id === a.subjectId)?.name, levelName: levels.find((l) => l.id === a.levelId)?.name, classIds: [] }))
+  ].sort((a, b) => (b.at || '').localeCompare(a.at || '')))
 }
-export function decideUpload(id, status, note = '') {
-  return respond(() => uploads.update(id, { status, note, decidedAt: new Date().toISOString() }))
+export function managerApprove(kind, id) {
+  return respond(() => {
+    const col = kind === 'upload' ? uploads() : teacherActs()
+    const r = col.find(id)
+    if (r.status !== 'review') throw new ApiError('invalid', 'المصادقة للعناصر قيد المراجعة فقط')
+    return col.update(id, { status: 'temp', managerAt: new Date().toISOString() })
+  }, 300)
 }

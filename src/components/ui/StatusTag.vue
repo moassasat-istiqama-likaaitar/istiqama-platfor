@@ -12,7 +12,7 @@ const map = {
   suspended: { label: 'موقوف', tone: 'red', icon: 'pi pi-ban' },
   archived: { label: 'مؤرشف', tone: 'gray', icon: 'pi pi-box' },
   approved: { label: 'معتمد', tone: 'green', icon: 'pi pi-check' },
-  temp: { label: 'مؤقت', tone: 'blue', icon: 'pi pi-hourglass' },
+  temp: { label: 'معتمد مؤقتاً', tone: 'blue', icon: 'pi pi-hourglass' },
   review: { label: 'قيد المراجعة', tone: 'amber', icon: 'pi pi-clock' },
   pending_review: { label: 'قيد المراجعة', tone: 'amber', icon: 'pi pi-clock' },
   draft: { label: 'مسودة', tone: 'gray', icon: 'pi pi-pencil' },
