@@ -1,0 +1,81 @@
+/* الأساس العام للمنصة */
+:root {
+  font-family: 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: 'Cairo', system-ui, sans-serif;
+  background: var(--p-surface-50);
+  color: var(--p-text-color);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* مكونات PrimeVue ترث نفس الخط */
+.p-component, .p-inputtext, .p-button, .p-select-label, .p-menu, .p-toast, .p-dialog, .p-tab {
+  font-family: 'Cairo', system-ui, sans-serif !important;
+}
+
+/* الأيقونات الاتجاهية تنقلب في الواجهات من اليسار لليمين */
+[dir='ltr'] .flip, [dir='ltr'] .flip::before { display: inline-block; transform: scaleX(-1); }
+
+/* لوحة عامة */
+.panel {
+  background: var(--p-content-background);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 18px;
+  padding: 1.25rem;
+}
+
+/* أزرار التصفية */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--p-content-border-color);
+  background: var(--p-content-background);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+  cursor: pointer;
+}
+.pill:hover { border-color: var(--p-primary-color); }
+.pill.is-active { background: var(--p-primary-color); border-color: var(--p-primary-color); color: var(--p-primary-contrast-color); }
+.pill__count {
+  font-size: 0.7rem;
+  background: rgba(0, 0, 0, 0.08);
+  padding: 0 0.4rem;
+  border-radius: 999px;
+}
+.pill.is-active .pill__count { background: rgba(255, 255, 255, 0.25); }
+
+/* ألوان أيقونات الإشعارات */
+[data-hue] { background: var(--hue-bg); color: var(--hue-fg); }
+[data-hue='blue'] { --hue-bg: #dbeafe; --hue-fg: #1d4ed8; }
+[data-hue='teal'] { --hue-bg: #ccfbf1; --hue-fg: #0f766e; }
+[data-hue='orange'] { --hue-bg: #ffedd5; --hue-fg: #c2410c; }
+[data-hue='green'] { --hue-bg: #dcfce7; --hue-fg: #15803d; }
+[data-hue='purple'] { --hue-bg: #ede9fe; --hue-fg: #6d28d9; }
+[data-hue='red'] { --hue-bg: #fee2e2; --hue-fg: #b91c1c; }
+
+/* ثيم الطور الابتدائي: زوايا أكثر استدارة وخط أكبر قليلاً */
+[data-theme='primary'] body { font-size: 16px; }
+[data-theme='primary'] .panel { border-radius: 24px; }
+
+a { color: inherit; }
+
+/* شريط التمرير */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--p-surface-300); border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
