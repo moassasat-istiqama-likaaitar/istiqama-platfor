@@ -1,4 +1,5 @@
 <template>
+  <!-- ST01 (المستكشفون): رئيسية المستكشفين — الرابعة والخامسة ابتدائي والأولى متوسط -->
   <div v-if="d" class="jh">
     <SchoolBanner :school="brand.school" :branding="brand.branding" variant="juniors" class="jh__banner" />
     <div class="jh__grid">

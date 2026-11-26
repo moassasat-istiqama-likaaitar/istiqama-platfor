@@ -28,6 +28,36 @@
         </div>
         <div v-if="canEdit" class="act"><Button type="submit" label="حفظ ونشر" icon="pi pi-check" :loading="busy" /></div>
       </form>
+      <!-- التأثيرات البصرية لكل ثيم -->
+      <section class="panel fx full2">
+        <h3>التأثيرات البصرية</h3>
+        <p class="muted small">لكل ثيم من الثيمات الأربعة تأثيراته، دون تغيير ألوانه. الهدف: منصة حيوية وأنيقة ومريحة للعين.</p>
+        <div class="fx__tabs">
+          <button v-for="th in FX_THEMES" :key="th.key" type="button" class="pill" :class="{ 'is-active': fxTheme === th.key }" @click="fxTheme = th.key"><i :class="th.icon" /> {{ th.label }}</button>
+        </div>
+        <div class="fx__body">
+          <div class="fx__ctl">
+            <template v-for="(o, k) in FX_OPTIONS" :key="k">
+              <label v-if="o.type === 'toggle'" class="fx__row"><ToggleSwitch v-model="f.effects[fxTheme][k]" :disabled="!canEdit" /><div><b>{{ o.label }}</b><small class="muted">{{ o.hint }}</small></div></label>
+              <div v-else class="fx__row col"><b>{{ o.label }}</b>
+                <div class="seg"><button v-for="op in o.options" :key="op.value" type="button" :class="{ on: f.effects[fxTheme][k] === op.value }" :disabled="!canEdit" @click="f.effects[fxTheme][k] = op.value">{{ op.label }}</button></div>
+                <small v-if="o.hint" class="muted">{{ o.hint }}</small>
+              </div>
+            </template>
+            <div class="fx__act">
+              <Button v-if="canEdit" label="القيم الافتراضية لهذا الثيم" icon="pi pi-undo" text size="small" @click="f.effects[fxTheme] = { ...DEFAULT_EFFECTS[fxTheme] }" />
+              <Button v-if="canEdit" label="حفظ ونشر التأثيرات" icon="pi pi-check" size="small" :loading="busy" @click="save" />
+            </div>
+          </div>
+          <div class="fx-preview" v-bind="fxAttrs(f.effects[fxTheme])" :data-theme="fxTheme">
+            <div :key="JSON.stringify(f.effects[fxTheme])" class="fx-stage">
+              <div class="fx-card"><i class="pi pi-book" /><b>درس اليوم</b><small>الطهارة وأحكامها</small></div>
+              <div class="fx-card"><i class="pi pi-star" /><b>120 نقطة</b><small>المستوى 2</small></div>
+              <div class="fx-card wide"><i class="pi pi-check-circle" /><b>واجب: أحكام البيع</b><small>آخر أجل غداً</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
       <aside class="panel">
         <h3>كيف يظهر</h3>
         <div class="pv-bar"><BrandPair :school="brand.school" :branding="brand.branding" :size="34" names /></div>
@@ -39,6 +69,7 @@
 </template>
 
 <script setup>
+import { isTop } from '@/config/roles'
 import { ref, computed, onMounted } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -52,6 +83,9 @@ import { useBrandStore } from '@/stores/brand'
 import { usePlatformStore } from '@/stores/platform'
 import { getPlatform, savePlatform } from '@/api/admin'
 import { readImage } from '@/utils/image'
+import ToggleSwitch from 'primevue/toggleswitch'
+import { FX_THEMES, FX_OPTIONS, DEFAULT_EFFECTS, fxAttrs } from '@/config/effects'
+const fxTheme = ref('staff')
 
 const auth = useAuthStore()
 const brand = useBrandStore()
@@ -60,7 +94,7 @@ const toast = useToast()
 const f = ref(null)
 const busy = ref(false)
 const saved = ref(null)
-const canEdit = computed(() => auth.role === 'super_admin')
+const canEdit = computed(() => isTop(auth.role))
 onMounted(async () => {
   saved.value = await getPlatform()
   f.value = { ...saved.value }
@@ -91,6 +125,26 @@ async function save() {
 </script>
 
 <style scoped>
+.full2 { grid-column: 1 / -1; order: 3; }
+.small { font-size: 0.82rem; }
+.fx__tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.6rem 0 1rem; }
+.fx__body { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.2rem; align-items: start; }
+.fx__ctl { display: flex; flex-direction: column; gap: 0.9rem; }
+.fx__row { display: flex; gap: 0.6rem; align-items: center; }
+.fx__row.col { flex-direction: column; align-items: flex-start; gap: 0.35rem; }
+.fx__row small { display: block; font-size: 0.76rem; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 0.35rem 0.8rem; font: inherit; font-size: 0.84rem; cursor: pointer; color: inherit; }
+.seg button + button { border-inline-start: 1px solid var(--line); }
+.seg button.on { background: var(--brand); color: #fff; }
+.fx__act { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.fx-preview { border-radius: 18px; padding: 1.4rem; min-height: 230px; border: 1px solid var(--line); overflow: hidden; }
+.fx-stage { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+.fx-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 1rem; display: flex; flex-direction: column; gap: 0.2rem; }
+.fx-card.wide { grid-column: 1 / -1; }
+.fx-card i { color: var(--brand); font-size: 1.2rem; }
+.fx-card small { color: var(--p-text-muted-color); font-size: 0.8rem; }
+@media (max-width: 900px) { .fx__body { grid-template-columns: 1fr; } }
 .mb { margin-bottom: 1rem; }
 .cz { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1rem; align-items: start; }
 .cz__f h3, aside h3 { margin: 0 0 0.75rem; font-size: 1rem; }

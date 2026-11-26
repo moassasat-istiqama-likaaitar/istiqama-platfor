@@ -1,4 +1,5 @@
 <template>
+  <!-- شاشة مؤقتة لما لم يُبنَ بعد -->
   <div>
     <PageHeader :title="title" />
     <div class="panel">

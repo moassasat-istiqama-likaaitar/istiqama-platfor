@@ -1,4 +1,5 @@
 <template>
+  <!-- AU01: تسجيل الدخول — صفحة المؤسسة العامة أو صفحة كل مدرسة (#/s/اسم-المدرسة) والحسابات التجريبية -->
   <div class="login">
     <!-- اللوحة الترحيبية: حيادية لكل الفئات -->
     <section class="brand" :class="{ 'brand--school': sb }" :style="sb ? { backgroundImage: coverCss(sb.branding), '--sp': sb.branding.primary } : null">

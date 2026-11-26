@@ -1,4 +1,5 @@
 <template>
+  <!-- ST01: رئيسية التلميذ — توجّه إلى ثيم الطور (البراعم / المستكشفون / الشباب) -->
   <KidsHome v-if="theme === 'kids'" />
   <JuniorsHome v-else-if="theme === 'juniors'" />
   <TeensHome v-else />

@@ -1,4 +1,5 @@
 <template>
+  <!-- CM03: البلاغات والمقترحات -->
   <div>
     <PageHeader :title="t('feedback.title')" />
 

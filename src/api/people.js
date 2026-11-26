@@ -1,3 +1,4 @@
+import { canGrantRole, canRemoveHolder } from '@/config/roles'
 import { respond, ApiError, newId } from './client'
 import { persons, assignments, classes, schools, levels } from '@/mock/db'
 import { subjects, lessons, activities } from '@/mock/content'
@@ -129,8 +130,9 @@ export function getUser(id) {
 }
 
 /** POST /api/users { person, assignment } — شخص جديد بصفته الأولى */
-export function createUser(data) {
+export function createUser(data, actorRole = null) {
   return respond(() => {
+    if (actorRole && data.role && !canGrantRole(actorRole, data.role)) throw new ApiError('forbidden', 'إضافة مشرف عام أو مدير عام من صلاحية المدير العام وحده')
     const login = (data.username || '').trim()
     if (login && persons.some((p) => p.username === login)) throw new ApiError('duplicate', 'اسم المستخدم مستعمل')
     const p = { id: newId('p'), username: login, email: data.email || '', password: '1234', firstName: data.firstName, lastName: data.lastName, gender: data.gender || 'male', phone: data.phone || '', birthDate: data.birthDate || '', status: data.status || 'active', generated: !login }
@@ -159,21 +161,26 @@ export function updateUser(id, patch) {
 }
 
 /** POST /api/users/:id/assignments — إضافة صفة لشخص موجود (مثلاً معلم يصبح ولياً) */
-export function addAssignment(personId, data) {
-  return respond(() => addAssignmentSync(personId, data))
+export function addAssignment(personId, data, actorRole = null) {
+  return respond(() => {
+    if (actorRole && !canGrantRole(actorRole, data.role)) throw new ApiError('forbidden', 'إضافة مشرف عام أو مدير عام من صلاحية المدير العام وحده')
+    return addAssignmentSync(personId, data)
+  })
 }
 /** DELETE /api/assignments/:id */
-export function removeAssignment(id) {
+export function removeAssignment(id, actorRole = null) {
   return respond(() => {
     const i = assignments.findIndex((a) => a.id === id)
+    if (actorRole && i >= 0 && !canRemoveHolder(actorRole, [assignments[i].role])) throw new ApiError('forbidden', 'نزع صفة المدير العام من صلاحية المدير العام وحده')
     if (i >= 0) assignments.splice(i, 1)
     return true
   })
 }
 
 /** POST /api/users/status { ids, status } — تفعيل/إيقاف جماعي */
-export function setStatus(ids, status) {
+export function setStatus(ids, status, actorRole = null) {
   return respond(() => {
+    if (actorRole && status !== 'active' && ids.some((id) => !canRemoveHolder(actorRole, assignments.filter((a) => a.personId === id).map((a) => a.role)))) throw new ApiError('forbidden', 'تعطيل حساب المدير العام من صلاحية المدير العام وحده')
     ids.forEach((id) => {
       const p = personOf(id)
       if (p) p.status = status

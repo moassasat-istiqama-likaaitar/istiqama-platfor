@@ -1,4 +1,5 @@
 <template>
+  <!-- الهيكل العام للطاقم — الشريط الجانبي (القائمة) والشريط العلوي (الصفة، الإشعارات، الرسائل، اللغة) -->
   <StudentShell v-if="auth.role === 'student'">
     <RouterView v-slot="{ Component, route }">
       <Transition name="fade" mode="out-in">

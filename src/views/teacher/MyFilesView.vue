@@ -25,7 +25,7 @@
         <RouterLink v-if="tab === 'files'" to="/app/upload-content" class="p-button p-component p-button-sm"><i class="pi pi-upload" />&nbsp;رفع محتوى</RouterLink>
         <template v-else>
           <RouterLink to="/app/new-homework" class="p-button p-component p-button-sm p-button-outlined">واجب جديد</RouterLink>
-          <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm">اختبار جديد</RouterLink>
+          <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm">تقييم جديد</RouterLink>
         </template>
       </template>
     </RecordTable>

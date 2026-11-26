@@ -1,4 +1,5 @@
 <template>
+  <!-- ST07/ST08: الواجب / الاختبار — الإجابة بالأنواع الثمانية، والنتيجة وتفصيل كل سؤال -->
   <div v-if="a" class="av" :class="`av--${theme}`" :style="{ '--c': a.subject?.color || 'var(--brand)' }">
     <RouterLink to="/app/my-assignments" class="back"><i class="pi pi-arrow-right flip" /> {{ t('student.backToAssignments') }}</RouterLink>
 

@@ -1,4 +1,5 @@
 <template>
+  <!-- ST03: المادة — دروسها المفتوحة والمقفلة -->
   <template v-if="s">
     <KidsSubject v-if="theme === 'kids'" :s="s" />
     <JuniorsSubject v-else-if="theme === 'juniors'" :s="s" />

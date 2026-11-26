@@ -1,4 +1,5 @@
 <template>
+  <!-- ST04: الدرس — وضع التركيز (بلا إشعارات ولا مكافآت) -->
   <template v-if="l">
     <KidsLesson v-if="theme === 'kids'" :key="l.id" :l="l" />
     <JuniorsLesson v-else-if="theme === 'juniors'" :key="l.id" :l="l" :initial="initial" />

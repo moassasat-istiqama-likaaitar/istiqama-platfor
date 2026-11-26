@@ -1,4 +1,5 @@
 <template>
+  <!-- ST01 (الشباب): رئيسية الشباب — من الثانية متوسط -->
   <div v-if="d" class="th">
     <SchoolBanner :school="brand.school" :branding="brand.branding" variant="teens" />
     <header class="th__head">

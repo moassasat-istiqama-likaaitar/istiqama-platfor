@@ -1,4 +1,5 @@
 <template>
+  <!-- AD19: طلبات هوية المدارس — اعتماد أو رفض -->
   <div>
     <PageHeader :title="t('menu.branding-requests')" subtitle="طلبات مديري المدارس لتعديل الشعار والألوان والغلاف. لا يظهر أي تعديل للتلاميذ قبل الاعتماد." />
 
@@ -64,6 +65,7 @@
 </template>
 
 <script setup>
+import { isTop } from '@/config/roles'
 import { ref, computed, onMounted, h } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'primevue/usetoast'
@@ -99,7 +101,7 @@ const ColorChips = (props) => {
 }
 ColorChips.props = ['b']
 
-const canDecide = computed(() => auth.role === 'super_admin')
+const canDecide = computed(() => isTop(auth.role))
 const all = ref([])
 const tab = ref('pending')
 const busy = ref(null)

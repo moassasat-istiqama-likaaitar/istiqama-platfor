@@ -10,7 +10,7 @@
       { key: 'levelName', label: 'المستوى', options: levelOpts },
       { key: 'subjectName', label: 'المادة', options: cat.subjectNames }
     ]" unit="نشاط">
-      <template #toolbar><RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;اختبار جديد</RouterLink></template>
+      <template #toolbar><RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;تقييم جديد</RouterLink></template>
       <template #actions="{ row }"><Button icon="pi pi-eye" text rounded size="small" @click="cur = row" /></template>
     </RecordTable>
     <Dialog :visible="!!cur" modal :header="cur?.title" :style="{ width: 'min(640px, 95vw)' }" @update:visible="cur = null">

@@ -1,0 +1,66 @@
+/* ════════ التأثيرات البصرية (تُضبط من تخصيص المنصة لكل ثيم) ════════
+   تُطبَّق على <html data-fx-*> وعلى صندوق المعاينة .fx-preview بالخصائص نفسها */
+
+/* الأسطح التي تتأثر */
+:root { --fx-surfaces: 1; }
+
+/* ——— الخلفية ——— */
+html[data-fx-bg='gradient'] body,
+.fx-preview[data-fx-bg='gradient'] {
+  background:
+    radial-gradient(1200px 600px at 100% -10%, color-mix(in srgb, var(--p-primary-300, #8ea2ff) 28%, transparent), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, color-mix(in srgb, var(--p-primary-200, #c7d2ff) 30%, transparent), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+html[data-fx-bg='pattern'] body,
+.fx-preview[data-fx-bg='pattern'] {
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--p-primary-400, #6b7cff) 18%, transparent) 1.4px, transparent 1.6px),
+    radial-gradient(800px 400px at 100% 0, color-mix(in srgb, var(--p-primary-200, #c7d2ff) 30%, transparent), transparent 65%);
+  background-size: 22px 22px, auto;
+  background-attachment: fixed;
+}
+
+/* ——— الزجاج ——— */
+:is(html, .fx-preview)[data-fx-glass='on'] :is(.panel, .card, .cc, .region, .quest, .kpi, .k-card, .k-tile, .se, .fx-card) {
+  background: color-mix(in srgb, var(--surface, #fff) 66%, transparent) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  border-color: color-mix(in srgb, #fff 55%, transparent) !important;
+}
+
+/* ——— العمق ——— */
+:is(html, .fx-preview)[data-fx-depth='soft'] :is(.panel, .card, .cc, .region, .quest, .kpi, .k-card, .k-tile, .se, .fx-card) {
+  box-shadow: 0 12px 32px -14px rgba(20, 30, 70, 0.22), 0 2px 6px -2px rgba(20, 30, 70, 0.08);
+}
+:is(html, .fx-preview)[data-fx-depth='flat'] :is(.panel, .card, .cc, .region, .quest, .kpi, .k-card, .k-tile, .se, .fx-card) {
+  box-shadow: none !important;
+}
+
+/* ——— الحواف ——— */
+:is(html, .fx-preview)[data-fx-radius='soft'] :is(.panel, .card, .cc, .region, .quest, .kpi, .se, .fx-card) { border-radius: 24px !important; }
+:is(html, .fx-preview)[data-fx-radius='soft'] .p-button:not(.p-button-rounded) { border-radius: 14px; }
+
+/* ——— الحركة ——— */
+@keyframes fx-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fx-rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+:is(html, .fx-preview)[data-fx-motion='subtle'] :is(.panel, .card, .cc, .region, .quest, .kpi, .k-card, .k-tile, .fx-card) {
+  animation: fx-fade 0.35s ease both;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+:is(html, .fx-preview)[data-fx-motion='subtle'] :is(.card, .cc, .k-card, .k-tile, .fx-card):hover { transform: translateY(-2px); }
+:is(html, .fx-preview)[data-fx-motion='lively'] :is(.panel, .card, .cc, .region, .quest, .kpi, .k-card, .k-tile, .fx-card) {
+  animation: fx-rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+}
+:is(html, .fx-preview)[data-fx-motion='lively'] :is(.card, .cc, .k-card, .k-tile, .quest, .fx-card):hover { transform: translateY(-4px) scale(1.01); }
+:is(html, .fx-preview)[data-fx-motion='lively'] .p-button:hover { transform: translateY(-1px); }
+:is(html, .fx-preview)[data-fx-motion='lively'] .p-button { transition: transform 0.15s ease, background 0.2s ease; }
+html[data-fx-motion='none'] *, .fx-preview[data-fx-motion='none'] * { animation: none !important; transition: none !important; }
+
+/* احترام «تقليل الحركة» في الجهاز */
+@media (prefers-reduced-motion: reduce) {
+  html[data-fx-motion] * { animation: none !important; transition: none !important; }
+}

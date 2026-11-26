@@ -1,4 +1,5 @@
 <template>
+  <!-- CM01: الإشعارات -->
   <div>
     <PageHeader :title="t('notifications.title')">
       <template #actions>

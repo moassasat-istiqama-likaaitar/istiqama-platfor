@@ -2,7 +2,7 @@
   <!-- TE17: بنك الاختبارات الحضورية — أفكار للمعلمين فقط: وثيقة الاختبار + الحلول + سلّم التنقيط.
        تُنشر مباشرة دون مصادقة، لا تُدرج في الأقسام، ولا يراها التلميذ ولا الولي. يراها معلمو المستوى نفسه. -->
   <div>
-    <PageHeader title="الاختبارات الحضورية" subtitle="بنك يستلهم منه معلمو المستوى: كل معلم يرفع اختباره مع الحلول وسلّم التنقيط. للمعلمين فقط — لا يصل التلاميذ ولا الأولياء." />
+    <PageHeader title="بنك الاختبارات الحضورية" subtitle="بنك يستلهم منه معلمو المستوى: كل معلم يرفع اختباره مع الحلول وسلّم التنقيط. للمعلمين فقط — لا يصل التلاميذ ولا الأولياء." />
     <div class="tabs">
       <button type="button" class="pill" :class="{ 'is-active': tab === 'bank' }" @click="tab = 'bank'"><i class="pi pi-database" /> البنك <span class="pill__count">{{ list.length }}</span></button>
       <button type="button" class="pill" :class="{ 'is-active': tab === 'up' }" @click="tab = 'up'"><i class="pi pi-upload" /> رفع اختبار</button>

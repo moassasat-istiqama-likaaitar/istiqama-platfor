@@ -1,4 +1,5 @@
 <template>
+  <!-- CM02: الرسائل — المحادثات حسب مصفوفة المراسلة، والموسم الحالي/المواسم السابقة (للقراءة) -->
   <div>
     <PageHeader :title="t('messages.title')">
       <template #actions>
@@ -13,6 +14,10 @@
           <InputIcon class="pi pi-search" />
           <InputText v-model="q" :placeholder="t('messages.search')" fluid size="small" />
         </IconField>
+        <div class="seasons">
+          <button type="button" class="pill" :class="{ 'is-active': !showArchive }" @click="showArchive = false">الموسم الحالي</button>
+          <button type="button" class="pill" :class="{ 'is-active': showArchive }" @click="showArchive = true"><i class="pi pi-box" /> المواسم السابقة <span v-if="archivedCount" class="pill__count">{{ archivedCount }}</span></button>
+        </div>
         <div v-if="filtered.length" class="conv-list">
           <button
             v-for="c in filtered"
@@ -59,7 +64,8 @@
               <small>{{ timeOf(m.at, locale) }}</small>
             </div>
           </div>
-          <form class="thread__composer" @submit.prevent="send">
+          <p v-if="thread.archived" class="ro"><i class="pi pi-box" /> محادثة من موسم مؤرشف — للقراءة فقط.</p>
+          <form v-else class="thread__composer" @submit.prevent="send">
             <Textarea v-model="draft" :placeholder="t('messages.placeholder')" rows="1" auto-resize class="composer__input" @keydown.enter.exact.prevent="send" />
             <Button type="submit" icon="pi pi-send" :disabled="!draft.trim()" :loading="sending" rounded :aria-label="t('common.send')" />
           </form>
@@ -150,10 +156,13 @@ const scroller = ref()
 
 const threadId = computed(() => route.params.id || null)
 
+const showArchive = ref(false)
+const archivedCount = computed(() => inbox.conversations.filter((c) => c.archived).length)
 const filtered = computed(() => {
   const s = q.value.trim()
-  if (!s) return inbox.conversations
-  return inbox.conversations.filter((c) => c.with.name.includes(s) || c.subject.includes(s) || c.lastMessage?.body.includes(s))
+  const list = inbox.conversations.filter((c) => !!c.archived === showArchive.value)
+  if (!s) return list
+  return list.filter((c) => c.with.name.includes(s) || c.subject.includes(s) || c.lastMessage?.body.includes(s))
 })
 
 const myRoleLabel = (id) => label.full(auth.assignments.find((a) => a.id === id))
@@ -238,6 +247,8 @@ async function start() {
 </script>
 
 <style scoped>
+.seasons { display: flex; gap: 0.35rem; margin: 0.5rem 0; flex-wrap: wrap; }
+.ro { margin: 0; padding: 0.8rem 1rem; background: var(--bg); border-top: 1px solid var(--line); font-size: 0.86rem; color: var(--p-text-muted-color); }
 .mail {
   display: grid;
   grid-template-columns: 340px 1fr;

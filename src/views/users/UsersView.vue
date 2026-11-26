@@ -38,7 +38,7 @@
             <li v-for="a in user.assignments" :key="a.id">
               <span class="role">{{ t('roles.' + a.role) }}</span>
               <span class="asg__d">{{ a.schoolName || 'كل المدارس' }}<template v-if="a.classNames.length"> · {{ a.classNames.join('، ') }}</template><template v-if="a.childNames.length"> · الأبناء: {{ a.childNames.join('، ') }}</template><template v-if="a.subjects?.length"> · {{ a.subjects.join('، ') }}</template></span>
-              <Button v-if="canEditAssignments && user.assignments.length > 1" icon="pi pi-times" text rounded size="small" severity="danger" title="إزالة الصفة" @click="dropAssignment(a)" />
+              <Button v-if="canEditAssignments && user.assignments.length > 1 && canRemoveHolder(auth.role, [a.role])" icon="pi pi-times" text rounded size="small" severity="danger" title="إزالة الصفة" @click="dropAssignment(a)" />
             </li>
           </ul>
           <div v-if="canEditAssignments" class="add-asg">
@@ -59,6 +59,7 @@
 </template>
 
 <script setup>
+import { canGrantRole, canRemoveHolder } from '@/config/roles'
 import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
@@ -129,7 +130,7 @@ const stats = computed(() => {
 const addDlg = ref(false)
 const addValue = ref({})
 const needsSchool = (r) => ['school_manager', 'teacher', 'student'].includes(r)
-const roleOptions = computed(() => (props.scope === 'school' ? ['teacher', 'student', 'parent'] : ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'student', 'parent', 'support']).map((r) => ({ label: t('roles.' + r), value: r })))
+const roleOptions = computed(() => (props.scope === 'school' ? ['teacher', 'student', 'parent'] : ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'student', 'parent', 'support']).filter((r) => canGrantRole(auth.role, r)).map((r) => ({ label: t('roles.' + r), value: r })))
 const schoolClasses = computed(() => cat.classOptions().filter((c) => !schoolId.value || cat.classes.find((x) => x.id === c.value)?.schoolId === schoolId.value))
 const addFields = computed(() => {
   const f = [
@@ -151,7 +152,7 @@ function openAdd() {
 async function add(v) {
   busy.value = true
   try {
-    await createUser({ ...v, role: props.role || v.role, schoolId: schoolId.value || v.schoolId, status: 'pending' })
+    await createUser({ ...v, role: props.role || v.role, schoolId: schoolId.value || v.schoolId, status: 'pending' }, auth.role)
     toast.add({ severity: 'success', summary: 'أُضيف', detail: 'الحساب بانتظار التفعيل', life: 2500 })
     addDlg.value = false
     load()
@@ -179,20 +180,34 @@ async function saveUser() {
   userDlg.value = false
   load()
 }
+const err = (e) => toast.add({ severity: 'warn', summary: e.message, life: 3000 })
 async function addAsg() {
-  await addAssignment(user.value.id, { ...na, schoolId: effSchool.value })
+  try {
+    await addAssignment(user.value.id, { ...na, schoolId: effSchool.value }, auth.role)
+  } catch (e) {
+    return err(e)
+  }
   user.value = await getUser(user.value.id)
   Object.assign(na, { role: null, schoolId: null, classIds: [], classId: null })
   toast.add({ severity: 'success', summary: 'أُضيفت الصفة', detail: 'سيختار الشخص صفته عند الدخول', life: 2500 })
   load()
 }
 async function dropAssignment(a) {
-  await removeAssignment(a.id)
+  try {
+    await removeAssignment(a.id, auth.role)
+  } catch (e) {
+    return err(e)
+  }
   user.value = await getUser(user.value.id)
   load()
 }
 async function bulk(status) {
-  const n = await setStatus(selected.value.map((r) => r.id), status)
+  let n
+  try {
+    n = await setStatus(selected.value.map((r) => r.id), status, auth.role)
+  } catch (e) {
+    return err(e)
+  }
   toast.add({ severity: 'success', summary: status === 'active' ? `فُعّل ${n} حساباً` : `أُوقف ${n} حساباً`, life: 2200 })
   load()
 }

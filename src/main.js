@@ -13,6 +13,7 @@ import '@fontsource/baloo-bhaijaan-2/500.css'
 import '@fontsource/baloo-bhaijaan-2/700.css'
 import 'primeicons/primeicons.css'
 import './styles/main.css'
+import './styles/effects.css'
 
 import App from './App.vue'
 import router from './router'

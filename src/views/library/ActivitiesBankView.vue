@@ -9,7 +9,7 @@
       <Select v-model="kind" :options="[{ label: 'اختبارات', value: 'quiz' }, { label: 'واجبات', value: 'homework' }]" option-label="label" option-value="value" placeholder="اختبارات وواجبات" show-clear />
       <Select v-model="qt" :options="Object.entries(QTYPES).map(([value, x]) => ({ value, label: x.label }))" option-label="label" option-value="value" placeholder="كل أنواع الأسئلة" show-clear />
       <span class="grow" />
-      <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;اختبار جديد</RouterLink>
+      <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;تقييم جديد</RouterLink>
       <RouterLink to="/app/new-homework" class="p-button p-component p-button-sm p-button-outlined">واجب جديد</RouterLink>
     </div>
     <p class="muted cnt">{{ list.length }} نشاط</p>

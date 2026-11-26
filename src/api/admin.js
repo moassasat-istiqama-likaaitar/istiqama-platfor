@@ -2,6 +2,9 @@ import { respond, ApiError, newId } from './client'
 import { schools, levels, seasons, classes, assignments, persons, schoolBranding } from '@/mock/db'
 import { subjects, lessons, contents, activities } from '@/mock/content'
 import { collection } from '@/mock/collections'
+import { isTop } from '@/config/roles'
+import { DEFAULT_EFFECTS } from '@/config/effects'
+import { DEFAULT_MATRIX as DEFAULT_MSG_MATRIX } from '@/config/messaging'
 import { overviewSync } from './school'
 import { fullName, personOf } from './people'
 
@@ -12,14 +15,16 @@ import { fullName, personOf } from './people'
 /* ——— تخصيص المنصة ——— */
 const platform = collection('platform', () => [{ id: 'main', name: 'منصة الاستقامة الرقمية', short: 'الاستقامة', logo: null, primary: '#233b85', tagline: 'فضاء تعليمي واحد لكل المدارس والأطوار', supportEmail: 'support@istiqama.dz', supportPhone: '0550 00 00 00', defaultLang: 'ar', loginNotice: '' }])
 export function getPlatform() {
-  return respond(() => platform.find('main'), 60)
+  return respond(() => getPlatformSync(), 60)
 }
 export function getPlatformSync() {
-  return platform.find('main')
+  const p = platform.find('main')
+  // التأثيرات البصرية لكل ثيم (تُكمَّل بالقيم الافتراضية)
+  return { ...p, effects: Object.fromEntries(Object.entries(DEFAULT_EFFECTS).map(([k, v]) => [k, { ...v, ...(p.effects?.[k] || {}) }])) }
 }
 export function savePlatform(patch, role) {
   return respond(() => {
-    if (role !== 'super_admin') throw new ApiError('forbidden', 'تخصيص المنصة من صلاحية المدير العام')
+    if (!isTop(role)) throw new ApiError('forbidden', 'تخصيص المنصة من صلاحية الإدارة العامة')
     return platform.update('main', patch)
   }, 400)
 }
@@ -58,16 +63,98 @@ export function saveLevel(data) {
     return true
   })
 }
-const seasonCol = collection('seasons', () => seasons.map((s) => ({ ...s, terms: [{ name: 'الفصل الأول', start: '2026-09-13', end: '2026-12-18' }, { name: 'الفصل الثاني', start: '2027-01-04', end: '2027-03-19' }, { name: 'الفصل الثالث', start: '2027-04-04', end: '2027-06-30' }] })).concat([{ id: 'y2025', name: '2025 / 2026', start: '2025-09-14', end: '2026-06-30', status: 'archived', terms: [] }]))
-export function listSeasons() {
-  return respond(() => seasonCol.all())
+/* ——— المواسم الدراسية: دورة حياة ———
+ * قيد الإعداد (draft) ← نشط (active، موسم واحد فقط) ← إقفال (closing) ← مؤرشف (archived، للقراءة فقط)
+ * الموسم الجديد يُعَدّ والقديم ما زال نشطاً، ثم «إطلاق الموسم» يؤرشف القديم ويفعّل الجديد.
+ * المؤرشف لا يُعاد تفعيله؛ يمكن «إعادة فتحه مؤقتاً للتصحيح» بسبب ومدة، ويُسجَّل ذلك. */
+const TERMS = (y) => [
+  { name: 'الفصل الأول', start: `${y}-09-13`, end: `${y}-12-18` },
+  { name: 'الفصل الثاني', start: `${y + 1}-01-04`, end: `${y + 1}-03-19` },
+  { name: 'الفصل الثالث', start: `${y + 1}-04-04`, end: `${y + 1}-06-30` }
+]
+const seasonCol = collection('seasons2', () => [
+  ...seasons.map((s) => ({ ...s, terms: TERMS(2026) })),
+  { id: 'y2025', name: '2025 / 2026', start: '2025-09-14', end: '2026-06-30', status: 'archived', terms: TERMS(2025), archivedAt: '2026-07-05T10:00:00Z', snapshot: { classes: 74, students: 1912, submissions: 18430, messages: 2210, reportCards: 1890 } }
+])
+/** ما يُؤرشف مع الموسم وما يبقى خارجه (قابل للتعديل لاحقاً) */
+export const ARCHIVE_SCOPE = {
+  archived: ['الأقسام والتسجيلات', 'التسليمات والعلامات وكشوف النقاط', 'خطط الدروس وربط المحتوى بالأقسام', 'إشعارات المدارس', 'المراسلات (للقراءة)'],
+  kept: ['حسابات الأشخاص', 'المكتبة المركزية', 'بنك الأنشطة', 'بنك الاختبارات الحضورية (مصنّف بالموسم)', 'الإعدادات والهوية']
 }
-export function saveSeason(data) {
+const ADMINS = ['super_admin', 'admin']
+const decorateSeason = (s) => ({ ...s, reopened: !!(s.reopen && s.reopen.until > new Date().toISOString()) })
+export function listSeasons() {
+  return respond(() => seasonCol.all().map(decorateSeason).sort((a, b) => b.start.localeCompare(a.start)))
+}
+export const activeSeason = () => seasonCol.all().find((s) => s.status === 'active')
+/** هل بيانات الموسم للقراءة فقط؟ (مؤرشف ولم يُعَد فتحه مؤقتاً) */
+export function seasonReadOnly(seasonId) {
+  const s = seasonCol.find(seasonId)
+  return !!s && s.status === 'archived' && !decorateSeason(s).reopened
+}
+/** POST /api/seasons — موسم جديد يبدأ «قيد الإعداد» */
+export function createSeason(data) {
   return respond(() => {
-    if (data.status === 'active') seasonCol.all().forEach((s) => s.id !== data.id && s.status === 'active' && (s.status = 'archived'))
-    return data.id && seasonCol.find(data.id) ? seasonCol.update(data.id, data) : seasonCol.insert({ ...data, id: newId('y'), terms: [] })
+    if (seasonCol.all().some((s) => s.status === 'draft')) throw new ApiError('exists', 'يوجد موسم قيد الإعداد بالفعل')
+    const y = Number(String(data.start).slice(0, 4))
+    return seasonCol.insert({ ...data, id: newId('y'), status: 'draft', terms: data.terms?.length ? data.terms : TERMS(y) })
   })
 }
+/** PUT /api/seasons/:id — التعديل ممنوع على المؤرشف (إلا إن أعيد فتحه مؤقتاً) */
+export function updateSeason(id, data) {
+  return respond(() => {
+    if (seasonReadOnly(id)) throw new ApiError('readonly', 'الموسم مؤرشف — للقراءة فقط')
+    const { status, ...rest } = data
+    return seasonCol.update(id, rest)
+  })
+}
+/** POST /api/seasons/:id/closing — بداية إقفال الموسم النشط (إقفال العلامات وطباعة الكشوف واعتماد الترقية) */
+export function setClosing(id, on = true) {
+  return respond(() => {
+    const s = seasonCol.find(id)
+    if (on && s.status !== 'active') throw new ApiError('state', 'الإقفال للموسم النشط فقط')
+    return seasonCol.update(id, { status: on ? 'closing' : 'active' })
+  })
+}
+/** GET /api/seasons/promotion-preview — اقتراح الترقية لكل مستوى: ناجح ← المستوى التالي، آخر مستوى ← متخرّج */
+export function promotionPreview() {
+  return respond(() => {
+    const ordered = [...levels].sort((a, b) => a.order - b.order)
+    return ordered.map((l, i) => {
+      const n = classes.filter((c) => c.levelId === l.id).reduce((t, c) => t + assignments.filter((a) => a.role === 'student' && a.classId === c.id).length, 0)
+      return { levelId: l.id, levelName: l.name, students: n, next: ordered[i + 1]?.name || 'متخرّج', repeat: 0, leave: 0 }
+    })
+  })
+}
+/** POST /api/seasons/:id/launch — يؤرشف النشط/المُقفل ويفعّل الموسم الجديد */
+export function launchSeason(id, { promotion = [], copyClasses = true, proposeAssignments = true } = {}, role) {
+  return respond(() => {
+    if (!ADMINS.includes(role)) throw new ApiError('forbidden', 'إطلاق الموسم من صلاحية الإدارة العامة')
+    const s = seasonCol.find(id)
+    if (!s || s.status !== 'draft') throw new ApiError('state', 'يُطلق الموسم الذي هو قيد الإعداد فقط')
+    const old = seasonCol.all().find((x) => ['active', 'closing'].includes(x.status))
+    if (old) {
+      const students = assignments.filter((a) => a.role === 'student').length
+      seasonCol.update(old.id, { status: 'archived', archivedAt: new Date().toISOString(), snapshot: { classes: classes.length, students, submissions: 0, messages: 0, reportCards: students } })
+    }
+    const promoted = promotion.reduce((t, p) => t + Math.max(0, p.students - p.repeat - p.leave), 0)
+    return seasonCol.update(id, { status: 'active', launchedAt: new Date().toISOString(), launch: { promoted, repeat: promotion.reduce((t, p) => t + p.repeat, 0), leave: promotion.reduce((t, p) => t + p.leave, 0), copyClasses, proposeAssignments } })
+  }, 600)
+}
+/** POST /api/seasons/:id/reopen { reason, hours } — إعادة فتح مؤقت للتصحيح (يُسجَّل) */
+export function reopenSeason(id, { reason, hours = 48 }, by, role) {
+  return respond(() => {
+    if (!ADMINS.includes(role)) throw new ApiError('forbidden', 'إعادة الفتح من صلاحية الإدارة العامة')
+    if (!reason?.trim()) throw new ApiError('required', 'سبب إعادة الفتح إجباري')
+    const until = new Date(Date.now() + hours * 36e5).toISOString()
+    const s = seasonCol.find(id)
+    return seasonCol.update(id, { reopen: { reason, until, by, at: new Date().toISOString() }, reopenLog: [...(s.reopenLog || []), { reason, hours, by, at: new Date().toISOString() }] })
+  })
+}
+export function endReopen(id) {
+  return respond(() => seasonCol.update(id, { reopen: null }))
+}
+
 export function listSubjects() {
   return respond(() => {
     const byName = {}
@@ -106,7 +193,7 @@ export const PERMISSIONS = [
 ]
 const DEFAULT_MATRIX = {
   super_admin: PERMISSIONS.map((p) => p.key),
-  admin: PERMISSIONS.map((p) => p.key).filter((k) => !['settings.platform', 'settings.branding_approve'].includes(k)),
+  admin: PERMISSIONS.map((p) => p.key), // المشرف العام = المدير العام (إلا نزع المدير العام وإضافة مشرف عام)
   editor: ['content.upload', 'content.review', 'activities.create', 'reports.global'],
   school_manager: ['users.manage', 'users.activate', 'content.school_approve', 'reports.school', 'messages.parents', 'notices.school'],
   teacher: ['content.upload', 'activities.create', 'activities.grade', 'messages.parents'],
@@ -120,7 +207,7 @@ export function getPermissions() {
 }
 export function savePermissions(matrix, role) {
   return respond(() => {
-    if (role !== 'super_admin') throw new ApiError('forbidden', 'تعديل الصلاحيات من صلاحية المدير العام')
+    if (!isTop(role)) throw new ApiError('forbidden', 'تعديل الصلاحيات من صلاحية الإدارة العامة')
     return perms.update('matrix', matrix)
   }, 350)
 }
@@ -165,9 +252,9 @@ export function removeEvent(id) {
 }
 
 /* ——— إعدادات التواصل ——— */
-const comm = collection('communication', () => [{
+const comm = collection('communication2', () => [{
   id: 'rules',
-  rules: { teacher_parent: true, teacher_student: true, student_student: false, parent_manager: true, parent_teacher_other_school: false },
+  matrix: DEFAULT_MSG_MATRIX,
   hours: { enabled: true, from: '07:00', to: '20:00' },
   channels: { inapp: true, email: true, sms: false, push: true },
   moderation: { badWords: true, attachmentsStudents: false, maxFileMb: 10 }
@@ -175,6 +262,8 @@ const comm = collection('communication', () => [{
 export function getCommunication() {
   return respond(() => comm.find('rules'))
 }
+/** المصفوفة الحالية (متزامنة) — تستعملها خدمة المراسلة */
+export const messagingMatrix = () => comm.find('rules')?.matrix || DEFAULT_MSG_MATRIX
 export function saveCommunication(data) {
   return respond(() => comm.update('rules', data), 350)
 }

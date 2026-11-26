@@ -1,5 +1,26 @@
 import { respond, newId, ApiError } from './client'
 import { conversations, persons, assignments, classes } from '@/mock/db'
+import { seasonReadOnly, activeSeason, messagingMatrix } from './admin'
+import { msgRoleOf } from '@/config/messaging'
+
+/** أقسام الصفة (null = عامّ بلا قيد قسم) */
+function classSetOf(a) {
+  if (a.role === 'teacher') return a.classIds || []
+  if (a.role === 'student') return [a.classId]
+  if (a.role === 'parent') return (a.childIds || []).map((cid) => assignments.find((x) => x.personId === cid && x.role === 'student')?.classId).filter(Boolean)
+  if (a.role === 'school_manager') return classes.filter((c) => c.schoolId === a.schoolId).map((c) => c.id)
+  if (a.role === 'editor') return classes.filter((c) => (a.levelIds || []).includes(c.levelId)).map((c) => c.id)
+  return null
+}
+/** مدارس الصفة (null = عامّ) */
+function schoolSetOf(a) {
+  if (a.schoolId) return [a.schoolId]
+  const cs = classSetOf(a)
+  return cs ? [...new Set(cs.map((id) => classes.find((c) => c.id === id)?.schoolId).filter(Boolean))] : null
+}
+
+// كل محادثة تنتمي لموسم؛ محادثات المواسم المؤرشفة للقراءة فقط
+const seasonOf = (cv) => cv.seasonId || 'y2026'
 
 const personName = (id) => {
   const p = persons.find((x) => x.id === id)
@@ -17,7 +38,9 @@ function summarize(cv, personId) {
     with: { personId: other.personId, name: personName(other.personId), role: otherAssignment?.role },
     myAssignmentId: mine?.assignmentId,
     lastMessage: last ? { body: last.body, at: last.at, fromMe: last.from === personId } : null,
-    unread: last ? last.from !== personId && !last.readBy?.includes(personId) : false
+    unread: last ? last.from !== personId && !last.readBy?.includes(personId) : false,
+    seasonId: seasonOf(cv),
+    archived: seasonReadOnly(seasonOf(cv))
   }
 }
 
@@ -50,6 +73,7 @@ export function getConversation(id, personId) {
 export function sendMessage(conversationId, personId, body) {
   return respond(() => {
     const cv = conversations.find((x) => x.id === conversationId)
+    if (seasonReadOnly(seasonOf(cv))) throw new ApiError('readonly', 'محادثة موسم مؤرشف — للقراءة فقط')
     const msg = { id: newId('m'), from: personId, body, at: new Date().toISOString(), readBy: [personId] }
     cv.messages.push(msg)
     return { id: msg.id, body, at: msg.at, fromMe: true, fromName: personName(personId) }
@@ -65,6 +89,7 @@ export function startConversation(personId, assignmentId, toPersonId, subject, b
       id: newId('cv'),
       participants: [{ personId, assignmentId }, { personId: toPersonId, assignmentId: target.assignmentId }],
       subject,
+      seasonId: activeSeason()?.id,
       messages: [{ id: newId('m'), from: personId, body, at: new Date().toISOString(), readBy: [personId] }]
     }
     conversations.push(cv)
@@ -72,49 +97,24 @@ export function startConversation(personId, assignmentId, toPersonId, subject, b
   })
 }
 
-/**
- * من يمكن مراسلته حسب الصفة الحالية (قاعدة مبدئية، تُضبط من إعدادات التواصل AD16):
- *  - المعلم: تلاميذ أقسامه وأولياؤهم + مدير مدرسته
- *  - التلميذ: معلمو قسمه
- *  - الولي: معلمو أبنائه + مديرو مدارسهم
- *  - مدير المدرسة: معلمو مدرسته
- *  - الإدارة/المحرر/الدعم: كل الطاقم
- */
+/** جهات الاتصال المسموح بها لصفة ما — حسب مصفوفة المراسلة */
 function contactsFor(assignmentId) {
   const me = assignments.find((a) => a.id === assignmentId)
   if (!me) return []
-  const teachersOfClass = (classId) => assignments.filter((a) => a.role === 'teacher' && a.classIds?.includes(classId))
-  const managerOf = (schoolId) => assignments.filter((a) => a.role === 'school_manager' && a.schoolId === schoolId)
   /*
-   * قواعد المراسلة:
-   *  التلميذ ← معلمو قسمه.  المعلم ← تلاميذ أقسامه وأولياؤهم + مدير مدرسته.
-   *  الولي ← مدير مدرسة ابنه فقط (لا يبدأ مراسلة المعلم؛ يردّ إن راسله المعلم).
-   *  المدير ← معلمو مدرسته + أولياء تلاميذها.  المحرر ← معلمو مستوياته + الإدارة.
+   * من يراسل من: حسب «مصفوفة المراسلة» التي تضبطها الإدارة العامة (إعدادات التواصل).
+   * النطاق: نفس القسم = يشتركان في قسم؛ نفس المدرسة = يشتركان في مدرسة؛ الإدارة والدعم بلا قسم ولا مدرسة (عامّون).
    */
-  const parentsOfSchool = (schoolId) => {
-    const kids = assignments.filter((a) => a.role === 'student' && a.schoolId === schoolId).map((a) => a.personId)
-    return assignments.filter((a) => a.role === 'parent' && a.childIds?.some((c) => kids.includes(c)))
-  }
-  let list = []
-  if (me.role === 'teacher') {
-    const students = assignments.filter((a) => a.role === 'student' && me.classIds.includes(a.classId))
-    const parents = assignments.filter((a) => a.role === 'parent' && a.childIds.some((cid) => students.some((s) => s.personId === cid)))
-    list = [...students, ...parents, ...managerOf(me.schoolId)]
-  } else if (me.role === 'student') {
-    list = teachersOfClass(me.classId)
-  } else if (me.role === 'parent') {
-    me.childIds.forEach((cid) => {
-      const s = assignments.find((a) => a.personId === cid && a.role === 'student')
-      if (s) list.push(...managerOf(s.schoolId))
-    })
-  } else if (me.role === 'school_manager') {
-    list = [...assignments.filter((a) => a.role === 'teacher' && a.schoolId === me.schoolId), ...parentsOfSchool(me.schoolId)]
-  } else if (me.role === 'editor') {
-    const cls = classes.filter((c) => (me.levelIds || []).includes(c.levelId)).map((c) => c.id)
-    list = [...assignments.filter((a) => a.role === 'teacher' && a.classIds?.some((c) => cls.includes(c))), ...assignments.filter((a) => ['super_admin', 'admin', 'editor'].includes(a.role))]
-  } else {
-    list = assignments.filter((a) => ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'support'].includes(a.role))
-  }
+  const matrix = messagingMatrix()
+  const row = matrix[msgRoleOf(me.role)] || {}
+  const list = assignments.filter((t) => {
+    if (t.personId === me.personId) return false
+    const scope = row[msgRoleOf(t.role)] || 'off'
+    if (scope === 'off') return false
+    if (scope === 'all') return true
+    const [A, B] = scope === 'class' ? [classSetOf(me), classSetOf(t)] : [schoolSetOf(me), schoolSetOf(t)]
+    return !A || !B || A.some((x) => B.includes(x))
+  })
   const seen = new Set()
   return list
     .filter((a) => a.personId !== me.personId && !seen.has(a.personId) && seen.add(a.personId))

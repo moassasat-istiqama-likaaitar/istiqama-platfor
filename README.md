@@ -12,6 +12,16 @@
 | التوجيه | Vue Router (hash) |
 | تعدد اللغات | vue-i18n — العربية (RTL)، الفرنسية والإنجليزية (LTR) |
 | الخط | Cairo |
+| ملفات Excel | ExcelJS (نموذج الاستيراد الجماعي، يُحمَّل عند الطلب) |
+
+## الروابط
+
+| ماذا | أين |
+|---|---|
+| العرض الحيّ (يتحدّث تلقائياً مع كل دفع) | https://moassasat-istiqama-likaaitar.github.io/istiqama-platfor/ |
+| الكود المصدري | https://github.com/moassasat-istiqama-likaaitar/istiqama-platfor |
+| تنزيل الكود كاملاً (ZIP) للمستشار | https://github.com/moassasat-istiqama-likaaitar/istiqama-platfor/archive/refs/heads/main.zip |
+| خريطة الشاشات ← الملفات | [`docs/SCREENS.md`](docs/SCREENS.md) |
 
 ## التشغيل
 

@@ -1,3 +1,4 @@
+import { isTop } from '@/config/roles'
 import { respond, ApiError, newId } from './client'
 import { schools, schoolBranding, persons } from '@/mock/db'
 import { storage } from '@/utils/storage'
@@ -7,7 +8,7 @@ import { storage } from '@/utils/storage'
  *
  * دورة العمل:
  *  1) مدير المدرسة يعدّل ويرسل طلباً  → الحالة pending (الهوية المعتمدة لا تتغير بعد)
- *  2) المدير العام (super_admin) يعتمد → تصبح الهوية الجديدة ظاهرة للجميع
+ *  2) الإدارة العامة (المدير العام أو المشرف العام) تعتمد → تصبح الهوية الجديدة ظاهرة للجميع
  *     أو يرفض مع ملاحظة                → يرى المدير الملاحظة ويعدّل
  *  المشرف العام (admin) يطّلع على الطلبات دون صلاحية الاعتماد.
  */
@@ -114,7 +115,7 @@ export function listRequests() {
 /** POST /api/branding-requests/:id/approve (المدير العام فقط) */
 export function approveRequest(id, role) {
   return respond(() => {
-    if (role !== 'super_admin') throw new ApiError('forbidden', 'الاعتماد من صلاحية المدير العام')
+    if (!isTop(role)) throw new ApiError('forbidden', 'الاعتماد من صلاحية الإدارة العامة')
     const d = db()
     const r = d.requests.find((x) => x.id === id)
     if (!r) throw new ApiError('not_found', 'الطلب غير موجود')
@@ -129,7 +130,7 @@ export function approveRequest(id, role) {
 /** POST /api/branding-requests/:id/reject { note } (المدير العام فقط) */
 export function rejectRequest(id, note, role) {
   return respond(() => {
-    if (role !== 'super_admin') throw new ApiError('forbidden', 'الرفض من صلاحية المدير العام')
+    if (!isTop(role)) throw new ApiError('forbidden', 'الرفض من صلاحية الإدارة العامة')
     if (!String(note || '').trim()) throw new ApiError('required', 'اكتب سبب الرفض ليعرف المدير ما يعدّله')
     const d = db()
     const r = d.requests.find((x) => x.id === id)

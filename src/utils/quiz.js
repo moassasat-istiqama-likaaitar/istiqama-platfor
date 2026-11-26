@@ -127,7 +127,7 @@ export function answerText(q, ans) {
   return String(ans)
 }
 
-/** قالب سؤال جديد حسب النوع (لمنشئ الاختبارات) */
+/** قالب سؤال جديد حسب النوع (لمنشئ التقييمات) */
 export function blankQuestion(type) {
   const b = { type, q: '', points: 1, explain: '' }
   if (type === 'mcq') return { ...b, options: ['', '', ''], answer: 0 }

@@ -1,4 +1,5 @@
 <template>
+  <!-- هيكل صفحات الدخول — الخلفية وشعار المؤسسة -->
   <div class="auth">
     <div class="auth__top">
       <LangSwitcher />

@@ -157,6 +157,16 @@ export const notifications = [
 /** المحادثات: المشاركون أشخاص، وكل طرف يشارك بصفة محددة */
 export const conversations = [
   {
+    id: 'cv0',
+    seasonId: 'y2025',
+    participants: [{ personId: 'p5', assignmentId: 'a6' }, { personId: 'p11', assignmentId: 'a14' }],
+    subject: 'نتائج السداسي الثاني (الموسم الماضي)',
+    messages: [
+      { id: 'm0a', from: 'p11', body: 'السلام عليكم، شكراً على متابعتكم لأنس هذا الموسم.', at: ago(60 * 24 * 160), readBy: ['p11', 'p5'] },
+      { id: 'm0b', from: 'p5', body: 'وعليكم السلام، بارك الله فيه، نتائجه ممتازة.', at: ago(60 * 24 * 159), readBy: ['p11', 'p5'] }
+    ]
+  },
+  {
     id: 'cv1',
     participants: [{ personId: 'p5', assignmentId: 'a6' }, { personId: 'p11', assignmentId: 'a14' }],
     subject: 'متابعة أنس',

@@ -1,4 +1,5 @@
 <template>
+  <!-- ST01 (البراعم): رئيسية البراعم — الأولى إلى الثالثة ابتدائي -->
   <div v-if="d" class="kh">
     <SchoolBanner :school="brand.school" :branding="brand.branding" variant="kids" class="kh__banner" />
     <!-- نور تقدّم مهمة اليوم -->

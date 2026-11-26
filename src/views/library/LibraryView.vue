@@ -1,4 +1,5 @@
 <template>
+  <!-- TE11/ED02: المكتبة المركزية — شبكة مصفّاة (المستوى ← المادة ← الدرس + النوع والتصنيف)؛ المعلم يرى المعتمد فقط -->
   <div class="lib">
     <header class="lib__hero">
       <div>
@@ -19,7 +20,8 @@
         <InputText v-model="f.q" :placeholder="t('library.search')" fluid @input="reload" />
       </IconField>
       <Select v-model="f.level" :options="levelOpts" option-label="label" option-value="value" :placeholder="t('library.level')" show-clear class="sel" @change="reload" />
-      <Select v-model="f.subjectKey" :options="subjectOpts" option-label="label" option-value="value" :placeholder="t('library.subject')" show-clear class="sel" @change="reload" />
+      <Select v-model="f.subjectKey" :options="subjectOpts" option-label="label" option-value="value" :placeholder="t('library.subject')" show-clear class="sel" @change="f.lessonId = null; reload()" />
+      <Select v-model="f.lessonId" :options="lessonFilterOpts" option-label="label" option-value="value" placeholder="الدرس" show-clear filter class="sel sel--wide" :disabled="!f.subjectKey" />
       <Select v-if="curator" v-model="f.status" :options="statusOpts" option-label="label" option-value="value" :placeholder="t('library.status')" show-clear class="sel" @change="reload" />
       <Select v-else v-model="f.classification" :options="classOpts" option-label="label" option-value="value" placeholder="التصنيف" show-clear class="sel" @change="reload" />
       <div class="filters__types">
@@ -30,22 +32,13 @@
     </section>
 
     <div class="lib__bar">
-      <span class="muted">{{ t('library.results', { n: items.length }) }}</span>
+      <span class="muted">{{ t('library.results', { n: shownItems.length }) }}</span>
       <Button v-if="hasFilters" :label="t('library.reset')" icon="pi pi-filter-slash" text size="small" @click="reset" />
     </div>
 
-    <!-- نفس ترتيب مكتبة القسم: المادة ← المحور ← الدرس، والمحتوى بطاقات داخل كل درس -->
-    <section v-for="g in groups" :key="g.key" class="sg" :style="{ '--c': g.color }">
-      <button type="button" class="sg__head" @click="toggle(g.key)">
-        <span class="sg__dot" /><h2>{{ g.subject }}</h2><small v-if="!f.level">{{ g.level }}</small><span class="sg__n">{{ g.count }} عنصر</span><i class="pi" :class="closed.has(g.key) ? 'pi-chevron-down' : 'pi-chevron-up'" />
-      </button>
-      <template v-if="!closed.has(g.key)">
-        <div v-for="ax in g.axes" :key="ax.name" class="sg__axis">
-          <h3>{{ ax.name }}</h3>
-          <div v-for="ls in ax.lessons" :key="ls.title" class="sg__lesson">
-            <h4><i class="pi pi-bookmark" /> {{ ls.title }}</h4>
+    <!-- شبكة مصفّاة مثل بنك الأنشطة: المرشّحات (المستوى ← المادة ← الدرس) تحدد ما يظهر، مرتباً بترتيب الدروس -->
     <div class="grid">
-      <button v-for="c in ls.items" :key="c.id" type="button" class="card" :style="{ '--c': c.subject.color }" @click="open(c)">
+      <button v-for="c in shownItems" :key="c.id" type="button" class="card" :style="{ '--c': c.subject.color }" @click="open(c)">
         <div class="card__thumb">
           <img v-if="c.payload?.poster" :src="c.payload.poster" alt="" />
           <LessonArt v-else :kind="thumbArt(c)" :color="c.subject.color" :accent="c.subject.accent" />
@@ -58,6 +51,7 @@
             <span class="tag tag--plain">{{ t(`student.classification.${c.classification}`) }}</span>
           </div>
           <strong class="card__title">{{ c.title }}</strong>
+          <span class="card__lesson"><i class="pi pi-bookmark" /> {{ c.lesson.title }}</span>
           <span class="card__meta">{{ c.subject.name }} · {{ c.level.name }}</span>
           <span class="card__foot">
             <span><i class="pi pi-user" /> {{ c.authorName }}</span>
@@ -66,10 +60,6 @@
         </div>
       </button>
     </div>
-          </div>
-        </div>
-      </template>
-    </section>
     <div v-if="!items.length" class="panel"><EmptyState icon="pi pi-search" :text="t('library.empty')" /></div>
 
     <!-- المعاينة -->
@@ -130,7 +120,7 @@ const auth = useAuthStore()
 
 const items = ref([])
 const facets = ref(null)
-const f = reactive({ q: '', level: null, subjectKey: null, status: null, type: null, classification: null })
+const f = reactive({ q: '', level: null, subjectKey: null, lessonId: null, status: null, type: null, classification: null })
 const preview = reactive({ open: false, item: null })
 
 const types = [
@@ -139,34 +129,15 @@ const types = [
 ]
 const curator = computed(() => ['editor', 'admin', 'super_admin'].includes(auth.role))
 const classOpts = [{ label: 'رئيسي', value: 'main' }, { label: 'إثرائي', value: 'enrichment' }, { label: 'نشاط', value: 'activity' }]
-const closed = ref(new Set())
-const toggle = (k) => {
-  const x = new Set(closed.value)
-  x.has(k) ? x.delete(k) : x.add(k)
-  closed.value = x
-}
-// تجميع النتائج المرتبة: مستوى+مادة ← محور ← درس
-const groups = computed(() => {
-  const out = []
-  items.value.forEach((c) => {
-    const key = `${c.level.id}|${c.subject.id}`
-    let g = out[out.length - 1]
-    if (!g || g.key !== key) out.push((g = { key, subject: c.subject.name, level: c.level.name, color: c.subject.color, count: 0, axes: [] }))
-    g.count++
-    let ax = g.axes[g.axes.length - 1]
-    if (!ax || ax.name !== c.lesson.axis) g.axes.push((ax = { name: c.lesson.axis || 'دروس', lessons: [] }))
-    let ls = ax.lessons[ax.lessons.length - 1]
-    if (!ls || ls.title !== c.lesson.title) ax.lessons.push((ls = { title: c.lesson.title, items: [] }))
-    ls.items.push(c)
-  })
-  return out
-})
+// الدروس المتاحة في المادة المختارة (من النتائج نفسها، بترتيبها)
+const lessonFilterOpts = computed(() => [...new Map(items.value.filter((c) => c.lesson.id).map((c) => [c.lesson.id, { label: c.lesson.title, value: c.lesson.id }])).values()])
+const shownItems = computed(() => items.value.filter((c) => !f.lessonId || c.lesson.id === f.lessonId))
 const typeIcon = Object.fromEntries(types.filter((x) => x.v).map((x) => [x.v, x.icon]))
 const statusHue = { approved: 'green', temp: 'teal', pending: 'orange', draft: 'blue', rejected: 'red' }
 const levelOpts = computed(() => facets.value?.levels.map((l) => ({ value: l.id, label: l.name })) || [])
 const subjectOpts = computed(() => facets.value?.subjects.map((s) => ({ value: s, label: s })) || [])
 const statusOpts = computed(() => Object.keys(statusHue).map((s) => ({ value: s, label: t(`library.statuses.${s}`) })))
-const hasFilters = computed(() => f.q || f.subjectKey || f.status || f.type || f.classification)
+const hasFilters = computed(() => f.q || f.subjectKey || f.lessonId || f.status || f.type || f.classification)
 const thumbArt = (c) => (c.type === 'image' ? c.payload.art : c.type === 'quiz' ? 'idea' : c.type === 'homework' ? 'pen' : c.subject.art)
 
 let timer
@@ -174,11 +145,10 @@ function reload() {
   clearTimeout(timer)
   timer = setTimeout(async () => {
     items.value = await libraryApi.list({ ...f }, { curator: curator.value })
-    closed.value = new Set(groups.value.slice(1).map((g) => g.key))
   }, 150)
 }
 function reset() {
-  Object.assign(f, { q: '', level: myLevel(), subjectKey: null, status: null, type: null, classification: null })
+  Object.assign(f, { q: '', level: myLevel(), subjectKey: null, lessonId: null, status: null, type: null, classification: null })
   reload()
 }
 function open(c) {
@@ -221,15 +191,8 @@ onMounted(async () => {
 .sel { width: 100%; }
 .lib__bar { display: flex; justify-content: space-between; align-items: center; }
 .lib__act { align-self: center; color: #fff; text-decoration: none; font-size: 0.82rem; background: rgba(255, 255, 255, 0.14); border-radius: 14px; padding: 0.6rem 0.9rem; max-width: 170px; }
-.sg { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 0 1rem 0.5rem; }
-.sg__head { width: 100%; display: flex; align-items: center; gap: 0.6rem; padding: 0.9rem 0; border: 0; background: none; cursor: pointer; font: inherit; color: inherit; text-align: start; }
-.sg__dot { width: 12px; height: 12px; border-radius: 4px; background: var(--c); }
-.sg__head h2 { margin: 0; font-size: 1.1rem; }
-.sg__n { margin-inline-start: auto; font-size: 0.8rem; color: var(--p-text-muted-color); }
-.sg__axis h3 { margin: 0.6rem 0 0.2rem; font-size: 0.82rem; color: var(--c); }
-.sg__lesson h4 { margin: 0.6rem 0 0.6rem; font-size: 0.95rem; display: flex; gap: 0.4rem; align-items: center; }
-.sg__lesson h4 i { color: var(--c); }
-.sg__lesson { padding-bottom: 0.6rem; border-bottom: 1px dashed var(--line); }
+.card__lesson { font-size: 0.78rem; color: var(--c); font-weight: 700; display: flex; gap: 0.3rem; align-items: center; }
+.sel--wide { min-width: 220px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
 .card { display: flex; flex-direction: column; text-align: start; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); cursor: pointer; font: inherit; color: inherit; box-shadow: var(--shadow); transition: transform 0.15s, border-color 0.15s; }
 .card:hover { transform: translateY(-3px); border-color: var(--c); }

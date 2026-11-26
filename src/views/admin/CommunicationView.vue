@@ -3,9 +3,26 @@
   <div v-if="f">
     <PageHeader title="إعدادات التواصل" subtitle="قواعد المراسلة داخل المنصة، أوقاتها، قنوات الإشعار، والرقابة." />
     <div class="cm">
-      <section class="panel">
-        <h3>من يراسل من</h3>
-        <label v-for="r in RULES" :key="r.key" class="row"><ToggleSwitch v-model="f.rules[r.key]" /><div><b>{{ r.label }}</b><small class="muted">{{ r.hint }}</small></div></label>
+      <section class="panel full">
+        <h3>مصفوفة المراسلة: من يراسل من</h3>
+        <p class="muted small">الصفوف = المرسِل، الأعمدة = المستقبِل. تفعّل الإدارة العامة أي خانة بنطاقها. الخانات المعلَّمة <i class="pi pi-exclamation-triangle warn" /> تخصّ القاصرين: يُنصح بإبقائها مغلقة.</p>
+        <div class="mx-wrap">
+          <table class="mx">
+            <thead><tr><th>المرسِل ↓ / المستقبِل ←</th><th v-for="c in MSG_ROLES" :key="c.key">{{ c.label }}</th></tr></thead>
+            <tbody>
+              <tr v-for="r in MSG_ROLES" :key="r.key">
+                <th>{{ r.label }}</th>
+                <td v-for="c in MSG_ROLES" :key="c.key" :class="['cell', f.matrix[r.key][c.key], { warnc: sensitive(r.key, c.key) && f.matrix[r.key][c.key] !== 'off' }]">
+                  <select v-model="f.matrix[r.key][c.key]" :aria-label="`${r.label} ← ${c.label}`">
+                    <option v-for="sc in SCOPES" :key="sc.value" :value="sc.value">{{ sc.label }}</option>
+                  </select>
+                  <i v-if="sensitive(r.key, c.key)" class="pi pi-exclamation-triangle warn" title="خانة تخصّ القاصرين" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <Button label="استعادة القواعد الافتراضية" icon="pi pi-undo" text size="small" @click="f.matrix = JSON.parse(JSON.stringify(DEFAULT_MATRIX))" />
       </section>
       <section class="panel">
         <h3>أوقات المراسلة</h3>
@@ -34,15 +51,9 @@ import InputNumber from 'primevue/inputnumber'
 import { useToast } from 'primevue/usetoast'
 import PageHeader from '@/components/PageHeader.vue'
 import { getCommunication, saveCommunication } from '@/api/admin'
+import { MSG_ROLES, SCOPES, DEFAULT_MATRIX, sensitive } from '@/config/messaging'
 
 const toast = useToast()
-const RULES = [
-  { key: 'teacher_parent', label: 'المعلم ↔ أولياء تلاميذه', hint: 'لمتابعة الأبناء' },
-  { key: 'teacher_student', label: 'المعلم ↔ تلاميذه', hint: 'أسئلة حول الدروس والواجبات' },
-  { key: 'parent_manager', label: 'الولي ↔ مدير مدرسة ابنه', hint: '' },
-  { key: 'student_student', label: 'التلميذ ↔ زملاؤه', hint: 'غير مستحسن للصغار' },
-  { key: 'parent_teacher_other_school', label: 'الولي ↔ معلمو مدارس أخرى', hint: 'خارج مدرسة الابن' }
-]
 const CHANNELS = [
   { key: 'inapp', label: 'داخل المنصة', hint: 'جرس الإشعارات' }, { key: 'push', label: 'إشعارات الهاتف', hint: 'عند تثبيت التطبيق' },
   { key: 'email', label: 'البريد الإلكتروني', hint: 'للمعلمين والأولياء' }, { key: 'sms', label: 'الرسائل القصيرة SMS', hint: 'بتكلفة — للتنبيهات المهمة فقط' }
@@ -59,6 +70,19 @@ async function save() {
 </script>
 
 <style scoped>
+.full { grid-column: 1 / -1; }
+.small { font-size: 0.82rem; }
+.warn { color: #c27c00; }
+.mx-wrap { overflow-x: auto; }
+.mx { border-collapse: separate; border-spacing: 4px; font-size: 0.84rem; }
+.mx th { font-weight: 700; padding: 0.3rem 0.5rem; white-space: nowrap; text-align: start; }
+.mx .cell { border-radius: 10px; padding: 0.25rem 0.35rem; white-space: nowrap; }
+.mx .cell select { border: 0; background: transparent; font: inherit; font-size: 0.8rem; cursor: pointer; color: inherit; }
+.mx .cell.off { background: #f1f2f5; color: #8a8f99; }
+.mx .cell.class { background: #e6f2ff; color: #1d5fa8; }
+.mx .cell.school { background: #e5f6ee; color: #17733f; }
+.mx .cell.all { background: #f3ecff; color: #6a3fb5; }
+.mx .cell.warnc { outline: 2px solid #e0a100; }
 .cm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; align-items: start; }
 .cm h3 { margin: 0 0 0.75rem; font-size: 1rem; }
 .mt { margin-top: 1.25rem !important; }

@@ -1,4 +1,5 @@
 <template>
+  <!-- خطأ 404: الصفحة غير موجودة -->
   <div class="err">
     <div class="err__code">404</div>
     <h1>{{ t('errors.notFound') }}</h1>

@@ -1,4 +1,5 @@
 <template>
+  <!-- AU03: نسيت كلمة المرور -->
   <div class="center">
     <section class="card">
       <span class="icon"><i :class="sent ? 'pi pi-check' : 'pi pi-key'" /></span>

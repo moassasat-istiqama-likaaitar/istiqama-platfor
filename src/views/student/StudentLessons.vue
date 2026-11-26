@@ -1,4 +1,5 @@
 <template>
+  <!-- ST02: دروسي — المواد ونسبة التقدم -->
   <div class="sl" :class="`sl--${theme}`">
     <header class="sl__head">
       <h1>{{ titles[theme] }}</h1>

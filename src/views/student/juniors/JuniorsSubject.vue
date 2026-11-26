@@ -1,4 +1,5 @@
 <template>
+  <!-- ST03 (المستكشفون): المادة -->
   <div class="js" :style="{ '--c': s.color }">
     <RouterLink to="/app/my-lessons" class="back"><i class="pi pi-arrow-right flip" /> مناطق الاستكشاف</RouterLink>
     <header class="js__head">

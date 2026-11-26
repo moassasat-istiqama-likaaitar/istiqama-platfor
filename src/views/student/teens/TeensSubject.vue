@@ -1,4 +1,5 @@
 <template>
+  <!-- ST03 (الشباب): المادة -->
   <div class="ts" :style="{ '--c': s.color }">
     <header class="ts__head">
       <div>

@@ -19,10 +19,10 @@ const adminMenu = [
     item('users-duplicates', 'pi pi-clone', ['AD05'], 7),
     item('activity-log', 'pi pi-history', ['AD06'], 7)
   ]),
-  group('library', 'pi pi-book', [
-    item('library-manage', 'pi pi-folder-open', ['ED02'], 5),
+  group('content', 'pi pi-book', [
+    item('library-manage', 'pi pi-book', ['ED02'], 5),
     item('library-review', 'pi pi-check-square', ['ED03', 'ED04'], 5),
-    item('activities', 'pi pi-pencil', ['ED05'], 5)
+    item('activities', 'pi pi-database', ['ED05'], 5)
   ]),
   group('reports', 'pi pi-chart-bar', [
     item('reports-general', 'pi pi-chart-line', ['AD17'], 7),
@@ -53,16 +53,19 @@ export const MENUS = {
 
   editor: [
     item('home', 'pi pi-home', ['ED01'], 5),
-    group('library', 'pi pi-book', [
-      item('library-manage', 'pi pi-folder-open', ['ED02'], 5),
-      item('library-review', 'pi pi-check-square', ['ED03', 'ED04'], 5),
-      item('upload-content', 'pi pi-upload', ['TE13'], 4)
+    item('library-manage', 'pi pi-book', ['ED02'], 5),
+    group('review', 'pi pi-check-square', [
+      item('library-review', 'pi pi-book', ['ED03', 'ED04'], 5),
+      item('activities-review', 'pi pi-question-circle', ['ED03'], 5)
     ]),
-    group('activities-group', 'pi pi-pencil', [
+    group('banks', 'pi pi-database', [
       item('activities', 'pi pi-database', ['ED05'], 5),
-      item('activities-review', 'pi pi-check-square', ['ED03'], 5),
-      item('quiz-builder', 'pi pi-question-circle', ['TE15'], 4),
-      item('new-homework', 'pi pi-file-edit', ['TE14'], 4)
+      item('offline-tests', 'pi pi-print', ['TE17'], 4)
+    ]),
+    group('production', 'pi pi-pencil', [
+      item('upload-content', 'pi pi-upload', ['TE13'], 4),
+      item('new-homework', 'pi pi-file-edit', ['TE14'], 4),
+      item('quiz-builder', 'pi pi-question-circle', ['TE15'], 4)
     ]),
     // المحرر يأخذ دور المعلم في أقسام مستوياته (والمستوى كقسم واحد)
     group('teaching', 'pi pi-th-large', [
@@ -84,7 +87,7 @@ export const MENUS = {
       item('activation', 'pi pi-check-circle', ['SM05'], 6)
     ]),
     item('school-classes', 'pi pi-th-large', ['SM06'], 6),
-    group('library', 'pi pi-book', [
+    group('content', 'pi pi-book', [
       item('teacher-files-review', 'pi pi-check-square', ['SM07'], 6),
       item('content-follow', 'pi pi-eye', ['SM08'], 6)
     ]),
@@ -99,14 +102,16 @@ export const MENUS = {
     item('my-classes', 'pi pi-th-large', ['TE02', 'TE03', 'TE06', 'TE07'], 4),
     item('class-library', 'pi pi-bookmark', ['TE04', 'TE05'], 4),
     item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4),
-    group('library', 'pi pi-book', [
-      item('central-library', 'pi pi-search', ['TE11', 'TE12'], 4),
+    item('central-library', 'pi pi-book', ['TE11', 'TE12'], 4),
+    group('banks', 'pi pi-database', [
       item('activities', 'pi pi-database', ['ED05'], 4),
+      item('offline-tests', 'pi pi-print', ['TE17'], 4)
+    ]),
+    group('production', 'pi pi-pencil', [
       item('upload-content', 'pi pi-upload', ['TE13'], 4),
       item('new-homework', 'pi pi-file-edit', ['TE14'], 4),
       item('quiz-builder', 'pi pi-question-circle', ['TE15'], 4),
-      item('my-files', 'pi pi-folder', ['TE16'], 4),
-      item('offline-tests', 'pi pi-print', ['TE17'], 4)
+      item('my-files', 'pi pi-folder', ['TE16'], 4)
     ]),
     feedback
   ],

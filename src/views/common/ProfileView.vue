@@ -1,4 +1,5 @@
 <template>
+  <!-- CM04: الملف الشخصي — البيانات وكلمة المرور والصفات -->
   <div>
     <PageHeader :title="t('profile.title')" />
 

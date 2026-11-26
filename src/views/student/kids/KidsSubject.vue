@@ -1,4 +1,5 @@
 <template>
+  <!-- ST03 (البراعم): المادة -->
   <div class="ks" :style="{ '--c': s.color, '--a': s.accent }">
     <header class="ks__head">
       <RouterLink to="/app/my-lessons" class="ks__back" aria-label="رجوع"><i class="pi pi-arrow-right flip" /></RouterLink>

@@ -1,4 +1,5 @@
 <template>
+  <!-- ST06: واجباتي / مهامي — الواجبات والاختبارات المصادَق عليها -->
   <div class="sa" :class="`sa--${theme}`">
     <header class="sa__head">
       <h1>{{ titles[theme] }}</h1>

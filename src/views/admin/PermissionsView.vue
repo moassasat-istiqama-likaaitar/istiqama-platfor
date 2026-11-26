@@ -11,7 +11,7 @@
             <tr class="grp"><td :colspan="ROLES.length + 1">{{ g }}</td></tr>
             <tr v-for="p in d.permissions.filter((x) => x.group === g)" :key="p.key">
               <td>{{ p.label }}</td>
-              <td v-for="r in ROLES" :key="r" class="c"><Checkbox :model-value="matrix[r]?.includes(p.key)" binary :disabled="!canEdit || r === 'super_admin'" @update:model-value="(v) => toggle(r, p.key, v)" /></td>
+              <td v-for="r in ROLES" :key="r" class="c"><Checkbox :model-value="matrix[r]?.includes(p.key)" binary :disabled="lockedCol(r) || !canEdit || r === 'super_admin'" @update:model-value="(v) => toggle(r, p.key, v)" /></td>
             </tr>
           </template>
         </tbody>
@@ -22,6 +22,7 @@
 </template>
 
 <script setup>
+import { isTop } from '@/config/roles'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
@@ -40,7 +41,9 @@ const d = ref(null)
 const matrix = ref({})
 const dirty = ref(false)
 const busy = ref(false)
-const canEdit = computed(() => auth.role === 'super_admin')
+const canEdit = computed(() => isTop(auth.role))
+// عمود المدير العام لا يعدّله إلا المدير العام
+const lockedCol = (r) => r === 'super_admin' && auth.role !== 'super_admin'
 const groups = computed(() => [...new Set(d.value.permissions.map((p) => p.group))])
 onMounted(async () => {
   d.value = await getPermissions()
