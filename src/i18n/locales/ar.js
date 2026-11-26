@@ -16,7 +16,7 @@ export default {
     'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل العمليات', library: 'المكتبة', content: 'المحتوى', review: 'المراجعة والمصادقة', banks: 'بنوك التقييم', production: 'إنتاجي',
     'library-manage': 'المكتبة المركزية', 'lesson-opening': 'فتح الدروس', 'activities-review': 'مراجعة الواجبات والتقييمات', 'library-review': 'مراجعة المحتوى', activities: 'بنك الواجبات والتقييمات',
     'activities-group': 'الواجبات والتقييمات', reports: 'التقارير', 'reports-general': 'تقارير عامة',
-    'reports-schools': 'أداء المدارس', 'reports-files': 'إحصائيات الملفات', 'reports-engagement': 'جودة التفاعل',
+    'reports-schools': 'أداء المدارس', 'reports-files': 'إحصائيات المحتوى', 'reports-engagement': 'جودة التفاعل',
     settings: 'الإعدادات العامة', schools: 'المدارس', levels: 'الأطوار والمستويات', seasons: 'المواسم الدراسية',
     'classes-all': 'الأقسام', subjects: 'المواد والدروس', permissions: 'الأدوار والصلاحيات',
     customization: 'تخصيص المنصة', announcements: 'الإعلانات', calendar: 'الرزنامة', communication: 'إعدادات التواصل',

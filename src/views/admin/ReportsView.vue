@@ -1,5 +1,5 @@
 <template>
-  <!-- AD17: التقارير — عامة / أداء المدارس / إحصائيات الملفات / جودة التفاعل -->
+  <!-- AD17: التقارير — عامة / أداء المدارس / إحصائيات المحتوى / جودة التفاعل -->
   <div v-if="r">
     <PageHeader :title="TITLES[kind]" subtitle="بيانات كل المدارس — قابلة للتصدير." />
 
@@ -57,7 +57,7 @@ import { exportCsv } from '@/utils/exportCsv'
 
 defineProps({ kind: { type: String, default: 'general' } })
 const cat = useCatalog()
-const TITLES = { general: 'تقارير عامة', schools: 'أداء المدارس', files: 'إحصائيات الملفات', engagement: 'جودة التفاعل' }
+const TITLES = { general: 'تقارير عامة', schools: 'أداء المدارس', files: 'إحصائيات المحتوى', engagement: 'جودة التفاعل' }
 const schoolCols = [{ field: 'name', label: 'المدرسة' }, { field: 'students', label: 'التلاميذ' }, { field: 'teachers', label: 'المعلمون' }, { field: 'classes', label: 'الأقسام' }, { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'active', label: 'الدخول %' }, { field: 'atRisk', label: 'متعثرون' }]
 const r = ref(null)
 onMounted(async () => (r.value = await globalReport()))
