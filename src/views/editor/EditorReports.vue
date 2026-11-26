@@ -4,7 +4,7 @@
     <PageHeader :title="home ? `السلام عليكم، ${auth.person.firstName}` : 'تقارير المحتوى'" :subtitle="home ? 'لوحة المحرر: ما ينتظر المراجعة وصحة المكتبة المركزية' : 'صحة المكتبة المركزية وتغطيتها للمنهاج'" />
     <StatTiles :items="[
       { label: 'محتويات المكتبة', value: s.total, icon: 'pi pi-book' },
-      { label: 'الأنشطة', value: s.activities, icon: 'pi pi-question-circle', tone: 'purple' },
+      { label: 'الواجبات والتقييمات', value: s.activities, icon: 'pi pi-question-circle', tone: 'purple' },
       { label: 'قيد المراجعة', value: (s.byStatus.pending || 0) + (s.byStatus.draft || 0), icon: 'pi pi-inbox', tone: 'amber', to: '/app/library-review' },
       { label: 'معتمد مؤقتاً', value: s.byStatus.temp || 0, icon: 'pi pi-hourglass', tone: 'blue', hint: 'يحتاج اعتماداً نهائياً' }
     ]" />

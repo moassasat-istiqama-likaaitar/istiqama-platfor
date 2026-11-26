@@ -3,7 +3,7 @@ import { conversations, persons, assignments, classes } from '@/mock/db'
 import { seasonReadOnly, activeSeason, messagingMatrix } from './admin'
 import { msgRoleOf } from '@/config/messaging'
 
-/** أقسام الصفة (null = عامّ بلا قيد قسم) */
+/** أقسام الدور (null = عامّ بلا قيد قسم) */
 function classSetOf(a) {
   if (a.role === 'teacher') return a.classIds || []
   if (a.role === 'student') return [a.classId]
@@ -12,7 +12,7 @@ function classSetOf(a) {
   if (a.role === 'editor') return classes.filter((c) => (a.levelIds || []).includes(c.levelId)).map((c) => c.id)
   return null
 }
-/** مدارس الصفة (null = عامّ) */
+/** مدارس الدور (null = عامّ) */
 function schoolSetOf(a) {
   if (a.schoolId) return [a.schoolId]
   const cs = classSetOf(a)
@@ -44,7 +44,7 @@ function summarize(cv, personId) {
   }
 }
 
-/** GET /api/conversations → محادثات الشخص في كل صفاته */
+/** GET /api/conversations → محادثات الشخص في كل أدواره */
 export function listConversations(personId) {
   return respond(() =>
     conversations
@@ -84,7 +84,7 @@ export function sendMessage(conversationId, personId, body) {
 export function startConversation(personId, assignmentId, toPersonId, subject, body) {
   return respond(() => {
     const target = contactsFor(assignmentId).find((c) => c.personId === toPersonId)
-    if (!target) throw new ApiError('forbidden', 'لا يمكنك مراسلة هذا الشخص بهذه الصفة')
+    if (!target) throw new ApiError('forbidden', 'لا يمكنك مراسلة هذا الشخص بهذا الدور')
     const cv = {
       id: newId('cv'),
       participants: [{ personId, assignmentId }, { personId: toPersonId, assignmentId: target.assignmentId }],
@@ -97,7 +97,7 @@ export function startConversation(personId, assignmentId, toPersonId, subject, b
   })
 }
 
-/** جهات الاتصال المسموح بها لصفة ما — حسب مصفوفة المراسلة */
+/** جهات الاتصال المسموح بها لدور ما — حسب مصفوفة المراسلة */
 function contactsFor(assignmentId) {
   const me = assignments.find((a) => a.id === assignmentId)
   if (!me) return []

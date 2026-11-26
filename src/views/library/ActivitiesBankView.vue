@@ -1,7 +1,7 @@
 <template>
-  <!-- TE/ED: بنك الأنشطة المركزي — واجبات وتقييمات المنصة والمعتمدة من المعلمين؛ يربطها أي معلم بقسمه -->
+  <!-- TE/ED: بنك الواجبات والتقييمات — واجبات وتقييمات المنصة والمعتمدة من المعلمين؛ يربطها أي معلم بقسمه -->
   <div>
-    <PageHeader title="بنك الأنشطة" subtitle="واجبات وتقييمات جاهزة من المنصة ومن زملائك (المعتمدة). اختر نشاطاً وأدرجه في قسمك بدرسه وآخر أجله." />
+    <PageHeader title="بنك الواجبات والتقييمات" subtitle="واجبات وتقييمات جاهزة من المنصة ومن زملائك (المعتمدة). اختر واجباً أو تقييماً وأدرجه في قسمك بدرسه وآخر أجله." />
     <div class="abar panel">
       <IconField class="q"><InputIcon class="pi pi-search" /><InputText v-model="q" placeholder="ابحث بالعنوان أو الدرس" fluid /></IconField>
       <Select v-model="level" :options="levelOpts" placeholder="كل المستويات" show-clear option-label="label" option-value="value" />
@@ -12,7 +12,7 @@
       <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;تقييم جديد</RouterLink>
       <RouterLink to="/app/new-homework" class="p-button p-component p-button-sm p-button-outlined">واجب جديد</RouterLink>
     </div>
-    <p class="muted cnt">{{ list.length }} نشاط</p>
+    <p class="muted cnt">{{ list.length }} عنصر</p>
     <div class="grid">
       <article v-for="a in list" :key="a.id" class="card" :style="{ '--c': a.subjectColor || 'var(--brand)' }">
         <header><span class="ic"><i :class="a.type === 'quiz' ? 'pi pi-question-circle' : 'pi pi-pencil'" /></span><div><b>{{ a.title }}</b><small class="muted">{{ a.subjectName }} · {{ a.levelName }}</small></div></header>

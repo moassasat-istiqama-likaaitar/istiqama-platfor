@@ -7,8 +7,8 @@ import { useBrandStore } from '@/stores/brand'
 const STAFF_ROLES = ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'parent', 'support']
 
 /**
- * الجلسة: الشخص + صفاته + الصفة النشطة.
- * الصفة النشطة تحدد القائمة الجانبية والصلاحيات والثيم.
+ * الجلسة: الشخص + أدواره + الدور النشط.
+ * الدور النشط يحدد القائمة الجانبية والصلاحيات والثيم.
  */
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -98,7 +98,7 @@ export const useAuthStore = defineStore('auth', {
     },
     _applyTheme() {
       applyTheme(this.themeKey)
-      // هوية المدرسة تتبع الصفة النشطة (لا تغيّر الثيم)
+      // هوية المدرسة تتبع الدور النشط (لا تغيّر الثيم)
       useBrandStore().sync(this.active)
     }
   }

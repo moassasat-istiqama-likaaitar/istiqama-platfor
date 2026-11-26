@@ -1,7 +1,7 @@
 import { respond, ApiError } from './client'
 import { persons, assignments, schools, classes, levels } from '@/mock/db'
 
-/** يكمّل الصفة بأسماء المدرسة والأقسام والأبناء لعرضها في الواجهة */
+/** يكمّل الدور بأسماء المدرسة والأقسام والأبناء لعرضها في الواجهة */
 export function describeAssignment(a) {
   const school = schools.find((s) => s.id === a.schoolId) || null
   const out = { ...a, school: school ? { id: school.id, name: school.name } : null }

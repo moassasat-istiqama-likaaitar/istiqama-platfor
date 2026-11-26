@@ -74,12 +74,14 @@ import PageHeader from '@/components/PageHeader.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalog } from '@/composables/useCatalog'
 import { offlineBank, uploadOfflineTest, removeOfflineTest, setOfflineHidden } from '@/api/teaching'
+import { semesterOf, SEMESTER_NAMES } from '@/api/admin'
 
 const auth = useAuthStore()
 const cat = useCatalog()
 const toast = useToast()
 const SEASONS = ['2026 / 2027', '2025 / 2026', '2024 / 2025']
-const SEMESTERS = [{ label: 'السداسي الأول', value: 1 }, { label: 'السداسي الثاني', value: 2 }]
+// السداسي الافتراضي يُحسب من تواريخ الموسم النشط التي تضبطها الإدارة العامة
+const SEMESTERS = SEMESTER_NAMES.map((label, i) => ({ label, value: i + 1 }))
 const FILES = [{ key: 'test', label: 'وثيقة الاختبار', icon: 'pi pi-file-pdf', req: true }, { key: 'solution', label: 'الحلول', icon: 'pi pi-check-square' }, { key: 'grading', label: 'سلّم التنقيط', icon: 'pi pi-list' }]
 const isEditor = computed(() => auth.role === 'editor')
 const myLevels = computed(() => (isEditor.value ? (auth.active.levels || []).map((l) => l.id) : [...new Set((auth.active.classIds || []).map(cat.levelOfClass))]))
@@ -88,7 +90,7 @@ const tab = ref('bank')
 const list = ref([])
 const q = ref('')
 const fl = reactive({ level: null, subject: null, season: null, semester: null })
-const blank = () => ({ title: '', levelId: myLevels.value[0] || null, subjectId: null, season: SEASONS[0], semester: 1, kind: 'اختبار', files: { test: null, solution: null, grading: null }, notes: '' })
+const blank = () => ({ title: '', levelId: myLevels.value[0] || null, subjectId: null, season: SEASONS[0], semester: semesterOf(), kind: 'اختبار', files: { test: null, solution: null, grading: null }, notes: '' })
 const f = reactive(blank())
 const busy = ref(false)
 const valid = computed(() => f.title.trim() && f.subjectId && f.files.test)

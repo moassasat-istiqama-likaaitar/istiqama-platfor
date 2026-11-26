@@ -10,7 +10,7 @@
         <div><b>{{ facets.stats.total }}</b><span>{{ t('library.stats.total') }}</span></div>
         <div><b>{{ facets.stats.videos }}</b><span>{{ t('library.stats.videos') }}</span></div>
         <div v-if="curator"><b>{{ facets.stats.pending }}</b><span>{{ t('library.stats.pending') }}</span></div>
-        <RouterLink to="/app/activities" class="lib__act"><i class="pi pi-pencil" /> الواجبات والتقييمات في «بنك الأنشطة»</RouterLink>
+        <RouterLink to="/app/activities" class="lib__act"><i class="pi pi-pencil" /> بنك الواجبات والتقييمات</RouterLink>
       </div>
     </header>
 
@@ -36,7 +36,7 @@
       <Button v-if="hasFilters" :label="t('library.reset')" icon="pi pi-filter-slash" text size="small" @click="reset" />
     </div>
 
-    <!-- شبكة مصفّاة مثل بنك الأنشطة: المرشّحات (المستوى ← المادة ← الدرس) تحدد ما يظهر، مرتباً بترتيب الدروس -->
+    <!-- شبكة مصفّاة مثل بنك الواجبات والتقييمات: المرشّحات (المستوى ← المادة ← الدرس) تحدد ما يظهر، مرتباً بترتيب الدروس -->
     <div class="grid">
       <button v-for="c in shownItems" :key="c.id" type="button" class="card" :style="{ '--c': c.subject.color }" @click="open(c)">
         <div class="card__thumb">

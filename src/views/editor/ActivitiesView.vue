@@ -1,15 +1,15 @@
 <template>
-  <!-- ED05: الأنشطة — تقييمات وواجبات المنصة والمعلمين -->
+  <!-- ED05: الواجبات والتقييمات — تقييمات وواجبات المنصة والمعلمين -->
   <div>
-    <PageHeader title="الأنشطة" subtitle="كل تقييمات وواجبات المنصة: المعتمدة في المكتبة وما أنشأه المعلمون." />
+    <PageHeader title="الواجبات والتقييمات" subtitle="كل تقييمات وواجبات المنصة: المعتمدة في المكتبة وما أنشأه المعلمون." />
     <RecordTable :rows="rows" :columns="[
-      { field: 'title', label: 'النشاط' }, { field: 'typeLabel', label: 'النوع' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' },
+      { field: 'title', label: 'العنوان' }, { field: 'typeLabel', label: 'النوع' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' },
       { field: 'count', label: 'الأسئلة' }, { field: 'authorName', label: 'المؤلف' }, { field: 'status', label: 'الحالة', type: 'status' }
     ]" :search-keys="['title', 'lessonTitle', 'authorName']" :filters="[
       { key: 'type', label: 'النوع', options: [{ label: 'تقييم', value: 'quiz' }, { label: 'واجب', value: 'homework' }] },
       { key: 'levelName', label: 'المستوى', options: levelOpts },
       { key: 'subjectName', label: 'المادة', options: cat.subjectNames }
-    ]" unit="نشاط">
+    ]" unit="عنصر">
       <template #toolbar><RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;تقييم جديد</RouterLink></template>
       <template #actions="{ row }"><Button icon="pi pi-eye" text rounded size="small" @click="cur = row" /></template>
     </RecordTable>

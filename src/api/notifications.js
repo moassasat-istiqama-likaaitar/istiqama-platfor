@@ -1,7 +1,7 @@
 import { respond } from './client'
 import { notifications } from '@/mock/db'
 
-/** GET /api/notifications → قائمة إشعارات الشخص (كل صفاته)، الأحدث أولاً */
+/** GET /api/notifications → قائمة إشعارات الشخص (كل أدواره)، الأحدث أولاً */
 export function list(personId) {
   return respond(() =>
     notifications.filter((n) => n.personId === personId).sort((a, b) => b.at.localeCompare(a.at))

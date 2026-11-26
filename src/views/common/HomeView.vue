@@ -1,5 +1,5 @@
 <template>
-  <!-- الرئيسية — توجّه كل صفة إلى رئيسيتها (خريطة HOMES) -->
+  <!-- الرئيسية — توجّه كل دور إلى رئيسيته (خريطة HOMES) -->
   <StudentHome v-if="auth.role === 'student'" />
   <component :is="roleHome" v-else-if="roleHome" />
   <div v-else>

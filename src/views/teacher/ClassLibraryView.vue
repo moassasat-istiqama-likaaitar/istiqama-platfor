@@ -1,5 +1,5 @@
 <template>
-  <!-- TE04/TE05: مكتبة القسم — شبكة مصفّاة مثل بنك الأنشطة: المادة ← الدرس ← النوع، محتوى وأنشطة القسم -->
+  <!-- TE04/TE05: مكتبة القسم — شبكة مصفّاة مثل بنك الواجبات والتقييمات: المادة ← الدرس ← النوع، محتوى القسم وواجباته وتقييماته -->
   <div class="cl">
     <PageHeader title="مكتبة القسم" :subtitle="isEditor ? 'اختر قسماً بعينه، أو المستوى كقسم واحد: ما تدرجه فيه يصل كل أقسامه إجبارياً.' : 'ما يصل تلاميذ القسم من محتوى وأنشطة. صفِّ بالمادة والدرس. الأساسي ثابت، وما أدرجته أنت يمكنك إزالته.'" />
 
@@ -13,7 +13,7 @@
       </div>
       <div class="clbar__links">
         <RouterLink to="/app/central-library" class="p-button p-component p-button-outlined p-button-sm"><i class="pi pi-book" />&nbsp;من المكتبة المركزية</RouterLink>
-        <RouterLink to="/app/activities" class="p-button p-component p-button-outlined p-button-sm"><i class="pi pi-pencil" />&nbsp;من بنك الأنشطة</RouterLink>
+        <RouterLink to="/app/activities" class="p-button p-component p-button-outlined p-button-sm"><i class="pi pi-pencil" />&nbsp;من بنك الواجبات والتقييمات</RouterLink>
         <RouterLink to="/app/upload-content" class="p-button p-component p-button-sm"><i class="pi pi-upload" />&nbsp;رفع</RouterLink>
       </div>
     </div>
@@ -66,7 +66,7 @@ const cat = useCatalog()
 const toast = useToast()
 const isEditor = computed(() => auth.role === 'editor')
 const FILTERS = [
-  { key: 'all', label: 'الكل' }, { key: 'main', label: 'رئيسي' }, { key: 'enrichment', label: 'إثرائي' }, { key: 'activity', label: 'أنشطة' }, { key: 'mine', label: 'ما أدرجته/رفعته' }
+  { key: 'all', label: 'الكل' }, { key: 'main', label: 'رئيسي' }, { key: 'enrichment', label: 'إثرائي' }, { key: 'activity', label: 'نشاط' }, { key: 'acts', label: 'الواجبات والتقييمات' }, { key: 'mine', label: 'ما أدرجته/رفعته' }
 ]
 const targetOpts = computed(() => {
   const groups = []
@@ -97,14 +97,14 @@ const fLesson = ref(null)
 const allItems = computed(() => [...data.value.contents.map((x) => ({ ...x, isAct: false })), ...data.value.activities.map((x) => ({ ...x, isAct: true }))])
 const subjectOpts = computed(() => [...new Set(allItems.value.map((x) => x.subjectName))])
 const lessonOpts = computed(() => [...new Map(allItems.value.filter((x) => x.subjectName === fSubject.value && x.lessonId).sort((a, b) => a.lessonOrder - b.lessonOrder).map((x) => [x.lessonId, { label: x.lessonTitle, value: x.lessonId }])).values()])
-// ترتيب الدروس نفسه في المكتبة المركزية، والرئيسي قبل الإثرائي ثم الأنشطة
+// ترتيب الدروس نفسه في المكتبة المركزية، والرئيسي قبل الإثرائي ثم الواجبات والتقييمات
 const flat = computed(() => {
   const term = q.value.trim()
   const rank = (it) => (it.isAct ? 3 : { main: 0, enrichment: 1, activity: 2 }[it.classification] ?? 1)
   return allItems.value
     .filter((x) => !fSubject.value || x.subjectName === fSubject.value)
     .filter((x) => !fLesson.value || x.lessonId === fLesson.value)
-    .filter((x) => show.value === 'all' || (show.value === 'mine' ? ['link', 'mine'].includes(x.source) : (x.isAct ? 'activity' : x.classification) === show.value))
+    .filter((x) => show.value === 'all' || (show.value === 'mine' ? ['link', 'mine'].includes(x.source) : (x.isAct ? 'acts' : x.classification) === show.value))
     .filter((x) => !term || [x.title, x.lessonTitle, x.subjectName].some((v) => v?.includes(term)))
     .sort((a, b) => (a.subjectOrder ?? 99) - (b.subjectOrder ?? 99) || (a.lessonId ? a.lessonOrder : 999) - (b.lessonId ? b.lessonOrder : 999) || rank(a) - rank(b))
     .map((x, i) => ({ ...x, key: `${x.id}-${x.linkId || i}` }))

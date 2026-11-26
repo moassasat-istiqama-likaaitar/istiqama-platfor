@@ -5,7 +5,7 @@
     <StatTiles :items="[
       { label: 'بانتظار القرار', value: rows.length, icon: 'pi pi-inbox', tone: rows.length ? 'amber' : 'green' },
       { label: 'مقترحات المعلمين', value: rows.filter((r) => r.kind === 'upload').length, icon: 'pi pi-user', tone: 'purple' },
-      { label: 'أنشطة', value: rows.filter((r) => r.kind === 'activity').length, icon: 'pi pi-question-circle', tone: 'blue' },
+      { label: 'واجبات وتقييمات', value: rows.filter((r) => r.kind === 'activity').length, icon: 'pi pi-question-circle', tone: 'blue' },
       { label: 'قرارات أخيرة', value: log.length, icon: 'pi pi-history', tone: 'green' }
     ]" />
     <div class="kinds">
@@ -16,7 +16,7 @@
       { field: 'title', label: 'العنوان' }, { field: 'origin', label: 'المصدر' }, { field: 'typeLabel', label: 'النوع' }, { field: 'subjectName', label: 'المادة' },
       { field: 'levelName', label: 'المستوى' }, { field: 'authorName', label: 'المؤلف' }, { field: 'at', label: 'التاريخ', type: 'date' }, { field: 'status', label: 'الحالة', type: 'status' }
     ]" :search-keys="['title', 'authorName', 'lessonTitle']" :filters="[
-      { key: 'origin', label: 'المصدر', options: [{ label: 'المكتبة', value: 'المكتبة' }, { label: 'مقترح معلم', value: 'مقترح معلم' }, { label: 'صادق عليه المدير', value: 'صادق عليه المدير' }, { label: 'نشاط معلم', value: 'نشاط معلم' }] },
+      { key: 'origin', label: 'المصدر', options: [{ label: 'المكتبة', value: 'المكتبة' }, { label: 'مقترح معلم', value: 'مقترح معلم' }, { label: 'صادق عليه المدير', value: 'صادق عليه المدير' }, { label: 'واجب أو تقييم معلم', value: 'واجب أو تقييم معلم' }] },
       { key: 'levelName', label: 'المستوى', options: levelOpts }
     ]" unit="عنصر" empty-text="لا شيء ينتظر المراجعة 🎉">
       <template #cell-title="{ row }"><b>{{ row.title }}</b><small v-if="row.lessonTitle" class="muted d">{{ row.lessonTitle }}</small></template>

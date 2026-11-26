@@ -1,6 +1,6 @@
 import { useI18n } from 'vue-i18n'
 
-/** وصف موحّد للصفة: "معلم — مدرسة النور" + سطر تفاصيل */
+/** وصف موحّد للدور: "معلم — مدرسة النور" + سطر تفاصيل */
 export function useAssignmentLabel() {
   const { t } = useI18n()
 

@@ -13,7 +13,7 @@
       </div>
       <button type="button" class="panel add" @click="dlg = true"><i class="pi pi-user-plus" /> عضو جديد</button>
     </div>
-    <FormDialog v-model:visible="dlg" title="عضو جديد في فريق الدعم" :fields="[{ key: 'name', label: 'الاسم الكامل', required: true }, { key: 'role', label: 'الدور', required: true, placeholder: 'دعم تقني' }, { key: 'scope', label: 'مجال التدخل', required: true }, { key: 'phone', label: 'الهاتف', ltr: true }]" @save="add" />
+    <FormDialog v-model:visible="dlg" title="عضو جديد في فريق الدعم" :fields="[{ key: 'name', label: 'الاسم الكامل', required: true }, { key: 'role', label: 'المهمة', required: true, placeholder: 'دعم تقني' }, { key: 'scope', label: 'مجال التدخل', required: true }, { key: 'phone', label: 'الهاتف', ltr: true }]" @save="add" />
   </div>
 </template>
 

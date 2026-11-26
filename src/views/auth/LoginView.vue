@@ -133,7 +133,7 @@ const toast = useToast()
 const auth = useAuthStore()
 
 const audiences = [
-  { i: 'pi pi-book', t: 'التلاميذ', d: 'دروس، أنشطة، ومتابعة التقدّم بواجهة تناسب كل طور' },
+  { i: 'pi pi-book', t: 'التلاميذ', d: 'دروس، واجبات وتقييمات، ومتابعة التقدّم بواجهة تناسب كل طور' },
   { i: 'pi pi-users', t: 'الأولياء', d: 'متابعة الأبناء والتواصل مع المدرسة' },
   { i: 'pi pi-graduation-cap', t: 'المعلمون', d: 'مكتبة مشتركة، تحضير، وتصحيح' },
   { i: 'pi pi-chart-bar', t: 'الإدارة', d: 'تسيير المدارس والمحتوى والتقارير' }
@@ -191,7 +191,7 @@ async function submit() {
   loading.value = true
   try {
     await auth.login(form.login, form.password, form.remember)
-    // الدخول من رابط مدرسة: تُختار صفة تلك المدرسة مباشرة (مثلاً معلم يدرّس في مدرستين)
+    // الدخول من رابط مدرسة: يُختار دور تلك المدرسة مباشرة (مثلاً معلم يدرّس في مدرستين)
     const match = sb.value && auth.assignments.find((a) => a.school?.id === sb.value.school.id)
     if (match) auth.selectAssignment(match.id)
     if (auth.active) router.push(route.query.next || { name: 'home' })

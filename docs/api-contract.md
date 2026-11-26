@@ -2,16 +2,16 @@
 
 وثيقة حيّة تُستكمل مع كل مرحلة. المصدر الدقيق هو دوال `src/api/`.
 كل الطلبات (عدا الدخول واسترجاع كلمة المرور) تحمل الرمز: `Authorization: Bearer <token>`.
-الطلبات المرتبطة بصفة معينة تحمل أيضاً: `X-Assignment-Id: <assignmentId>`.
+الطلبات المرتبطة بدور معيّن يحمل أيضاً: `X-Assignment-Id: <assignmentId>`.
 
-## نموذج البيانات الأساسي: الشخص والصفات
+## نموذج البيانات الأساسي: الشخص والأدوار
 
 ```jsonc
 // Person — حساب واحد لكل شخص
 { "id": "p5", "username": "teacher", "email": "…", "firstName": "عمر", "lastName": "باعمر",
   "gender": "male", "phone": "…", "status": "active" }
 
-// Assignment — صفة: دور + نطاق
+// Assignment — دور: دور + نطاق
 { "id": "a6", "personId": "p5", "role": "teacher", "schoolId": "s1",
   "classIds": ["c1","c3"], "subjects": ["القرآن الكريم","الفقه"] }
 { "id": "a8", "personId": "p5", "role": "parent", "schoolId": null, "childIds": ["p10"] }
@@ -19,7 +19,7 @@
 
 الأدوار: `super_admin`, `admin`, `editor`, `school_manager`, `teacher`, `student`, `parent`, `support`.
 
-> ⚠️ يختلف هذا عن هيكلة البيانات في دفتر الشروط الحالي (جدول مستقل بكلمة مرور لكل دور). يجب تعديل الدفتر ليعتمد جدول الأشخاص + جدول الصفات.
+> ⚠️ يختلف هذا عن هيكلة البيانات في دفتر الشروط الحالي (جدول مستقل بكلمة مرور لكل دور). يجب تعديل الدفتر ليعتمد جدول الأشخاص + جدول الأدوار.
 
 ## المصادقة
 
@@ -52,7 +52,7 @@
 | GET | `/api/conversations/{id}` | المحادثة + `messages[] { id, body, at, fromMe, fromName }` |
 | POST | `/api/conversations/{id}/messages` | `{ body }` → message |
 | POST | `/api/conversations` | `{ assignmentId, toPersonId, subject, body }` → conversation |
-| GET | `/api/contacts?assignment={id}` | من يمكن مراسلته بهذه الصفة |
+| GET | `/api/contacts?assignment={id}` | من يمكن مراسلته بهذا الدور |
 
 قواعد المراسلة المبدئية (تُضبط لاحقاً من إعدادات التواصل AD16):
 المعلم ← تلاميذ أقسامه وأولياؤهم ومدير مدرسته · التلميذ ← معلمو قسمه · الولي ← معلمو أبنائه ومديرو مدارسهم · المدير ← معلمو مدرسته · الإدارة ← كل الطاقم.

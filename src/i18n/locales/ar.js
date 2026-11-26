@@ -13,8 +13,8 @@ export default {
   menu: {
     teaching: 'أقسامي', 'my-library': 'مكتبة القسم',
     home: 'الرئيسية', users: 'المستخدمون', 'users-list': 'قائمة المستخدمين', 'users-import': 'الاستيراد الجماعي',
-    'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل النشاطات', library: 'المكتبة', content: 'المحتوى', review: 'المراجعة والمصادقة', banks: 'بنوك التقييم', production: 'إنتاجي',
-    'library-manage': 'المكتبة المركزية', 'lesson-opening': 'فتح الدروس', 'activities-review': 'مراجعة الأنشطة', 'library-review': 'مراجعة المحتوى', activities: 'بنك الأنشطة',
+    'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل العمليات', library: 'المكتبة', content: 'المحتوى', review: 'المراجعة والمصادقة', banks: 'بنوك التقييم', production: 'إنتاجي',
+    'library-manage': 'المكتبة المركزية', 'lesson-opening': 'فتح الدروس', 'activities-review': 'مراجعة الواجبات والتقييمات', 'library-review': 'مراجعة المحتوى', activities: 'بنك الواجبات والتقييمات',
     'activities-group': 'الواجبات والتقييمات', reports: 'التقارير', 'reports-general': 'تقارير عامة',
     'reports-schools': 'أداء المدارس', 'reports-files': 'إحصائيات الملفات', 'reports-engagement': 'جودة التفاعل',
     settings: 'الإعدادات العامة', schools: 'المدارس', levels: 'الأطوار والمستويات', seasons: 'المواسم الدراسية',
@@ -23,7 +23,7 @@ export default {
     'import-export': 'الاستيراد والتصدير', tickets: 'البلاغات', 'quiz-builder': 'منشئ التقييمات',
     'editor-reports': 'التقارير', teachers: 'المعلمون', students: 'التلاميذ', parents: 'الأولياء',
     activation: 'تفعيل الحسابات', 'school-classes': 'الأقسام', 'teacher-files-review': 'مصادقة ملفات المعلمين',
-    'content-follow': 'متابعة المحتوى والأنشطة', performance: 'تقارير الأداء', 'school-notice': 'إعلانات المدرسة', 'school-identity': 'هوية المدرسة', 'branding-requests': 'اعتماد هويات المدارس',
+    'content-follow': 'متابعة المحتوى والواجبات والتقييمات', performance: 'تقارير الأداء', 'school-notice': 'إعلانات المدرسة', 'school-identity': 'هوية المدرسة', 'branding-requests': 'اعتماد هويات المدارس',
     'my-classes': 'أقسامي', 'class-library': 'مكتبة القسم', submissions: 'التسليمات والتصحيح',
     'central-library': 'المكتبة المركزية', 'upload-content': 'رفع محتوى', 'new-homework': 'واجب منزلي جديد',
     'my-files': 'ملفاتي وأنشطتي', 'offline-tests': 'بنك الاختبارات الحضورية', 'my-lessons': 'دروسي',
@@ -32,7 +32,7 @@ export default {
     feedback: 'البلاغات والمقترحات', profile: 'الملف الشخصي', notifications: 'الإشعارات', messages: 'الرسائل'
   },
   layout: {
-    switchRole: 'تبديل الصفة', currentRole: 'الصفة الحالية', myRoles: 'صفاتي', profile: 'الملف الشخصي',
+    switchRole: 'تبديل الدور', currentRole: 'الدور الحالي', myRoles: 'أدواري', profile: 'الملف الشخصي',
     logout: 'تسجيل الخروج', language: 'اللغة', openMenu: 'القائمة', demoMode: 'نموذج تجريبي',
     allSchools: 'كل المدارس', viewAll: 'عرض الكل', noNotifications: 'لا توجد إشعارات'
   },
@@ -44,23 +44,23 @@ export default {
     forgotTitle: 'استرجاع كلمة المرور', forgotHint: 'أدخل بريدك الإلكتروني أو رقم هاتفك وسنرسل لك رابط إعادة التعيين',
     contact: 'البريد الإلكتروني أو رقم الهاتف', sendLink: 'إرسال الرابط', sent: 'تم الإرسال',
     sentHint: 'إن كان الحساب موجوداً فستصلك رسالة خلال دقائق.', backToLogin: 'العودة لتسجيل الدخول',
-    chooseTitle: 'اختر صفتك', chooseHint: 'لديك أكثر من صفة في المنصة. بأي صفة تريد الدخول؟',
-    hello: 'أهلاً {name}', switchLater: 'يمكنك التبديل بين صفاتك في أي وقت من أعلى الصفحة.'
+    chooseTitle: 'اختر دورك', chooseHint: 'لديك أكثر من دور في المنصة. بأي دور تريد الدخول؟',
+    hello: 'أهلاً {name}', switchLater: 'يمكنك التبديل بين أدوارك في أي وقت من أعلى الصفحة.'
   },
   assignment: {
     classes: 'الأقسام: {list}', class: 'القسم: {name}', children: 'الأبناء: {list}', subjects: 'المواد: {list}',
     allPlatform: 'كل المدارس', levels: 'المستويات: {list}'
   },
   home: {
-    greeting: 'السلام عليكم، {name}', as: 'أنت الآن بصفة: {role}', quickAccess: 'الوصول السريع',
-    phaseNote: 'لوحة هذه الصفة تُبنى في المرحلة {phase}. هذه نسخة مبدئية للتنقل.'
+    greeting: 'السلام عليكم، {name}', as: 'دورك الآن: {role}', quickAccess: 'الوصول السريع',
+    phaseNote: 'لوحة هذا الدور تُبنى في المرحلة {phase}. هذه نسخة مبدئية للتنقل.'
   },
   profile: {
     title: 'الملف الشخصي', personal: 'البيانات الشخصية', lastName: 'اللقب', firstName: 'الاسم',
     email: 'البريد الإلكتروني', phone: 'رقم الهاتف', username: 'اسم المستخدم', photo: 'الصورة الشخصية',
     changePhoto: 'تغيير الصورة', security: 'كلمة المرور', currentPassword: 'كلمة المرور الحالية',
     newPassword: 'كلمة المرور الجديدة', confirmPassword: 'تأكيد كلمة المرور', changePassword: 'تغيير كلمة المرور',
-    mismatch: 'كلمتا المرور غير متطابقتين', passwordChanged: 'تم تغيير كلمة المرور', myRoles: 'صفاتي في المنصة'
+    mismatch: 'كلمتا المرور غير متطابقتين', passwordChanged: 'تم تغيير كلمة المرور', myRoles: 'أدواري في المنصة'
   },
   notifications: {
     title: 'الإشعارات', markAll: 'تعليم الكل كمقروء', empty: 'لا توجد إشعارات هنا',
@@ -73,7 +73,7 @@ export default {
   messages: {
     title: 'الرسائل', newMessage: 'رسالة جديدة', search: 'ابحث في المحادثات', empty: 'لا توجد محادثات',
     select: 'اختر محادثة لعرضها', placeholder: 'اكتب رسالتك...', to: 'إلى', subject: 'الموضوع', body: 'الرسالة',
-    as: 'بصفة', noContacts: 'لا توجد جهات اتصال متاحة لهذه الصفة', you: 'أنت', start: 'بدء المحادثة'
+    as: 'بدور', noContacts: 'لا توجد جهات اتصال متاحة لهذا الدور', you: 'أنت', start: 'بدء المحادثة'
   },
   feedback: {
     title: 'البلاغات والمقترحات', newTab: 'بلاغ أو مقترح جديد', mineTab: 'بلاغاتي', type: 'النوع',
@@ -90,13 +90,13 @@ export default {
   },
   errors: {
     notFound: 'الصفحة غير موجودة', notFoundHint: 'ربما تغيّر الرابط أو حُذفت الصفحة.',
-    forbidden: 'لا تملك صلاحية الوصول', forbiddenHint: 'هذه الصفحة غير متاحة لصفتك الحالية.', goHome: 'العودة للرئيسية'
+    forbidden: 'لا تملك صلاحية الوصول', forbiddenHint: 'هذه الصفحة غير متاحة لدورك الحالية.', goHome: 'العودة للرئيسية'
   },
   student: {
     nav: { home: 'الرئيسية', lessons: 'دروسي', assignments: 'واجباتي', progress: 'تقدمي' },
     stars: 'نجمة', points: 'نقطة', streak: 'يوم متتالي', streakShort: 'أيام',
     hello: { kids: 'مرحباً يا بطل!', juniors: 'أهلاً أيها المستكشف!', teens: 'أهلاً بعودتك' },
-    helloName: 'مرحباً {name}', todayGoal: 'هدف اليوم', goalHint: 'درسان ونشاط واحد', goalDone: 'أنجزت هدف اليوم! رائع',
+    helloName: 'مرحباً {name}', todayGoal: 'هدف اليوم', goalHint: 'درسان وواجب أو تقييم', goalDone: 'أنجزت هدف اليوم! رائع',
     continue: 'تابع من حيث توقفت', start: 'ابدأ', resume: 'تابع', mySubjects: 'موادي', seeAll: 'عرض الكل',
     upcoming: 'ينتظرك', noUpcoming: 'لا واجبات حالياً، أحسنت!', badges: 'شاراتي', overall: 'تقدّمك العام',
     lessonsDone: '{done} من {total} درس', newLessons: '{n} جديد', lessonsCount: '{n} دروس',
@@ -105,7 +105,7 @@ export default {
     types: { video: 'فيديو', slides: 'عرض', pdf: 'مذكرة', image: 'صورة', quiz: 'تقييم', homework: 'واجب' },
     classification: { main: 'رئيسي', enrichment: 'إثرائي', activity: 'نشاط' },
     markDone: 'أكملت الدرس', alreadyDone: 'درس مكتمل', prev: 'الدرس السابق', next: 'الدرس التالي',
-    lessonContent: 'محتوى الدرس', lessonActivities: 'أنشطة الدرس', comments: 'التعليقات', commentPlaceholder: 'اكتب سؤالك أو تعليقك...',
+    lessonContent: 'محتوى الدرس', lessonActivities: 'واجبات الدرس وتقييماته', comments: 'التعليقات', commentPlaceholder: 'اكتب سؤالك أو تعليقك...',
     rate: 'ما مدى استفادتك؟', report: 'إبلاغ', reportSent: 'شكراً، وصل بلاغك', thanksRating: 'شكراً على تقديرك',
     gained: '+{n}', bravo: { kids: 'رائع يا بطل!', juniors: 'إنجاز رائع!', teens: 'أحسنت!' }, newBadge: 'شارة جديدة!',
     tabs: { todo: 'للإنجاز', submitted: 'مُسلّمة', graded: 'مصحّحة' },
@@ -117,7 +117,7 @@ export default {
     instructions: 'التعليمات', attachments: 'المرفقات', myAnswer: 'إجابتي', writeAnswer: 'اكتب إجابتك هنا...',
     attachFile: 'أرفق صورة أو ملفاً', submit: 'تسليم الواجب', submitted: 'تم التسليم! سيصححه معلمك قريباً',
     teacherNote: 'ملاحظة المعلم', modelAnswer: 'الإجابة النموذجية', submittedAt: 'سُلّم {d}',
-    report_: { title: 'تقريري الشخصي', lessons: 'دروس مكتملة', activities: 'أنشطة منجزة', average: 'المعدل', quizzes: 'التقييمات',
+    report_: { title: 'تقريري الشخصي', lessons: 'دروس مكتملة', activities: 'واجبات وتقييمات منجزة', average: 'المعدل', quizzes: 'التقييمات',
       homework: 'الواجبات', interactions: 'التفاعلات', bySubject: 'حسب المادة', allBadges: 'كل الشارات', locked: 'لم تُفتح بعد' }
   },
   library: {

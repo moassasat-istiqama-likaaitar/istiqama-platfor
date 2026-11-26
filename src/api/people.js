@@ -6,7 +6,7 @@ import { progressOf } from '@/mock/progress'
 import { hashStats } from '@/mock/world'
 
 /**
- * الأشخاص والصفات والمؤشرات — تخدم شاشات المعلم والمدير والإدارة العامة والولي.
+ * الأشخاص والأدوار والمؤشرات — تخدم شاشات المعلم والمدير والإدارة العامة والولي.
  */
 
 export const fullName = (p) => (p ? `${p.firstName} ${p.lastName}` : '—')
@@ -79,7 +79,7 @@ export function classStudents(classId) {
   return respond(() => assignments.filter((a) => a.role === 'student' && a.classId === classId).map((a) => studentRow(a.personId)))
 }
 
-/** GET /api/users?role=&schoolId= → صفوف جدول المستخدمين (شخص واحد قد يظهر بأكثر من صفة) */
+/** GET /api/users?role=&schoolId= → صفوف جدول المستخدمين (شخص واحد قد يظهر بأكثر من دور) */
 export function listUsers({ role, schoolId } = {}) {
   return respond(() => {
     const rows = persons
@@ -111,7 +111,7 @@ export function listUsers({ role, schoolId } = {}) {
   })
 }
 
-/** GET /api/users/:id → الشخص وكل صفاته */
+/** GET /api/users/:id → الشخص وكل أدواره */
 export function getUser(id) {
   return respond(() => {
     const p = personOf(id)
@@ -129,7 +129,7 @@ export function getUser(id) {
   })
 }
 
-/** POST /api/users { person, assignment } — شخص جديد بصفته الأولى */
+/** POST /api/users { person, assignment } — شخص جديد بدوره الأولى */
 export function createUser(data, actorRole = null) {
   return respond(() => {
     if (actorRole && data.role && !canGrantRole(actorRole, data.role)) throw new ApiError('forbidden', 'إضافة مشرف عام أو مدير عام من صلاحية المدير العام وحده')
@@ -160,7 +160,7 @@ export function updateUser(id, patch) {
   })
 }
 
-/** POST /api/users/:id/assignments — إضافة صفة لشخص موجود (مثلاً معلم يصبح ولياً) */
+/** POST /api/users/:id/assignments — إضافة دور لشخص موجود (مثلاً معلم يصبح ولياً) */
 export function addAssignment(personId, data, actorRole = null) {
   return respond(() => {
     if (actorRole && !canGrantRole(actorRole, data.role)) throw new ApiError('forbidden', 'إضافة مشرف عام أو مدير عام من صلاحية المدير العام وحده')
@@ -171,7 +171,7 @@ export function addAssignment(personId, data, actorRole = null) {
 export function removeAssignment(id, actorRole = null) {
   return respond(() => {
     const i = assignments.findIndex((a) => a.id === id)
-    if (actorRole && i >= 0 && !canRemoveHolder(actorRole, [assignments[i].role])) throw new ApiError('forbidden', 'نزع صفة المدير العام من صلاحية المدير العام وحده')
+    if (actorRole && i >= 0 && !canRemoveHolder(actorRole, [assignments[i].role])) throw new ApiError('forbidden', 'نزع دور المدير العام من صلاحية المدير العام وحده')
     if (i >= 0) assignments.splice(i, 1)
     return true
   })
@@ -209,7 +209,7 @@ export function duplicates() {
   })
 }
 
-/** POST /api/users/merge { keepId, mergeIds } — دمج: تنتقل الصفات إلى الحساب المحتفظ به */
+/** POST /api/users/merge { keepId, mergeIds } — دمج: تنتقل الأدوار إلى الحساب المحتفظ به */
 export function mergeUsers(keepId, mergeIds) {
   return respond(() => {
     assignments.forEach((a) => mergeIds.includes(a.personId) && (a.personId = keepId))

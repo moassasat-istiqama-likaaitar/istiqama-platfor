@@ -67,19 +67,35 @@ export function saveLevel(data) {
  * قيد الإعداد (draft) ← نشط (active، موسم واحد فقط) ← إقفال (closing) ← مؤرشف (archived، للقراءة فقط)
  * الموسم الجديد يُعَدّ والقديم ما زال نشطاً، ثم «إطلاق الموسم» يؤرشف القديم ويفعّل الجديد.
  * المؤرشف لا يُعاد تفعيله؛ يمكن «إعادة فتحه مؤقتاً للتصحيح» بسبب ومدة، ويُسجَّل ذلك. */
-const TERMS = (y) => [
-  { name: 'الفصل الأول', start: `${y}-09-13`, end: `${y}-12-18` },
-  { name: 'الفصل الثاني', start: `${y + 1}-01-04`, end: `${y + 1}-03-19` },
-  { name: 'الفصل الثالث', start: `${y + 1}-04-04`, end: `${y + 1}-06-30` }
+/** السداسيان: الافتراضي عند إعداد موسم جديد؛ تواريخهما تضبطها الإدارة العامة لكل موسم */
+export const SEMESTER_NAMES = ['السداسي الأول', 'السداسي الثاني']
+const SEMESTERS = (y) => [
+  { n: 1, name: SEMESTER_NAMES[0], start: `${y}-09-13`, end: `${y + 1}-01-29` },
+  { n: 2, name: SEMESTER_NAMES[1], start: `${y + 1}-02-08`, end: `${y + 1}-06-30` }
 ]
-const seasonCol = collection('seasons2', () => [
-  ...seasons.map((s) => ({ ...s, terms: TERMS(2026) })),
-  { id: 'y2025', name: '2025 / 2026', start: '2025-09-14', end: '2026-06-30', status: 'archived', terms: TERMS(2025), archivedAt: '2026-07-05T10:00:00Z', snapshot: { classes: 74, students: 1912, submissions: 18430, messages: 2210, reportCards: 1890 } }
+const seasonCol = collection('seasons3', () => [
+  ...seasons.map((s) => ({ ...s, semesters: SEMESTERS(2026) })),
+  { id: 'y2025', name: '2025 / 2026', start: '2025-09-14', end: '2026-06-30', status: 'archived', semesters: SEMESTERS(2025), archivedAt: '2026-07-05T10:00:00Z', snapshot: { classes: 74, students: 1912, submissions: 18430, messages: 2210, reportCards: 1890 } }
 ])
+/** السداسيان داخل حدود الموسم، والثاني يبدأ بعد نهاية الأول */
+function checkSemesters(season, sems) {
+  if (!sems) return
+  if (sems.length !== 2 || sems.some((x) => !x.start || !x.end)) throw new ApiError('invalid', 'حدّد بداية ونهاية السداسيين')
+  const [a, b] = sems
+  if (a.start > a.end || b.start > b.end) throw new ApiError('invalid', 'بداية السداسي يجب أن تسبق نهايته')
+  if (a.end >= b.start) throw new ApiError('invalid', 'السداسي الثاني يبدأ بعد نهاية الأول')
+  if (season.start && a.start < season.start) throw new ApiError('invalid', 'السداسي الأول يبدأ قبل بداية الموسم')
+  if (season.end && b.end > season.end) throw new ApiError('invalid', 'السداسي الثاني ينتهي بعد نهاية الموسم')
+}
+/** في أي سداسي يقع هذا التاريخ من الموسم النشط؟ (1 أو 2؛ بين السداسيين = العطلة ← 1) */
+export function semesterOf(date = new Date().toISOString().slice(0, 10)) {
+  const s = seasonCol.all().find((x) => ['active', 'closing'].includes(x.status))
+  return s?.semesters?.[1] && date >= s.semesters[1].start ? 2 : 1
+}
 /** ما يُؤرشف مع الموسم وما يبقى خارجه (قابل للتعديل لاحقاً) */
 export const ARCHIVE_SCOPE = {
   archived: ['الأقسام والتسجيلات', 'التسليمات والعلامات وكشوف النقاط', 'خطط الدروس وربط المحتوى بالأقسام', 'إشعارات المدارس', 'المراسلات (للقراءة)'],
-  kept: ['حسابات الأشخاص', 'المكتبة المركزية', 'بنك الأنشطة', 'بنك الاختبارات الحضورية (مصنّف بالموسم)', 'الإعدادات والهوية']
+  kept: ['حسابات الأشخاص', 'المكتبة المركزية', 'بنك الواجبات والتقييمات', 'بنك الاختبارات الحضورية (مصنّف بالموسم)', 'الإعدادات والهوية']
 }
 const ADMINS = ['super_admin', 'admin']
 const decorateSeason = (s) => ({ ...s, reopened: !!(s.reopen && s.reopen.until > new Date().toISOString()) })
@@ -93,18 +109,23 @@ export function seasonReadOnly(seasonId) {
   return !!s && s.status === 'archived' && !decorateSeason(s).reopened
 }
 /** POST /api/seasons — موسم جديد يبدأ «قيد الإعداد» */
-export function createSeason(data) {
+export function createSeason(data, role) {
   return respond(() => {
+    if (role && !ADMINS.includes(role)) throw new ApiError('forbidden', 'ضبط المواسم من صلاحية الإدارة العامة')
     if (seasonCol.all().some((s) => s.status === 'draft')) throw new ApiError('exists', 'يوجد موسم قيد الإعداد بالفعل')
     const y = Number(String(data.start).slice(0, 4))
-    return seasonCol.insert({ ...data, id: newId('y'), status: 'draft', terms: data.terms?.length ? data.terms : TERMS(y) })
+    const semesters = data.semesters?.length ? data.semesters : SEMESTERS(y)
+    checkSemesters(data, semesters)
+    return seasonCol.insert({ ...data, id: newId('y'), status: 'draft', semesters })
   })
 }
 /** PUT /api/seasons/:id — التعديل ممنوع على المؤرشف (إلا إن أعيد فتحه مؤقتاً) */
-export function updateSeason(id, data) {
+export function updateSeason(id, data, role) {
   return respond(() => {
+    if (role && !ADMINS.includes(role)) throw new ApiError('forbidden', 'ضبط المواسم من صلاحية الإدارة العامة')
     if (seasonReadOnly(id)) throw new ApiError('readonly', 'الموسم مؤرشف — للقراءة فقط')
     const { status, ...rest } = data
+    checkSemesters({ ...seasonCol.find(id), ...rest }, rest.semesters)
     return seasonCol.update(id, rest)
   })
 }
@@ -212,7 +233,7 @@ export function savePermissions(matrix, role) {
   }, 350)
 }
 
-/* ——— سجل النشاطات ——— */
+/* ——— سجل العمليات ——— */
 const ACTIONS = [
   ['login', 'دخول إلى المنصة'], ['content.upload', 'رفع محتوى'], ['content.approve', 'اعتماد محتوى'], ['grade', 'تصحيح واجب'], ['user.create', 'إضافة مستخدم'],
   ['user.activate', 'تفعيل حساب'], ['notice.send', 'إرسال إعلان'], ['lesson.complete', 'إكمال درس'], ['quiz.submit', 'تسليم تقييم'], ['settings.update', 'تعديل الإعدادات']
@@ -234,7 +255,7 @@ const events = collection('events', () => {
   const d = (m, day) => `2026-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   return [
     { id: 'ev1', title: 'عطلة الشتاء', type: 'holiday', start: d(12, 18), end: '2027-01-03', scope: 'all' },
-    { id: 'ev2', title: 'اختبارات الفصل الأول', type: 'exam', start: d(12, 6), end: d(12, 14), scope: 'all' },
+    { id: 'ev2', title: 'اختبارات السداسي الأول', type: 'exam', start: d(12, 6), end: d(12, 14), scope: 'all' },
     { id: 'ev3', title: 'اجتماع المعلمين العام', type: 'meeting', start: d(11, 29), end: d(11, 29), scope: 'all' },
     { id: 'ev4', title: 'عطلة الربيع', type: 'holiday', start: '2027-03-19', end: '2027-04-04', scope: 'all' },
     { id: 'ev5', title: 'يوم مفتوح للأولياء', type: 'event', start: d(12, 2), end: d(12, 2), scope: 's1' },
@@ -271,7 +292,7 @@ export function saveCommunication(data) {
 /* ——— الاستيراد والتصدير ——— */
 const jobs = collection('importJobs', () => [
   { id: 'jb1', kind: 'import', entity: 'students', file: 'تلاميذ-النور-2026.xlsx', rows: 112, ok: 109, errors: 3, status: 'done', at: new Date(Date.now() - 9 * 864e5).toISOString(), by: 'عبد الرحمن بكير' },
-  { id: 'jb2', kind: 'export', entity: 'grades', file: 'علامات-الفصل-الأول.xlsx', rows: 1840, ok: 1840, errors: 0, status: 'done', at: new Date(Date.now() - 2 * 864e5).toISOString(), by: 'إبراهيم حمودة' }
+  { id: 'jb2', kind: 'export', entity: 'grades', file: 'علامات-السداسي-الأول.xlsx', rows: 1840, ok: 1840, errors: 0, status: 'done', at: new Date(Date.now() - 2 * 864e5).toISOString(), by: 'إبراهيم حمودة' }
 ])
 export function listJobs() {
   return respond(() => jobs.all())

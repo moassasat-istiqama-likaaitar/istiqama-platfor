@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import * as notificationsApi from '@/api/notifications'
 import * as messagesApi from '@/api/messages'
 
-/** صندوق الإشعارات والرسائل — موحّد لكل صفات الشخص */
+/** صندوق الإشعارات والرسائل — موحّد لكل أدوار الشخص */
 export const useInboxStore = defineStore('inbox', {
   state: () => ({
     notifications: [],

@@ -29,9 +29,9 @@ import { exportCsv } from '@/utils/exportCsv'
 const auth = useAuthStore()
 const toast = useToast()
 const EXPORTS = [
-  { key: 'users', label: 'المستخدمون', hint: 'كل الأشخاص وصفاتهم', icon: 'pi pi-users' },
+  { key: 'users', label: 'المستخدمون', hint: 'كل الأشخاص وأدوارهم', icon: 'pi pi-users' },
   { key: 'schools', label: 'المدارس', hint: 'المدارس ومديروها وأعدادها', icon: 'pi pi-building' },
-  { key: 'performance', label: 'أداء المدارس', hint: 'التقدّم والمعدلات والنشاط', icon: 'pi pi-chart-bar' }
+  { key: 'performance', label: 'أداء المدارس', hint: 'التقدّم والمعدلات ونسبة الدخول', icon: 'pi pi-chart-bar' }
 ]
 const jobs = ref([])
 const busy = ref(null)
@@ -42,7 +42,7 @@ async function run(e) {
   let rows, cols
   if (e.key === 'users') {
     rows = await listUsers()
-    cols = [{ field: 'name', label: 'الاسم' }, { field: 'roles', label: 'الصفات' }, { field: 'schoolsLabel', label: 'المدارس' }, { field: 'phone', label: 'الهاتف' }, { field: 'status', label: 'الحالة' }]
+    cols = [{ field: 'name', label: 'الاسم' }, { field: 'roles', label: 'الأدوار' }, { field: 'schoolsLabel', label: 'المدارس' }, { field: 'phone', label: 'الهاتف' }, { field: 'status', label: 'الحالة' }]
   } else if (e.key === 'schools') {
     rows = await listSchools()
     cols = [{ field: 'code', label: 'الرمز' }, { field: 'name', label: 'المدرسة' }, { field: 'manager', label: 'المدير' }, { field: 'classes', label: 'الأقسام' }, { field: 'students', label: 'التلاميذ' }]

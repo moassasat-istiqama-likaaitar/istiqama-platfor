@@ -20,12 +20,12 @@
       </RecordTable>
       <div class="g mt">
         <section class="panel"><h3>المعدل العام حسب المدرسة</h3><BarList :rows="r.schools.map((s) => ({ label: s.short, sub: s.name.split(' - ')[1], value: s.average }))" :max="20" :warn-below="10" /></section>
-        <section class="panel"><h3>نسبة النشاط الأسبوعي</h3><BarList :rows="r.schools.map((s) => ({ label: s.short, sub: s.name.split(' - ')[1], value: s.active }))" :max="100" suffix="%" :warn-below="50" /></section>
+        <section class="panel"><h3>نسبة الدخول الأسبوعي</h3><BarList :rows="r.schools.map((s) => ({ label: s.short, sub: s.name.split(' - ')[1], value: s.active }))" :max="100" suffix="%" :warn-below="50" /></section>
       </div>
     </template>
 
     <template v-else-if="kind === 'files'">
-      <StatTiles :items="[{ label: 'المحتويات', value: r.contents, icon: 'pi pi-book' }, { label: 'الأنشطة', value: r.activities, icon: 'pi pi-question-circle', tone: 'purple' }, { label: 'ينتظر المراجعة', value: r.pendingReview, icon: 'pi pi-inbox', tone: 'amber' }]" />
+      <StatTiles :items="[{ label: 'المحتويات', value: r.contents, icon: 'pi pi-book' }, { label: 'الواجبات والتقييمات', value: r.activities, icon: 'pi pi-question-circle', tone: 'purple' }, { label: 'ينتظر المراجعة', value: r.pendingReview, icon: 'pi pi-inbox', tone: 'amber' }]" />
       <div class="g">
         <section class="panel"><h3>المحتوى حسب النوع</h3><BarList :rows="r.byType.map((x) => ({ label: cat.TYPE_LABEL[x.key] || x.key, value: x.value }))" /></section>
         <section class="panel"><h3>المحتوى والمشاهدات حسب المستوى</h3><BarList :rows="r.byLevel.map((x) => ({ label: x.label, sub: `${x.value} محتوى`, value: x.views }))" suffix=" مشاهدة" /></section>
@@ -58,7 +58,7 @@ import { exportCsv } from '@/utils/exportCsv'
 defineProps({ kind: { type: String, default: 'general' } })
 const cat = useCatalog()
 const TITLES = { general: 'تقارير عامة', schools: 'أداء المدارس', files: 'إحصائيات الملفات', engagement: 'جودة التفاعل' }
-const schoolCols = [{ field: 'name', label: 'المدرسة' }, { field: 'students', label: 'التلاميذ' }, { field: 'teachers', label: 'المعلمون' }, { field: 'classes', label: 'الأقسام' }, { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'active', label: 'النشاط %' }, { field: 'atRisk', label: 'متعثرون' }]
+const schoolCols = [{ field: 'name', label: 'المدرسة' }, { field: 'students', label: 'التلاميذ' }, { field: 'teachers', label: 'المعلمون' }, { field: 'classes', label: 'الأقسام' }, { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'active', label: 'الدخول %' }, { field: 'atRisk', label: 'متعثرون' }]
 const r = ref(null)
 onMounted(async () => (r.value = await globalReport()))
 </script>

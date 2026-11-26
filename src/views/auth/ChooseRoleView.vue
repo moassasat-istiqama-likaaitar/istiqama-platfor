@@ -1,5 +1,5 @@
 <template>
-  <!-- AU02: اختيار الصفة — لمن يحمل أكثر من صفة (معلم وولي، معلم في مدرستين...) -->
+  <!-- AU02: اختيار الدور — لمن يحمل أكثر من دور (معلم وولي، معلم في مدرستين...) -->
   <div class="choose">
     <header class="choose__head">
       <Avatar :label="auth.initials" shape="circle" size="xlarge" class="choose__avatar" />

@@ -12,7 +12,7 @@
         <label class="fl"><span>آخر أجل</span><InputText v-model="q.due" type="datetime-local" fluid /></label>
         <label class="fl sw full"><ToggleSwitch v-model="q.showAnswers" /> <span>إظهار الإجابات الصحيحة بعد التسليم</span></label>
         <p v-if="!tg.isEditor.value" class="muted small full"><i class="pi pi-info-circle" /> يُرسل تلقائياً للمكتبة المركزية للمراجعة، ولا يراه التلاميذ حتى يصادق عليه مدير المدرسة أو يعتمده المحرر.</p>
-        <p v-else class="muted small">ما ينشره المحرر يدخل بنك الأنشطة معتمداً، وما يُنشر على المستوى إجباري لكل أقسامه.</p>
+        <p v-else class="muted small">ما ينشره المحرر يدخل بنك الواجبات والتقييمات معتمداً، وما يُنشر على المستوى إجباري لكل أقسامه.</p>
       </section>
 
       <section class="qs">

@@ -30,7 +30,7 @@ export function reviewQueue(scope = {}) {
       at: u.at, status: STATUS_TAG[u.status], levelId: u.levelId, subjectId: u.subjectId, lessonId: u.lessonId, ...meta(u), payload: normUpload(u).payload
     }))
     const acts = teacherActs().all().filter((a) => ['review', 'temp'].includes(a.status)).map((a) => ({
-      id: a.id, kind: 'activity', origin: a.status === 'temp' ? 'صادق عليه المدير' : 'نشاط معلم', title: a.title, type: a.kind === 'quiz' ? 'quiz' : 'homework', proposedClass: 'activity', authorName: a.authorName,
+      id: a.id, kind: 'activity', origin: a.status === 'temp' ? 'صادق عليه المدير' : 'واجب أو تقييم معلم', title: a.title, type: a.kind === 'quiz' ? 'quiz' : 'homework', proposedClass: 'activity', authorName: a.authorName,
       at: a.at, status: STATUS_TAG[a.status], levelId: a.levelId, subjectId: a.subjectId, lessonId: a.lessonId, ...meta(a), questions: a.questions, instructions: a.instructions
     }))
     const lib = contents.filter((c) => ['pending', 'temp'].includes(c.status)).map((c) => ({

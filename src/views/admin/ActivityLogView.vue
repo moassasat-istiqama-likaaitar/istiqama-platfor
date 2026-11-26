@@ -1,11 +1,11 @@
 <template>
-  <!-- AD06: سجل النشاطات -->
+  <!-- AD06: سجل العمليات -->
   <div>
-    <PageHeader title="سجل النشاطات" subtitle="من فعل ماذا ومتى — للتدقيق والأمان. يُحفظ السجل 12 شهراً." />
-    <RecordTable :rows="rows" :columns="[{ field: 'at', label: 'الوقت' }, { field: 'person', label: 'المستخدم' }, { field: 'roleLabel', label: 'الصفة' }, { field: 'school', label: 'المدرسة' }, { field: 'actionLabel', label: 'العملية' }, { field: 'device', label: 'الجهاز' }, { field: 'ip', label: 'العنوان' }]" :search-keys="['person', 'actionLabel', 'school']" :filters="[{ key: 'actionLabel', label: 'العملية', options: actions }, { key: 'roleLabel', label: 'الصفة', options: roles }]" :page-size="20" unit="عملية">
+    <PageHeader title="سجل العمليات" subtitle="من فعل ماذا ومتى — للتدقيق والأمان. يُحفظ السجل 12 شهراً." />
+    <RecordTable :rows="rows" :columns="[{ field: 'at', label: 'الوقت' }, { field: 'person', label: 'المستخدم' }, { field: 'roleLabel', label: 'الدور' }, { field: 'school', label: 'المدرسة' }, { field: 'actionLabel', label: 'العملية' }, { field: 'device', label: 'الجهاز' }, { field: 'ip', label: 'العنوان' }]" :search-keys="['person', 'actionLabel', 'school']" :filters="[{ key: 'actionLabel', label: 'العملية', options: actions }, { key: 'roleLabel', label: 'الدور', options: roles }]" :page-size="20" unit="عملية">
       <template #cell-at="{ row }">{{ new Date(row.at).toLocaleString('ar-DZ', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) }}</template>
       <template #cell-ip="{ row }"><bdi dir="ltr">{{ row.ip }}</bdi></template>
-      <template #toolbar><Button label="تصدير" icon="pi pi-download" size="small" outlined severity="secondary" @click="exportCsv('سجل-النشاطات.csv', rows, [{ field: 'at', label: 'الوقت' }, { field: 'person', label: 'المستخدم' }, { field: 'actionLabel', label: 'العملية' }, { field: 'ip', label: 'IP' }])" /></template>
+      <template #toolbar><Button label="تصدير" icon="pi pi-download" size="small" outlined severity="secondary" @click="exportCsv('سجل-العمليات.csv', rows, [{ field: 'at', label: 'الوقت' }, { field: 'person', label: 'المستخدم' }, { field: 'actionLabel', label: 'العملية' }, { field: 'ip', label: 'IP' }])" /></template>
     </RecordTable>
   </div>
 </template>

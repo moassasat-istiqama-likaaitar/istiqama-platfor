@@ -1,11 +1,11 @@
 <template>
-  <!-- AD05: الحسابات المكررة — الدمج يحفظ كل الصفات في حساب واحد -->
+  <!-- AD05: الحسابات المكررة — الدمج يحفظ كل الأدوار في حساب واحد -->
   <div>
-    <PageHeader title="الحسابات المكررة" subtitle="أشخاص لهم أكثر من حساب (نفس الاسم واللقب أو نفس تاريخ الميلاد). الدمج ينقل كل الصفات إلى حساب واحد: شخص واحد = حساب واحد." />
+    <PageHeader title="الحسابات المكررة" subtitle="أشخاص لهم أكثر من حساب (نفس الاسم واللقب أو نفس تاريخ الميلاد). الدمج ينقل كل الأدوار إلى حساب واحد: شخص واحد = حساب واحد." />
     <div v-for="g in groups" :key="g.id" class="panel grp">
       <header><b>{{ g.name }}</b><span class="muted">{{ g.reason }} · {{ g.people.length }} حسابات</span></header>
       <table class="t">
-        <thead><tr><th>الاحتفاظ</th><th>الصفات</th><th>المدرسة</th><th>الميلاد</th><th>الهاتف</th></tr></thead>
+        <thead><tr><th>الاحتفاظ</th><th>الأدوار</th><th>المدرسة</th><th>الميلاد</th><th>الهاتف</th></tr></thead>
         <tbody><tr v-for="p in g.people" :key="p.id"><td><RadioButton v-model="keep[g.id]" :value="p.id" /></td><td>{{ p.roles.map((r) => t('roles.' + r)).join('، ') }}</td><td>{{ p.school }}</td><td>{{ p.birthDate }}</td><td dir="ltr">{{ p.phone }}</td></tr></tbody>
       </table>
       <footer>
@@ -39,7 +39,7 @@ onMounted(async () => {
 })
 async function merge(g) {
   await mergeUsers(keep[g.id], g.people.map((p) => p.id).filter((id) => id !== keep[g.id]))
-  toast.add({ severity: 'success', summary: `دُمجت حسابات ${g.name}`, detail: 'انتقلت كل الصفات إلى الحساب المختار', life: 2600 })
+  toast.add({ severity: 'success', summary: `دُمجت حسابات ${g.name}`, detail: 'انتقلت كل الأدوار إلى الحساب المختار', life: 2600 })
   groups.value = groups.value.filter((x) => x.id !== g.id)
 }
 </script>

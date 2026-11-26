@@ -30,7 +30,7 @@ const label = useAssignmentLabel()
 
 const type = computed(() => NOTIFICATION_TYPES[props.item.type] || NOTIFICATION_TYPES.announcement)
 
-// وسم الصفة يظهر فقط لمن له أكثر من صفة
+// وسم الدور يظهر فقط لمن له أكثر من دور
 const roleLabel = computed(() => {
   if (!auth.hasManyAssignments) return ''
   if (!props.item.assignmentId) return t('notifications.general')

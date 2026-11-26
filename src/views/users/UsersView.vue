@@ -13,12 +13,12 @@
         <Button :label="addLabel" icon="pi pi-plus" size="small" @click="openAdd" />
       </template>
       <template #cell-roles="{ row }"><span class="roles"><span v-for="r in row.roles" :key="r" class="role">{{ t('roles.' + r) }}</span></span></template>
-      <template #actions="{ row }"><Button icon="pi pi-pencil" text rounded size="small" title="الملف والصفات" @click="openUser(row.id)" /></template>
+      <template #actions="{ row }"><Button icon="pi pi-pencil" text rounded size="small" title="الملف والأدوار" @click="openUser(row.id)" /></template>
     </RecordTable>
 
     <FormDialog v-model:visible="addDlg" :title="addLabel" :fields="addFields" :value="addValue" save-label="إضافة" wide :busy="busy" @save="add" />
 
-    <!-- ملف المستخدم: البيانات + كل صفاته (شخص واحد، صفات متعددة) -->
+    <!-- ملف المستخدم: البيانات + كل أدواره (شخص واحد، أدوار متعددة) -->
     <Dialog v-model:visible="userDlg" modal :header="user ? `${user.firstName} ${user.lastName}` : ''" :style="{ width: 'min(760px, 96vw)' }">
       <div v-if="user" class="ud">
         <section>
@@ -33,20 +33,20 @@
           </div>
         </section>
         <section>
-          <h4>الصفات <small class="muted">— شخص واحد قد يكون معلماً ووليّاً، أو معلماً في مدرستين</small></h4>
+          <h4>الأدوار <small class="muted">— شخص واحد قد يكون معلماً ووليّاً، أو معلماً في مدرستين</small></h4>
           <ul class="asg">
             <li v-for="a in user.assignments" :key="a.id">
               <span class="role">{{ t('roles.' + a.role) }}</span>
               <span class="asg__d">{{ a.schoolName || 'كل المدارس' }}<template v-if="a.classNames.length"> · {{ a.classNames.join('، ') }}</template><template v-if="a.childNames.length"> · الأبناء: {{ a.childNames.join('، ') }}</template><template v-if="a.subjects?.length"> · {{ a.subjects.join('، ') }}</template></span>
-              <Button v-if="canEditAssignments && user.assignments.length > 1 && canRemoveHolder(auth.role, [a.role])" icon="pi pi-times" text rounded size="small" severity="danger" title="إزالة الصفة" @click="dropAssignment(a)" />
+              <Button v-if="canEditAssignments && user.assignments.length > 1 && canRemoveHolder(auth.role, [a.role])" icon="pi pi-times" text rounded size="small" severity="danger" title="إزالة الدور" @click="dropAssignment(a)" />
             </li>
           </ul>
           <div v-if="canEditAssignments" class="add-asg">
-            <Select v-model="na.role" :options="roleOptions" option-label="label" option-value="value" placeholder="صفة جديدة" />
+            <Select v-model="na.role" :options="roleOptions" option-label="label" option-value="value" placeholder="دور جديد" />
             <Select v-if="needsSchool(na.role) && !schoolId" v-model="na.schoolId" :options="cat.schoolOptions" option-label="label" option-value="value" placeholder="المدرسة" filter />
             <MultiSelect v-if="na.role === 'teacher'" v-model="na.classIds" :options="cat.classOptions().filter((c) => !effSchool || cat.classes.find((x) => x.id === c.value)?.schoolId === effSchool)" option-label="label" option-value="value" placeholder="الأقسام" display="chip" />
             <Select v-if="na.role === 'student'" v-model="na.classId" :options="cat.classOptions().filter((c) => !effSchool || cat.classes.find((x) => x.id === c.value)?.schoolId === effSchool)" option-label="label" option-value="value" placeholder="القسم" />
-            <Button label="إضافة الصفة" icon="pi pi-plus" size="small" :disabled="!na.role" @click="addAsg" />
+            <Button label="إضافة الدور" icon="pi pi-plus" size="small" :disabled="!na.role" @click="addAsg" />
           </div>
         </section>
       </div>
@@ -104,13 +104,13 @@ const columns = computed(() => {
   if (props.role === 'teacher') return [{ field: 'name', label: 'المعلم', type: 'person', sub: 'phone' }, { field: 'subjects', label: 'المواد', type: 'list' }, { field: 'classesLabel', label: 'الأقسام' }, { field: 'classCount', label: 'عدد الأقسام' }, status]
   if (props.role === 'student') return [{ field: 'name', label: 'التلميذ', type: 'person', sub: 'parents' }, { field: 'className', label: 'القسم' }, { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'late', label: 'متأخرات' }, status]
   if (props.role === 'parent') return [{ field: 'name', label: 'الولي', type: 'person', sub: 'phone' }, { field: 'childrenLabel', label: 'الأبناء' }, { field: 'childCount', label: 'العدد' }, status]
-  return [{ field: 'name', label: 'المستخدم', type: 'person', sub: 'username' }, { field: 'roles', label: 'الصفات' }, { field: 'schoolsLabel', label: 'المدارس' }, { field: 'phone', label: 'الهاتف' }, status]
+  return [{ field: 'name', label: 'المستخدم', type: 'person', sub: 'username' }, { field: 'roles', label: 'الأدوار' }, { field: 'schoolsLabel', label: 'المدارس' }, { field: 'phone', label: 'الهاتف' }, status]
 })
 const filters = computed(() => {
   const f = [{ key: 'status', label: 'الحالة', options: STATUS_OPTS }]
   if (props.role === 'student') f.push({ key: 'className', label: 'القسم', options: [...new Set(rows.value.map((r) => r.className))].filter(Boolean).map((v) => ({ label: v, value: v })) })
   if (!props.role) {
-    f.push({ key: 'role', label: 'الصفة', options: Object.keys({ super_admin: 1, admin: 1, editor: 1, school_manager: 1, teacher: 1, student: 1, parent: 1, support: 1 }).map((r) => ({ label: t('roles.' + r), value: r })), match: (r, v) => r.roles.includes(v) })
+    f.push({ key: 'role', label: 'الدور', options: Object.keys({ super_admin: 1, admin: 1, editor: 1, school_manager: 1, teacher: 1, student: 1, parent: 1, support: 1 }).map((r) => ({ label: t('roles.' + r), value: r })), match: (r, v) => r.roles.includes(v) })
     f.push({ key: 'school', label: 'المدرسة', options: cat.schools.map((s) => ({ label: s.short + ' - ' + s.commune, value: s.short })), match: (r, v) => r.schools.includes(v) })
     f.push({ key: 'demo', label: 'الحسابات', options: [{ label: 'حسابات تجريبية للدخول', value: true }], match: (r) => r.demo })
   }
@@ -122,7 +122,7 @@ const stats = computed(() => {
   const base = [{ label: `عدد ${unit.value === 'مستخدم' ? 'المستخدمين' : 'السجلات'}`, value: rows.value.length, icon: 'pi pi-users' }, { label: 'بانتظار التفعيل', value: pend, icon: 'pi pi-clock', tone: pend ? 'amber' : 'green', to: props.scope === 'school' ? '/app/activation' : null }]
   if (props.role === 'student') base.push({ label: 'متوسط التقدّم', value: Math.round(rows.value.reduce((n, r) => n + r.progress, 0) / rows.value.length) + '%', icon: 'pi pi-book', tone: 'purple' }, { label: 'يحتاجون متابعة', value: rows.value.filter((r) => r.progress < 30 || r.late >= 3).length, icon: 'pi pi-exclamation-triangle', tone: 'red' })
   if (props.role === 'teacher') base.push({ label: 'الأقسام المغطاة', value: rows.value.reduce((n, r) => n + (r.classCount || 0), 0), icon: 'pi pi-th-large', tone: 'purple' })
-  if (!props.role) base.push({ label: 'لهم أكثر من صفة', value: rows.value.filter((r) => r.roles.length > 1).length, icon: 'pi pi-clone', tone: 'purple', hint: 'شخص واحد = حساب واحد' })
+  if (!props.role) base.push({ label: 'لهم أكثر من دور', value: rows.value.filter((r) => r.roles.length > 1).length, icon: 'pi pi-clone', tone: 'purple', hint: 'شخص واحد = حساب واحد' })
   return base
 })
 
@@ -137,7 +137,7 @@ const addFields = computed(() => {
     { key: 'firstName', label: 'الاسم', required: true }, { key: 'lastName', label: 'اللقب', required: true },
     { key: 'gender', label: 'الجنس', type: 'select', options: [{ label: 'ذكر', value: 'male' }, { label: 'أنثى', value: 'female' }], required: true }
   ]
-  if (!props.role) f.push({ key: 'role', label: 'الصفة', type: 'select', options: roleOptions.value, required: true }, { key: 'schoolId', label: 'المدرسة', type: 'select', options: cat.schoolOptions, hint: 'لمدير المدرسة والمعلم والتلميذ' })
+  if (!props.role) f.push({ key: 'role', label: 'الدور', type: 'select', options: roleOptions.value, required: true }, { key: 'schoolId', label: 'المدرسة', type: 'select', options: cat.schoolOptions, hint: 'لمدير المدرسة والمعلم والتلميذ' })
   if (props.role === 'student') f.push({ key: 'classId', label: 'القسم', type: 'select', options: schoolClasses.value, required: true }, { key: 'birthDate', label: 'تاريخ الميلاد', type: 'date' })
   if (props.role === 'teacher') f.push({ key: 'classIds', label: 'الأقسام', type: 'multi', options: schoolClasses.value }, { key: 'subjects', label: 'المواد', type: 'multi', options: cat.subjectNames })
   if (props.role === 'parent') f.push({ key: 'childIds', label: 'الأبناء', type: 'multi', options: [], hint: 'يُربط الأبناء من ملف الولي بعد الإنشاء أو بالاستيراد' })
@@ -163,7 +163,7 @@ async function add(v) {
   }
 }
 
-/* ——— الملف والصفات ——— */
+/* ——— الملف والأدوار ——— */
 const userDlg = ref(false)
 const user = ref(null)
 const na = reactive({ role: null, schoolId: null, classIds: [], classId: null })
@@ -189,7 +189,7 @@ async function addAsg() {
   }
   user.value = await getUser(user.value.id)
   Object.assign(na, { role: null, schoolId: null, classIds: [], classId: null })
-  toast.add({ severity: 'success', summary: 'أُضيفت الصفة', detail: 'سيختار الشخص صفته عند الدخول', life: 2500 })
+  toast.add({ severity: 'success', summary: 'أُضيف الدور', detail: 'سيختار الشخص دوره عند الدخول', life: 2500 })
   load()
 }
 async function dropAssignment(a) {

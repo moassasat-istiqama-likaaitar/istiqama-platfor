@@ -14,7 +14,7 @@
           <StatusTag :status="s.reopened ? 'reopened' : s.status === 'draft' ? 'preparing' : s.status" />
         </header>
         <p class="muted">{{ fmt(s.start) }} ← {{ fmt(s.end) }}</p>
-        <ol v-if="s.terms?.length" class="terms"><li v-for="tm in s.terms" :key="tm.name"><b>{{ tm.name }}</b><small class="muted">{{ fmt(tm.start) }} – {{ fmt(tm.end) }}</small></li></ol>
+        <ol v-if="s.semesters?.length" class="terms"><li v-for="tm in s.semesters" :key="tm.n"><b>{{ tm.name }}</b><small class="muted">{{ fmt(tm.start) }} – {{ fmt(tm.end) }}</small></li></ol>
 
         <div v-if="s.status === 'archived' && s.snapshot" class="snap">
           <span><b>{{ s.snapshot.classes }}</b> قسم</span><span><b>{{ s.snapshot.students }}</b> تلميذ</span><span><b>{{ s.snapshot.reportCards }}</b> كشف</span><span><b>{{ s.snapshot.messages }}</b> رسالة</span>
@@ -43,15 +43,15 @@
       <p class="muted small full">بعد الأرشفة يرى الولي والتلميذ كشوف المواسم السابقة في «سجلّي». ما يُخفى ليراه الإشراف العام فقط يُضبط لاحقاً.</p>
     </section>
 
-    <FormDialog v-model:visible="dlg" :title="cur ? 'تعديل الموسم' : 'إعداد موسم جديد'" :fields="[{ key: 'name', label: 'الاسم', required: true, placeholder: '2027 / 2028' }, { key: 'start', label: 'البداية', type: 'date', required: true }, { key: 'end', label: 'النهاية', type: 'date', required: true }]" :value="cur || {}" @save="save" />
+    <FormDialog v-model:visible="dlg" wide :title="cur ? 'تعديل الموسم' : 'إعداد موسم جديد'" :fields="SEASON_FIELDS" :value="formValue" @save="save" />
 
     <!-- معالج إطلاق الموسم -->
     <Dialog v-model:visible="wiz.open" modal :header="`إطلاق الموسم ${wiz.season?.name || ''}`" :style="{ width: 'min(860px, 96vw)' }">
       <ol class="steps"><li v-for="(st, i) in STEPS" :key="st" :class="{ on: wiz.step === i, done: wiz.step > i }"><b>{{ i + 1 }}</b> {{ st }}</li></ol>
 
       <div v-if="wiz.step === 0" class="wz">
-        <p class="muted">راجع تواريخ الفصول.</p>
-        <div v-for="tm in wiz.terms" :key="tm.name" class="trow"><b>{{ tm.name }}</b><input v-model="tm.start" type="date" /><span>←</span><input v-model="tm.end" type="date" /></div>
+        <p class="muted">راجع تواريخ السداسيين (تضبطها الإدارة العامة).</p>
+        <div v-for="tm in wiz.semesters" :key="tm.n" class="trow"><b>{{ tm.name }}</b><input v-model="tm.start" type="date" /><span>←</span><input v-model="tm.end" type="date" /></div>
       </div>
 
       <div v-else-if="wiz.step === 1" class="wz">
@@ -94,7 +94,7 @@
     <!-- إعادة الفتح المؤقت -->
     <Dialog v-model:visible="re.open" modal header="إعادة فتح مؤقت للتصحيح" :style="{ width: 'min(520px, 95vw)' }">
       <p class="muted small">يُفتح الموسم {{ re.season?.name }} للتعديل مدةً محددة (لتصحيح علامة مثلاً)، ثم يعود مؤرشفاً تلقائياً. يُسجَّل ذلك في سجل النشاط.</p>
-      <label class="fl"><span>السبب *</span><Textarea v-model="re.reason" rows="2" auto-resize fluid placeholder="مثال: تصحيح علامة تلميذ في كشف الفصل الثالث" /></label>
+      <label class="fl"><span>السبب *</span><Textarea v-model="re.reason" rows="2" auto-resize fluid placeholder="مثال: تصحيح علامة تلميذ في كشف السداسي الثاني" /></label>
       <label class="fl"><span>المدة</span><Select v-model="re.hours" :options="[{ label: '24 ساعة', value: 24 }, { label: '48 ساعة', value: 48 }, { label: '7 أيام', value: 168 }]" option-label="label" option-value="value" fluid /></label>
       <template #footer><Button label="إلغاء" text severity="secondary" @click="re.open = false" /><Button label="فتح للتصحيح" icon="pi pi-unlock" :disabled="!re.reason.trim()" @click="reopen" /></template>
     </Dialog>
@@ -116,17 +116,17 @@ import FormDialog from '@/components/ui/FormDialog.vue'
 import StatusTag from '@/components/ui/StatusTag.vue'
 import { useAuthStore } from '@/stores/auth'
 import { fullName } from '@/api/people'
-import { listSeasons, createSeason, updateSeason, setClosing, promotionPreview, launchSeason, reopenSeason, endReopen, ARCHIVE_SCOPE } from '@/api/admin'
+import { listSeasons, createSeason, updateSeason, setClosing, promotionPreview, launchSeason, reopenSeason, endReopen, ARCHIVE_SCOPE, SEMESTER_NAMES } from '@/api/admin'
 
 const auth = useAuthStore()
 const toast = useToast()
 const LIFE = [
-  { key: 'draft', label: 'قيد الإعداد', hint: 'التواريخ، الفصول، الأقسام، الإسنادات' },
+  { key: 'draft', label: 'قيد الإعداد', hint: 'التواريخ، السداسيان، الأقسام، الإسنادات' },
   { key: 'active', label: 'نشط', hint: 'موسم واحد فقط في كل لحظة' },
   { key: 'closing', label: 'إقفال', hint: 'إقفال العلامات، الكشوف، اعتماد الترقية' },
   { key: 'archived', label: 'مؤرشف', hint: 'للقراءة فقط' }
 ]
-const STEPS = ['التواريخ والفصول', 'ترقية التلاميذ', 'الأقسام والإسنادات', 'التأكيد']
+const STEPS = ['التواريخ والسداسيان', 'ترقية التلاميذ', 'الأقسام والإسنادات', 'التأكيد']
 const rows = ref([])
 const dlg = ref(false)
 const cur = ref(null)
@@ -138,14 +138,28 @@ onMounted(load)
 const current = computed(() => rows.value.find((s) => ['active', 'closing'].includes(s.status)))
 const err = (e) => toast.add({ severity: 'warn', summary: e.message, life: 2800 })
 
+/* الموسم وتواريخ السداسيين — تضبطها الإدارة العامة (المدير العام والمشرف العام) */
+const SEASON_FIELDS = [
+  { key: 'name', label: 'الاسم', required: true, placeholder: '2027 / 2028' }, { key: 'start', label: 'بداية الموسم', type: 'date', required: true }, { key: 'end', label: 'نهاية الموسم', type: 'date', required: true },
+  { key: 's1start', label: 'بداية السداسي الأول', type: 'date', hint: 'يُقترح تلقائياً إن تُرك فارغاً' }, { key: 's1end', label: 'نهاية السداسي الأول', type: 'date' },
+  { key: 's2start', label: 'بداية السداسي الثاني', type: 'date' }, { key: 's2end', label: 'نهاية السداسي الثاني', type: 'date' }
+]
+const formValue = computed(() => {
+  const s = cur.value
+  if (!s) return {}
+  const [a, b] = s.semesters || []
+  return { ...s, s1start: a?.start, s1end: a?.end, s2start: b?.start, s2end: b?.end }
+})
 function edit(s) {
   cur.value = s ? { ...s } : null
   dlg.value = true
 }
 async function save(v) {
+  const { s1start, s1end, s2start, s2end, ...data } = v
+  if (s1start || s1end || s2start || s2end) data.semesters = [{ n: 1, name: SEMESTER_NAMES[0], start: s1start, end: s1end }, { n: 2, name: SEMESTER_NAMES[1], start: s2start, end: s2end }]
   try {
-    if (cur.value) await updateSeason(cur.value.id, v)
-    else await createSeason(v)
+    if (cur.value) await updateSeason(cur.value.id, data, auth.role)
+    else await createSeason(data, auth.role)
     toast.add({ severity: 'success', summary: cur.value ? 'حُفظ الموسم' : 'أُنشئ الموسم «قيد الإعداد»', life: 2200 })
     dlg.value = false
     load()
@@ -163,9 +177,9 @@ async function closing(s, on) {
   }
 }
 
-const wiz = reactive({ open: false, step: 0, season: null, terms: [], promotion: [], copyClasses: true, proposeAssignments: true })
+const wiz = reactive({ open: false, step: 0, season: null, semesters: [], promotion: [], copyClasses: true, proposeAssignments: true })
 async function openWizard(s) {
-  Object.assign(wiz, { open: true, step: 0, season: s, terms: JSON.parse(JSON.stringify(s.terms || [])), promotion: await promotionPreview(), copyClasses: true, proposeAssignments: true })
+  Object.assign(wiz, { open: true, step: 0, season: s, semesters: JSON.parse(JSON.stringify(s.semesters || [])), promotion: await promotionPreview(), copyClasses: true, proposeAssignments: true })
 }
 const totals = computed(() => ({
   promoted: wiz.promotion.reduce((t, p) => t + Math.max(0, p.students - p.repeat - p.leave), 0),
@@ -175,7 +189,7 @@ const totals = computed(() => ({
 async function launch() {
   busy.value = true
   try {
-    await updateSeason(wiz.season.id, { terms: wiz.terms })
+    await updateSeason(wiz.season.id, { semesters: wiz.semesters }, auth.role)
     await launchSeason(wiz.season.id, { promotion: wiz.promotion, copyClasses: wiz.copyClasses, proposeAssignments: wiz.proposeAssignments }, auth.role)
     toast.add({ severity: 'success', summary: `أُطلق الموسم ${wiz.season.name}`, detail: current.value ? `وأُرشف ${current.value.name}` : '', life: 3500 })
     wiz.open = false

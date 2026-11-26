@@ -66,7 +66,7 @@ const routes = [
       { path: 'performance', name: 'performance', component: () => import('@/views/manager/PerformanceView.vue'), meta: { roles: ['school_manager'] } },
       { path: 'school-notice', name: 'school-notice', component: () => import('@/views/manager/SchoolNoticeView.vue'), meta: { roles: ['school_manager'] } },
       // ——— الإدارة العامة ———
-      { path: 'users-list', name: 'users-list', component: () => import('@/views/users/UsersView.vue'), props: { scope: 'all', title: 'قائمة المستخدمين', subtitle: 'كل الأشخاص في المنصة وصفاتهم. شخص واحد = حساب واحد بصفات متعددة.' }, meta: { roles: ['admin', 'super_admin'] } },
+      { path: 'users-list', name: 'users-list', component: () => import('@/views/users/UsersView.vue'), props: { scope: 'all', title: 'قائمة المستخدمين', subtitle: 'كل الأشخاص في المنصة وأدوارهم. شخص واحد = حساب واحد بأدوار متعددة.' }, meta: { roles: ['admin', 'super_admin'] } },
       { path: 'users-import', name: 'users-import', component: () => import('@/views/admin/ImportView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       { path: 'users-duplicates', name: 'users-duplicates', component: () => import('@/views/admin/DuplicatesView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       { path: 'activity-log', name: 'activity-log', component: () => import('@/views/admin/ActivityLogView.vue'), meta: { roles: ['admin', 'super_admin'] } },
@@ -121,7 +121,7 @@ router.beforeEach(async (to) => {
   if (to.meta.guest && auth.isAuthenticated) return auth.active ? { name: 'home' } : { name: 'choose-role' }
   if (needsAuth && !to.meta.noRole && !auth.active) return { name: 'choose-role' }
 
-  // صلاحية الشاشة حسب الصفة الحالية
+  // صلاحية الشاشة حسب الدور الحالي
   const roles = to.matched.flatMap((r) => r.meta.roles || [])
   if (roles.length && !roles.includes(auth.role)) return { name: 'forbidden' }
   if (to.name === 'screen') {

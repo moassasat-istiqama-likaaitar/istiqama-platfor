@@ -253,7 +253,7 @@ export function unlinkItem(id, personId, role) {
   })
 }
 
-/* ——— بنك الأنشطة المركزي ——— */
+/* ——— بنك الواجبات والتقييمات ——— */
 
 /** GET /api/activities-bank → أنشطة المنصة + أنشطة المعلمين المعتمدة (ونشاطاتي بكل حالاتها) */
 export function activitiesBank({ personId, scopeLevels } = {}) {

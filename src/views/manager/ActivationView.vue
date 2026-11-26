@@ -3,8 +3,8 @@
   <div>
     <PageHeader title="تفعيل الحسابات" subtitle="حسابات أُنشئت أو طلبت الانضمام إلى مدرستك وتنتظر التحقق والتفعيل." />
     <RecordTable v-model:selection="sel" :rows="rows" :loading="loading" :columns="[
-      { field: 'name', label: 'الاسم', type: 'person', sub: 'phone' }, { field: 'roleLabel', label: 'الصفة' }, { field: 'detail', label: 'التفاصيل' }, { field: 'requestedAt', label: 'تاريخ الطلب', type: 'date' }
-    ]" :search-keys="['name', 'detail']" :filters="[{ key: 'role', label: 'الصفة', options: [{ label: 'تلميذ', value: 'student' }, { label: 'ولي', value: 'parent' }, { label: 'معلم', value: 'teacher' }] }]" selectable unit="طلب" empty-text="لا طلبات تفعيل — كل الحسابات مفعّلة">
+      { field: 'name', label: 'الاسم', type: 'person', sub: 'phone' }, { field: 'roleLabel', label: 'الدور' }, { field: 'detail', label: 'التفاصيل' }, { field: 'requestedAt', label: 'تاريخ الطلب', type: 'date' }
+    ]" :search-keys="['name', 'detail']" :filters="[{ key: 'role', label: 'الدور', options: [{ label: 'تلميذ', value: 'student' }, { label: 'ولي', value: 'parent' }, { label: 'معلم', value: 'teacher' }] }]" selectable unit="طلب" empty-text="لا طلبات تفعيل — كل الحسابات مفعّلة">
       <template #toolbar>
         <Button :label="`تفعيل المحدد (${sel.length})`" icon="pi pi-check" size="small" severity="success" :disabled="!sel.length" @click="act(sel, 'active')" />
       </template>

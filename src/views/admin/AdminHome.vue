@@ -25,7 +25,7 @@
       </section>
       <RecordTable class="span" :rows="r.schools" :columns="[
         { field: 'name', label: 'المدرسة' }, { field: 'students', label: 'التلاميذ' }, { field: 'teachers', label: 'المعلمون' }, { field: 'classes', label: 'الأقسام' },
-        { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'active', label: 'النشاط %' }, { field: 'atRisk', label: 'متعثرون' }
+        { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'active', label: 'الدخول %' }, { field: 'atRisk', label: 'متعثرون' }
       ]" :search-keys="['name']" unit="مدرسة" :page-size="10">
         <template #toolbar><RouterLink to="/app/reports-schools" class="p-button p-component p-button-sm p-button-outlined">تقرير المدارس</RouterLink></template>
       </RecordTable>

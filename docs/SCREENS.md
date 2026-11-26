@@ -2,12 +2,12 @@
 
 كل شاشة: اسمها كما يظهر في القائمة، رمزها في دفتر الشروط، رابطها، والملف الذي يحتويها. في أول كل ملف تعليق بالاسم نفسه.
 
-| الشاشة (كما في الواجهة) | الرمز | الرابط | الملف | الصفات |
+| الشاشة (كما في الواجهة) | الرمز | الرابط | الملف | الأدوار |
 |---|---|---|---|---|
 | تسجيل الدخول | AU01 | `#/login` | `src/views/auth/LoginView.vue` | الكل |
 | دخول مدرسة | AU01 | `#/s/:slug` | `src/views/auth/LoginView.vue` | الكل |
 | نسيت كلمة المرور | AU03 | `#/forgot-password` | `src/views/auth/ForgotPasswordView.vue` | الكل |
-| اختيار الصفة | AU02 | `#/choose-role` | `src/views/auth/ChooseRoleView.vue` | الكل |
+| اختيار الدور | AU02 | `#/choose-role` | `src/views/auth/ChooseRoleView.vue` | الكل |
 | الرئيسية | SU01 | `#/app/home` | `src/views/common/HomeView.vue` | الكل |
 | الملف الشخصي |  | `#/app/profile` | `src/views/common/ProfileView.vue` | الكل |
 | الإشعارات |  | `#/app/notifications` | `src/views/common/NotificationsView.vue` | الكل |
@@ -31,9 +31,9 @@
 | ملفاتي وأنشطتي | TE16 | `#/app/my-files` | `src/views/teacher/MyFilesView.vue` | teacher, editor |
 | بنك الاختبارات الحضورية | TE17 | `#/app/offline-tests` | `src/views/teacher/OfflineTestsView.vue` | teacher, editor |
 | فتح الدروس | ED07 | `#/app/lesson-opening` | `src/views/editor/LessonOpeningView.vue` | editor |
-| مراجعة الأنشطة | ED03 | `#/app/activities-review` | `src/views/editor/ReviewView.vue` | editor, admin, super_admin |
+| مراجعة الواجبات والتقييمات | ED03 | `#/app/activities-review` | `src/views/editor/ReviewView.vue` | editor, admin, super_admin |
 | مراجعة المحتوى | ED03,ED04 | `#/app/library-review` | `src/views/editor/ReviewView.vue` | editor, admin, super_admin |
-| بنك الأنشطة | ED05 | `#/app/activities` | `src/views/library/ActivitiesBankView.vue` | teacher, editor, admin, super_admin |
+| بنك الواجبات والتقييمات | ED05 | `#/app/activities` | `src/views/library/ActivitiesBankView.vue` | teacher, editor, admin, super_admin |
 | التقارير | ED06 | `#/app/editor-reports` | `src/views/editor/EditorReports.vue` | editor |
 | المعلمون | SM02 | `#/app/teachers` | `src/views/users/UsersView.vue` | الكل |
 | التلاميذ | SM03 | `#/app/students` | `src/views/users/UsersView.vue` | الكل |
@@ -41,13 +41,13 @@
 | تفعيل الحسابات | SM05 | `#/app/activation` | `src/views/manager/ActivationView.vue` | school_manager |
 | الأقسام | SM06 | `#/app/school-classes` | `src/views/manager/SchoolClassesView.vue` | school_manager |
 | مصادقة ملفات المعلمين | SM07 | `#/app/teacher-files-review` | `src/views/manager/TeacherFilesReview.vue` | school_manager |
-| متابعة المحتوى والأنشطة | SM08 | `#/app/content-follow` | `src/views/manager/ContentFollowView.vue` | school_manager |
+| متابعة المحتوى والواجبات والتقييمات | SM08 | `#/app/content-follow` | `src/views/manager/ContentFollowView.vue` | school_manager |
 | تقارير الأداء | SM09 | `#/app/performance` | `src/views/manager/PerformanceView.vue` | school_manager |
 | إشعار للمدرسة | SM10 | `#/app/school-notice` | `src/views/manager/SchoolNoticeView.vue` | school_manager |
 | قائمة المستخدمين | AD02,AD03 | `#/app/users-list` | `src/views/users/UsersView.vue` | الكل |
 | الاستيراد الجماعي | AD04 | `#/app/users-import` | `src/views/admin/ImportView.vue` | admin, super_admin |
 | الحسابات المكررة | AD05 | `#/app/users-duplicates` | `src/views/admin/DuplicatesView.vue` | admin, super_admin |
-| سجل النشاطات | AD06 | `#/app/activity-log` | `src/views/admin/ActivityLogView.vue` | admin, super_admin |
+| سجل العمليات | AD06 | `#/app/activity-log` | `src/views/admin/ActivityLogView.vue` | admin, super_admin |
 | تقارير عامة | AD17 | `#/app/reports-general` | `src/views/admin/ReportsView.vue` | الكل |
 | أداء المدارس | AD17 | `#/app/reports-schools` | `src/views/admin/ReportsView.vue` | الكل |
 | إحصائيات الملفات | AD17 | `#/app/reports-files` | `src/views/admin/ReportsView.vue` | الكل |
@@ -80,7 +80,7 @@
 
 | المجلد | ماذا فيه |
 |---|---|
-| `src/views/<الصفة>/` | الشاشات، مجمّعة حسب الصفة (admin, editor, manager, teacher, student, parent, support, common) |
+| `src/views/<الدور>/` | الشاشات، مجمّعة حسب الدور (admin, editor, manager, teacher, student, parent, support, common) |
 | `src/layouts/` | الهياكل: الطاقم (AppLayout) والتلاميذ (KidsShell / JuniorsShell / TeensShell / FocusShell) |
 | `src/components/` | مكوّنات مشتركة: ui (جداول، حالات)، quiz (الأسئلة)، library (الإدراج)، plan (فتح الدروس)، brand (الشعارات) |
 | `src/api/` | طبقة الخدمات الوهمية — كل دالة تمثّل نقطة API سيبنيها المطوّر (التعليق فوقها يذكر المسار) |
