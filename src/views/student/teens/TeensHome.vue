@@ -21,7 +21,7 @@
         <div v-for="(day, i) in d.week" :key="i" class="day" :class="{ today: i === 0 }">
           <div class="day__head"><span>{{ wd(day.date) }}</span><b>{{ new Date(day.date).getDate() }}</b></div>
           <RouterLink v-for="a in day.items" :key="a.id" :to="`/app/activity/${a.id}`" class="task" :style="{ '--c': a.subject.color }">
-            <small>{{ a.type === 'quiz' ? 'اختبار' : 'واجب' }}</small>{{ a.label }}
+            <small>{{ a.type === 'quiz' ? 'تقييم' : 'واجب' }}</small>{{ a.label }}
           </RouterLink>
           <span v-if="!day.items.length" class="day__free">—</span>
         </div>

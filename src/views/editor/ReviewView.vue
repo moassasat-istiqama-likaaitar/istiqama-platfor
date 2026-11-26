@@ -83,7 +83,7 @@ const rows = ref([])
 const KINDS = [
   { key: 'all', label: 'الكل', icon: 'pi pi-inbox', fn: () => true },
   { key: 'content', label: 'المحتوى', icon: 'pi pi-book', fn: (r) => r.kind !== 'activity' },
-  { key: 'activity', label: 'الواجبات والاختبارات', icon: 'pi pi-question-circle', fn: (r) => r.kind === 'activity' }
+  { key: 'activity', label: 'الواجبات والتقييمات', icon: 'pi pi-question-circle', fn: (r) => r.kind === 'activity' }
 ]
 const kind = ref(route.name === 'activities-review' ? 'activity' : 'all')
 watch(() => route.name, (n) => (kind.value = n === 'activities-review' ? 'activity' : 'all'))
@@ -104,7 +104,7 @@ const subj = computed(() => cat.subjects.find((s) => s.name === cur.value?.subje
 const levelOpts = computed(() => [...new Set(rows.value.map((r) => r.levelName).filter(Boolean))].map((v) => ({ label: v, value: v })))
 async function load() {
   loading.value = true
-  rows.value = (await reviewQueue(scope.value)).map((r) => ({ ...r, typeLabel: cat.TYPE_LABEL[r.type] || (r.type === 'quiz' ? 'اختبار' : r.type) }))
+  rows.value = (await reviewQueue(scope.value)).map((r) => ({ ...r, typeLabel: cat.TYPE_LABEL[r.type] || (r.type === 'quiz' ? 'تقييم' : r.type) }))
   log.value = await recentDecisions()
   outside.value = await outOfScopeCount(scope.value)
   loading.value = false

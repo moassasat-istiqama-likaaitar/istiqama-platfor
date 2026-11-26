@@ -1,7 +1,7 @@
 <template>
-  <!-- SM10 / AD14: الإشعارات والإعلانات — رسالة لفئة محددة (أولياء/تلاميذ/معلمين، كل المدرسة أو أقسام بعينها) -->
+  <!-- SM10 / AD14: الإعلانات — رسالة لفئة محددة (أولياء/تلاميذ/معلمين، كل المدرسة أو أقسام بعينها) -->
   <div>
-    <PageHeader :title="scope === 'all' ? 'الإعلانات العامة' : 'إشعار للمدرسة'" :subtitle="scope === 'all' ? 'إعلانات تصل كل المدارس أو مدارس محددة.' : 'أرسل إشعاراً لفئة من مدرستك. يظهر في جرس الإشعارات وفي رئيسية المعنيين.'" />
+    <PageHeader :title="scope === 'all' ? 'الإعلانات العامة' : 'إعلانات المدرسة'" :subtitle="scope === 'all' ? 'إعلانات تصل كل المدارس أو مدارس محددة.' : 'أرسل إعلاناً لفئة من مدرستك. يصل كإشعار في الجرس ويظهر في رئيسية المعنيين.'" />
     <div class="nt">
       <form class="panel nt__form" @submit.prevent="send">
         <label class="fl"><span>العنوان *</span><InputText v-model="f.title" fluid /></label>
@@ -25,7 +25,7 @@
           <small class="muted">{{ new Date(n.at).toLocaleString('ar-DZ', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) }} · {{ n.audience.map((a) => AUD.find((x) => x.value === a)?.label).join('، ') }}<template v-if="n.reach"> · {{ n.reach }} مستلم</template></small>
           <Button icon="pi pi-trash" text rounded size="small" severity="danger" class="del" @click="del(n)" />
         </div>
-        <p v-if="!list.length" class="muted">لا إشعارات بعد.</p>
+        <p v-if="!list.length" class="muted">لا إعلانات بعد.</p>
       </section>
     </div>
   </div>
@@ -63,7 +63,7 @@ async function send() {
   busy.value = true
   try {
     await createNotice(sid.value, auth.person, { ...f })
-    toast.add({ severity: 'success', summary: f.schedule ? 'جُدول الإشعار' : 'أُرسل الإشعار', detail: `إلى نحو ${reach.value} شخص`, life: 2600 })
+    toast.add({ severity: 'success', summary: f.schedule ? 'جُدول الإعلان' : 'أُرسل الإعلان', detail: `إلى نحو ${reach.value} شخص`, life: 2600 })
     Object.assign(f, blank())
     load()
   } catch (e) {

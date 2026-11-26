@@ -209,7 +209,7 @@ export function checkAnswer(id, index, answer) {
 }
 
 const SAMPLE_COMMENTS = (l) => [
-  { id: `sc-${l.id}`, author: 'المعلم عمر', role: 'teacher', body: 'شاهدوا الفيديو ثم حاولوا حل الاختبار، وأنا هنا لأي سؤال.', at: new Date(Date.now() - 86400000 * 2).toISOString() }
+  { id: `sc-${l.id}`, author: 'المعلم عمر', role: 'teacher', body: 'شاهدوا الفيديو ثم حاولوا حل التقييم، وأنا هنا لأي سؤال.', at: new Date(Date.now() - 86400000 * 2).toISOString() }
 ]
 
 /** POST /api/student/lessons/{id}/complete → يمنح نقاطاً وشارات */

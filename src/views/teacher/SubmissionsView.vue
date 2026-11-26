@@ -1,7 +1,7 @@
 <template>
   <!-- TE09/TE10: التسليمات والتصحيح — العلامة والملاحظة تصلان للتلميذ ووليه فوراً -->
   <div>
-    <PageHeader title="التسليمات والتصحيح" subtitle="الواجبات تنتظر تصحيحك؛ الاختبارات تُصحَّح آلياً ويمكنك مراجعتها." />
+    <PageHeader title="التسليمات والتصحيح" subtitle="الواجبات تنتظر تصحيحك؛ التقييمات تُصحَّح آلياً ويمكنك مراجعتها." />
     <div class="tabs">
       <button type="button" class="pill" :class="{ 'is-active': tab === 'submitted' }" @click="tab = 'submitted'">بانتظار التصحيح <span class="pill__count">{{ rows.filter((r) => r.status === 'submitted').length }}</span></button>
       <button type="button" class="pill" :class="{ 'is-active': tab === 'graded' }" @click="tab = 'graded'">مصحَّحة <span class="pill__count">{{ rows.filter((r) => r.status === 'graded').length }}</span></button>
@@ -9,7 +9,7 @@
     <RecordTable :rows="shown" :loading="loading" :columns="[
       { field: 'student', label: 'التلميذ', type: 'person', sub: 'className' }, { field: 'title', label: 'العمل' }, { field: 'subjectName', label: 'المادة' },
       { field: 'at', label: 'سُلّم في', type: 'date' }, { field: 'scoreLabel', label: 'العلامة' }, { field: 'status', label: 'الحالة', type: 'status' }
-    ]" :search-keys="['student', 'title']" :filters="[{ key: 'className', label: 'القسم', options: classOpts }, { key: 'type', label: 'النوع', options: [{ label: 'واجب', value: 'homework' }, { label: 'اختبار', value: 'quiz' }] }]" unit="تسليم" empty-text="لا تسليمات هنا">
+    ]" :search-keys="['student', 'title']" :filters="[{ key: 'className', label: 'القسم', options: classOpts }, { key: 'type', label: 'النوع', options: [{ label: 'واجب', value: 'homework' }, { label: 'تقييم', value: 'quiz' }] }]" unit="تسليم" empty-text="لا تسليمات هنا">
       <template #cell-title="{ row }">{{ row.title }} <span v-if="row.late" class="late">متأخر</span></template>
       <template #actions="{ row }"><Button :label="row.status === 'submitted' ? 'صحّح' : 'عرض'" size="small" :outlined="row.status !== 'submitted'" @click="open(row)" /></template>
     </RecordTable>
@@ -33,7 +33,7 @@
             </li>
           </ol>
         </template>
-        <p v-else-if="cur.type === 'quiz'" class="muted"><i class="pi pi-bolt" /> اختبار مصحَّح آلياً — يمكنك تعديل العلامة إن لزم.</p>
+        <p v-else-if="cur.type === 'quiz'" class="muted"><i class="pi pi-bolt" /> تقييم مصحَّح آلياً — يمكنك تعديل العلامة إن لزم.</p>
         <label class="f"><span>العلامة (من {{ cur.maxScore }})</span>
           <div class="score">
             <InputNumber v-model="score" :min="0" :max="cur.maxScore" show-buttons button-layout="horizontal" :step="0.5" />

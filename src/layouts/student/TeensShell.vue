@@ -70,11 +70,11 @@ const subjects = computed(() => dash.value?.subjects || [])
 const todo = computed(() => dash.value?.todoCount || 0)
 
 const nav = [
-  { key: 'home', to: '/app/home', icon: 'pi pi-calendar', label: 'أسبوعي', match: ['/app/home'] },
-  { key: 'lessons', to: '/app/my-lessons', icon: 'pi pi-book', label: 'المقررات', match: ['/app/my-lessons'] },
-  { key: 'tasks', to: '/app/my-assignments', icon: 'pi pi-check-square', label: 'الأعمال', match: ['/app/my-assignments', '/app/activity'] },
+  { key: 'home', to: '/app/home', icon: 'pi pi-calendar', label: 'الرئيسية', match: ['/app/home'] },
+  { key: 'lessons', to: '/app/my-lessons', icon: 'pi pi-book', label: 'دروسي', match: ['/app/my-lessons'] },
+  { key: 'tasks', to: '/app/my-assignments', icon: 'pi pi-check-square', label: 'واجباتي وتقييماتي', match: ['/app/my-assignments', '/app/activity'] },
   { key: 'library', to: '/app/my-library', icon: 'pi pi-folder-open', label: 'مكتبة القسم', match: ['/app/my-library'] },
-  { key: 'progress', to: '/app/my-progress', icon: 'pi pi-chart-bar', label: 'التحليلات', match: ['/app/my-progress'] }
+  { key: 'progress', to: '/app/my-progress', icon: 'pi pi-chart-bar', label: 'تقدمي', match: ['/app/my-progress'] }
 ]
 const isActive = (n) => n.match.some((m) => route.path.startsWith(m))
 function search() {

@@ -29,7 +29,7 @@
       <article v-for="it in flat" :key="it.key" class="cc" :data-src="it.source" :style="{ '--sc': it.subjectColor || 'var(--brand)' }">
         <header>
           <span class="cc__ic"><i :class="iconOf(it)" /></span>
-          <div class="cc__t"><b>{{ it.title }}</b><small class="muted">{{ it.isAct ? (it.type === 'quiz' ? 'اختبار' : 'واجب') : cat.TYPE_LABEL[it.type] }}<template v-if="it.classification && !it.isAct"> · {{ classLabel(it.classification) }}</template></small></div>
+          <div class="cc__t"><b>{{ it.title }}</b><small class="muted">{{ it.isAct ? (it.type === 'quiz' ? 'تقييم' : 'واجب') : cat.TYPE_LABEL[it.type] }}<template v-if="it.classification && !it.isAct"> · {{ classLabel(it.classification) }}</template></small></div>
           <Button v-if="it.linkId && (!it.mandatory || isEditor)" icon="pi pi-times" text rounded size="small" severity="secondary" title="إزالة من القسم" @click="unlink(it)" />
         </header>
         <span class="cc__lesson"><i class="pi pi-bookmark" /> {{ it.lessonTitle || 'بلا درس — عام للقسم' }}</span>

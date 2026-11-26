@@ -23,7 +23,7 @@ export function useLesson(l) {
   async function rate(item, n) {
     item.myRating = n
     await learning.rateContent(student.personId, item.id, n)
-    toast.add({ severity: 'success', summary: 'شكراً على تقييمك', life: 1500 })
+    toast.add({ severity: 'success', summary: 'شكراً على تقديرك', life: 1500 })
   }
   async function comment(text) {
     const r = await learning.addComment(student.personId, l.value.id, text)

@@ -1,10 +1,10 @@
 <template>
-  <!-- TE15: منشئ التقييمات — ثمانية أنواع أسئلة، تجربة الاختبار وتنقيطه قبل النشر، إدراج في القسم أو المستوى، وإرسال للمكتبة المركزية -->
+  <!-- TE15: منشئ التقييمات — ثمانية أنواع أسئلة، تجربة التقييم وتنقيطه قبل النشر، إدراج في القسم أو المستوى، وإرسال للمكتبة المركزية -->
   <div>
-    <PageHeader title="منشئ التقييمات" subtitle="ثمانية أنواع أسئلة تُصحَّح آلياً (المقالي والقصير بلا كلمات مفتاحية يصحّحهما المعلم). جرّب الاختبار بنفسك قبل نشره." />
+    <PageHeader title="منشئ التقييمات" subtitle="ثمانية أنواع أسئلة تُصحَّح آلياً (المقالي والقصير بلا كلمات مفتاحية يصحّحهما المعلم). جرّب التقييم بنفسك قبل نشره." />
     <div class="qb">
       <section class="panel meta">
-        <label class="fl full"><span>عنوان الاختبار *</span><InputText v-model="q.title" fluid placeholder="مثال: اختبار قصير — أحكام الطهارة" /></label>
+        <label class="fl full"><span>عنوان التقييم *</span><InputText v-model="q.title" fluid placeholder="مثال: تقييم قصير — أحكام الطهارة" /></label>
         <label class="fl"><span>{{ tg.isEditor.value ? 'أين يُنشر؟ (المستوى كقسم واحد أو قسم)' : 'الأقسام *' }}</span><MultiSelect v-model="q.targets" :options="targetOpts" option-label="label" option-value="value" display="chip" fluid placeholder="اختر" /></label>
         <label class="fl"><span>المادة *</span><Select v-model="q.subjectId" :options="cat.subjectOptions(levelId)" option-label="label" option-value="value" fluid :disabled="!levelId" /></label>
         <label class="fl"><span>الدرس</span><Select v-model="q.lessonId" placeholder="— بلا درس —" :options="[{ label: '— بلا درس —', value: null }, ...cat.linkLessonOptions(q.subjectId)]" option-label="label" option-value="value" option-disabled="disabled" filter fluid :disabled="!q.subjectId" /></label>
@@ -20,7 +20,7 @@
           <h3>الأسئلة ({{ q.questions.length }}) · المجموع {{ total }} ن</h3>
           <div class="btns">
             <Button label="من بنك الأسئلة" icon="pi pi-database" outlined size="small" :disabled="!levelId" @click="openBank" />
-            <Button :label="mode === 'test' ? 'العودة للتحرير' : 'جرّب الاختبار'" :icon="mode === 'test' ? 'pi pi-pencil' : 'pi pi-play'" severity="help" size="small" :disabled="!q.questions.length" @click="toggleTest" />
+            <Button :label="mode === 'test' ? 'العودة للتحرير' : 'جرّب التقييم'" :icon="mode === 'test' ? 'pi pi-pencil' : 'pi pi-play'" severity="help" size="small" :disabled="!q.questions.length" @click="toggleTest" />
           </div>
         </div>
         <div v-if="mode === 'edit'" class="types">
@@ -70,7 +70,7 @@
     </div>
 
     <Dialog v-model:visible="bankDlg" modal header="بنك الأسئلة" :style="{ width: 'min(760px, 96vw)' }">
-      <p class="muted">أسئلة الاختبارات المعتمدة لهذا المستوى{{ q.subjectId ? ' والمادة' : '' }}. اختر ما تريد إضافته.</p>
+      <p class="muted">أسئلة التقييمات المعتمدة لهذا المستوى{{ q.subjectId ? ' والمادة' : '' }}. اختر ما تريد إضافته.</p>
       <div class="bank">
         <label v-for="b in bank" :key="b.id" class="bq" :class="{ on: picked.includes(b.id) }">
           <Checkbox v-model="picked" :value="b.id" />
@@ -154,7 +154,7 @@ function addFromBank() {
 }
 const problems = computed(() => {
   const out = []
-  if (!q.title.trim()) out.push('أضف عنواناً للاختبار')
+  if (!q.title.trim()) out.push('أضف عنواناً للتقييم')
   if (!q.targets.length) out.push('اختر أين يُنشر')
   if (new Set(q.targets.map(tg.levelOf)).size > 1) out.push('الأهداف من مستويات مختلفة: اختر مستوى واحداً')
   if (!q.subjectId) out.push('اختر المادة')

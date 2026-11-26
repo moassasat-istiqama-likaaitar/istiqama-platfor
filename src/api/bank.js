@@ -39,7 +39,7 @@ function SEED_UPLOADS() {
   ]
 }
 
-/** اختبار نموذجي بالأنواع الثمانية (للتجربة الكاملة: المعلم ← التلميذ ← التصحيح) */
+/** تقييم نموذجي بالأنواع الثمانية (للتجربة الكاملة: المعلم ← التلميذ ← التصحيح) */
 function SEED_ACTS() {
   const qs8 = [
     { type: 'mcq', q: 'البيع في اللغة هو:', options: ['مبادلة شيء بشيء', 'الهبة', 'القرض'], answer: 0, points: 1 },
@@ -59,8 +59,8 @@ function SEED_ACTS() {
     { type: 'essay', q: 'اشرحي بأسلوبك أثر الطهارة في حياة المسلمة.', points: 4 }
   ]
   return [
-    { id: 'ta-s2-bay', kind: 'quiz', authorId: 'p5', authorName: 'عمر باعمر', title: 'اختبار شامل: البيع (8 أنواع من الأسئلة)', levelId: 'S2', subjectId: 'S2-fiqh', lessonId: L('S2', 'fiqh', 0)?.id, questions: qs8, minutes: 20, status: 'temp', note: '', at: ago(3) },
-    { id: 'ta-m4-taha', kind: 'quiz', authorId: 'p5', authorName: 'عمر باعمر', title: 'اختبار: أحكام الطهارة', levelId: 'M4', subjectId: 'M4-fiqh', lessonId: L('M4', 'fiqh', 0)?.id, questions: qs4, minutes: 15, status: 'temp', note: '', at: ago(30) },
+    { id: 'ta-s2-bay', kind: 'quiz', authorId: 'p5', authorName: 'عمر باعمر', title: 'تقييم شامل: البيع (8 أنواع من الأسئلة)', levelId: 'S2', subjectId: 'S2-fiqh', lessonId: L('S2', 'fiqh', 0)?.id, questions: qs8, minutes: 20, status: 'temp', note: '', at: ago(3) },
+    { id: 'ta-m4-taha', kind: 'quiz', authorId: 'p5', authorName: 'عمر باعمر', title: 'تقييم: أحكام الطهارة', levelId: 'M4', subjectId: 'M4-fiqh', lessonId: L('M4', 'fiqh', 0)?.id, questions: qs4, minutes: 15, status: 'temp', note: '', at: ago(30) },
     { id: 'ta-m4-hw', kind: 'homework', authorId: 'p5', authorName: 'عمر باعمر', title: 'واجب: بطاقة أحكام المياه', levelId: 'M4', subjectId: 'M4-fiqh', lessonId: L('M4', 'fiqh', 1)?.id, instructions: 'صمّمي بطاقة تلخّص أقسام المياه مع مثال لكل قسم، ثم أرفقي صورتها.', maxScore: 20, mode: 'any', status: 'approved', note: '', at: ago(400) }
   ]
 }

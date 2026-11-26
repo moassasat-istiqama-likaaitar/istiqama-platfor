@@ -1,12 +1,12 @@
 <template>
-  <!-- ED05: الأنشطة — اختبارات وواجبات المنصة والمعلمين -->
+  <!-- ED05: الأنشطة — تقييمات وواجبات المنصة والمعلمين -->
   <div>
-    <PageHeader title="الأنشطة" subtitle="كل اختبارات وواجبات المنصة: المعتمدة في المكتبة وما أنشأه المعلمون." />
+    <PageHeader title="الأنشطة" subtitle="كل تقييمات وواجبات المنصة: المعتمدة في المكتبة وما أنشأه المعلمون." />
     <RecordTable :rows="rows" :columns="[
       { field: 'title', label: 'النشاط' }, { field: 'typeLabel', label: 'النوع' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' },
       { field: 'count', label: 'الأسئلة' }, { field: 'authorName', label: 'المؤلف' }, { field: 'status', label: 'الحالة', type: 'status' }
     ]" :search-keys="['title', 'lessonTitle', 'authorName']" :filters="[
-      { key: 'type', label: 'النوع', options: [{ label: 'اختبار', value: 'quiz' }, { label: 'واجب', value: 'homework' }] },
+      { key: 'type', label: 'النوع', options: [{ label: 'تقييم', value: 'quiz' }, { label: 'واجب', value: 'homework' }] },
       { key: 'levelName', label: 'المستوى', options: levelOpts },
       { key: 'subjectName', label: 'المادة', options: cat.subjectNames }
     ]" unit="نشاط">
@@ -35,7 +35,7 @@ import { listActivities } from '@/api/editorial'
 const cat = useCatalog()
 const rows = ref([])
 const cur = ref(null)
-onMounted(async () => (rows.value = (await listActivities()).map((a) => ({ ...a, typeLabel: a.type === 'quiz' ? 'اختبار' : 'واجب' }))))
+onMounted(async () => (rows.value = (await listActivities()).map((a) => ({ ...a, typeLabel: a.type === 'quiz' ? 'تقييم' : 'واجب' }))))
 const levelOpts = computed(() => [...new Set(rows.value.map((r) => r.levelName).filter(Boolean))].map((v) => ({ label: v, value: v })))
 </script>
 

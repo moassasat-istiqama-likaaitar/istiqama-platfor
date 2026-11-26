@@ -11,7 +11,7 @@ export const BADGES = {
   'first-lesson': { icon: 'pi pi-flag', title: 'الخطوة الأولى', hint: 'أكملت أول درس' },
   'streak-3': { icon: 'pi pi-bolt', title: 'مواظب', hint: '3 أيام متتالية' },
   'streak-7': { icon: 'pi pi-sun', title: 'أسبوع كامل', hint: '7 أيام متتالية' },
-  'quiz-ace': { icon: 'pi pi-star', title: 'نجم الاختبارات', hint: 'علامة كاملة في اختبار' },
+  'quiz-ace': { icon: 'pi pi-star', title: 'نجم التقييمات', hint: 'علامة كاملة في تقييم' },
   'curious': { icon: 'pi pi-eye', title: 'فضولي', hint: 'شاهدت 10 محتويات' },
   'helper': { icon: 'pi pi-comments', title: 'مشارك', hint: 'كتبت تعليقاً مفيداً' },
   'subject-master': { icon: 'pi pi-trophy', title: 'بطل المادة', hint: 'أكملت كل دروس مادة' },

@@ -1,6 +1,6 @@
 <template>
   <!-- لكل طور قالبه الخاص: بنية التنقل وترتيب الشاشة يختلفان، لا الألوان فقط -->
-  <!-- داخل الدرس والاختبار: وضع التركيز (بلا إشعارات ولا مكافآت ولا قوائم) -->
+  <!-- داخل الدرس والتقييم: وضع التركيز (بلا إشعارات ولا مكافآت ولا قوائم) -->
   <FocusShell v-if="focus"><slot /></FocusShell>
   <KidsShell v-else-if="theme === 'kids'"><slot /></KidsShell>
   <JuniorsShell v-else-if="theme === 'juniors'"><slot /></JuniorsShell>

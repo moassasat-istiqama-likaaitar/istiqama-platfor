@@ -135,7 +135,7 @@ const ago = (min) => new Date(now - min * 60000).toISOString()
 export const notifications = [
   { id: 'n1', personId: 'p7', assignmentId: 'a10', type: 'lesson', title: 'درس جديد في التربية الإيمانية', body: 'من وصايا لقمان الحكيم', read: false, at: ago(12) },
   { id: 'n2', personId: 'p7', assignmentId: 'a10', type: 'assignment', title: 'واجب جديد', body: 'اللغة العربية: التاء المربوطة', read: false, at: ago(90) },
-  { id: 'n3', personId: 'p7', assignmentId: 'a10', type: 'result', title: 'نتيجة اختبار', body: 'حصلت على 9/10 في اختبار الإملاء', read: true, at: ago(60 * 26) },
+  { id: 'n3', personId: 'p7', assignmentId: 'a10', type: 'result', title: 'نتيجة تقييم', body: 'حصلت على 9/10 في تقييم الإملاء', read: true, at: ago(60 * 26) },
   { id: 'n4', personId: 'p7', assignmentId: null, type: 'announcement', title: 'إعلان عام', body: 'عطلة الشتاء تبدأ يوم الخميس 18 ديسمبر', read: true, at: ago(60 * 50) },
   { id: 'n5', personId: 'p5', assignmentId: 'a6', type: 'submission', title: 'تسليم جديد', body: 'أنس بلحاج سلّم واجب التربية الإيمانية', read: false, at: ago(25) },
   { id: 'n6', personId: 'p5', assignmentId: 'a7', type: 'comment', title: 'تعليق جديد', body: 'المحرر علّق على ملف "أحكام الطهارة"', read: false, at: ago(140) },
@@ -144,11 +144,11 @@ export const notifications = [
   { id: 'n9', personId: 'p4', assignmentId: 'a4', type: 'content', title: 'محتوى ينتظر المصادقة', body: '3 ملفات جديدة من معلمي مدرستك', read: false, at: ago(45) },
   { id: 'n10', personId: 'p4', assignmentId: 'a5', type: 'result', title: 'نتيجة لإسحاق', body: 'علامة واجب الفقه: 16/20', read: false, at: ago(300) },
   { id: 'n11', personId: 'p11', assignmentId: 'a14', type: 'lesson', title: 'درس جديد لأنس', body: 'من وصايا لقمان الحكيم', read: false, at: ago(12) },
-  { id: 'n12', personId: 'p11', assignmentId: 'a14', type: 'result', title: 'نتيجة لمريم', body: 'Quiz الفقه: 8/10', read: false, at: ago(180) },
+  { id: 'n12', personId: 'p11', assignmentId: 'a14', type: 'result', title: 'نتيجة لمريم', body: 'تقييم الفقه: 8/10', read: false, at: ago(180) },
   { id: 'n13', personId: 'p3', assignmentId: 'a3', type: 'content', title: 'ملف ينتظر المراجعة', body: 'أحكام الطهارة — الرابعة متوسط', read: false, at: ago(140) },
   { id: 'n14', personId: 'p1', assignmentId: 'a1', type: 'report', title: 'بلاغ جديد', body: 'عطل في تشغيل الفيديو', read: false, at: ago(35) },
   { id: 'n15', personId: 'p12', assignmentId: 'a15', type: 'report', title: 'بلاغ جديد', body: 'عطل في تشغيل الفيديو', read: false, at: ago(35) },
-  { id: 'n16', personId: 'p8', assignmentId: 'a11', type: 'assignment', title: 'Quiz جديد', body: 'الفقه: أحكام الطهارة', read: false, at: ago(70) },
+  { id: 'n16', personId: 'p8', assignmentId: 'a11', type: 'assignment', title: 'تقييم جديد', body: 'الفقه: أحكام الطهارة', read: false, at: ago(70) },
   { id: 'n17', personId: 'p9', assignmentId: 'a12', type: 'message', title: 'رسالة من المعلم عمر', body: 'أحسنت في العرض الأخير', read: false, at: ago(400) },
   { id: 'n18', personId: 'p6', assignmentId: 'a9', type: 'submission', title: 'تسليم جديد', body: 'مريم بلحاج سلّمت التعبير الكتابي', read: false, at: ago(55) },
   { id: 'n19', personId: 'p2', assignmentId: 'a2', type: 'report', title: 'مقترح جديد', body: 'إضافة وضع ليلي للمنصة', read: false, at: ago(500) }

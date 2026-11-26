@@ -1,5 +1,5 @@
 <template>
-  <!-- ED06 / ED01: تقارير المحتوى — الحجم، الحالات، التغطية، الأكثر مشاهدة، الأقل تقييماً -->
+  <!-- ED06 / ED01: تقارير المحتوى — الحجم، الحالات، التغطية، الأكثر مشاهدة، الأقل تقديراً -->
   <div v-if="s">
     <PageHeader :title="home ? `السلام عليكم، ${auth.person.firstName}` : 'تقارير المحتوى'" :subtitle="home ? 'لوحة المحرر: ما ينتظر المراجعة وصحة المكتبة المركزية' : 'صحة المكتبة المركزية وتغطيتها للمنهاج'" />
     <StatTiles :items="[
@@ -26,7 +26,7 @@
         <BarList :rows="s.authors" suffix=" محتوى" />
       </section>
       <RecordTable class="span" :rows="s.topViewed" :columns="[{ field: 'title', label: 'الأكثر مشاهدة' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' }, { field: 'views', label: 'مشاهدات' }, { field: 'rating', label: 'التقييم' }]" :page-size="8" unit="" />
-      <RecordTable class="span" :rows="s.lowRated" :columns="[{ field: 'title', label: 'الأقل تقييماً (للمراجعة)' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' }, { field: 'rating', label: 'التقييم' }, { field: 'views', label: 'مشاهدات' }]" :page-size="8" unit="" />
+      <RecordTable class="span" :rows="s.lowRated" :columns="[{ field: 'title', label: 'الأقل تقديراً (للمراجعة)' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' }, { field: 'rating', label: 'التقييم' }, { field: 'views', label: 'مشاهدات' }]" :page-size="8" unit="" />
     </div>
   </div>
 </template>

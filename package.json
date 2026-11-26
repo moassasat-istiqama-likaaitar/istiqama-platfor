@@ -4,7 +4,8 @@
   "description": "منصة الاستقامة الرقمية — النموذج التفاعلي للواجهة",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "terms": "node scripts/check-terms.mjs",
+    "build": "node scripts/check-terms.mjs && vite build",
     "preview": "vite preview"
   },
   "keywords": [],

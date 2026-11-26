@@ -180,12 +180,12 @@ export const PERMISSIONS = [
   { key: 'content.upload', label: 'رفع المحتوى', group: 'المحتوى' },
   { key: 'content.review', label: 'مراجعة المكتبة المركزية', group: 'المحتوى' },
   { key: 'content.school_approve', label: 'مصادقة ملفات المدرسة', group: 'المحتوى' },
-  { key: 'activities.create', label: 'إنشاء الواجبات والاختبارات', group: 'التقييم' },
-  { key: 'activities.grade', label: 'التصحيح ووضع العلامات', group: 'التقييم' },
+  { key: 'activities.create', label: 'إنشاء الواجبات والتقييمات', group: 'الواجبات والتقييمات' },
+  { key: 'activities.grade', label: 'التصحيح ووضع العلامات', group: 'الواجبات والتقييمات' },
   { key: 'reports.school', label: 'تقارير المدرسة', group: 'التقارير' },
   { key: 'reports.global', label: 'التقارير العامة', group: 'التقارير' },
   { key: 'messages.parents', label: 'مراسلة الأولياء', group: 'التواصل' },
-  { key: 'notices.school', label: 'إشعارات المدرسة', group: 'التواصل' },
+  { key: 'notices.school', label: 'إعلانات المدرسة', group: 'التواصل' },
   { key: 'notices.global', label: 'الإعلانات العامة', group: 'التواصل' },
   { key: 'settings.platform', label: 'تخصيص المنصة', group: 'الإعدادات' },
   { key: 'settings.branding_approve', label: 'اعتماد هويات المدارس', group: 'الإعدادات' },
@@ -215,7 +215,7 @@ export function savePermissions(matrix, role) {
 /* ——— سجل النشاطات ——— */
 const ACTIONS = [
   ['login', 'دخول إلى المنصة'], ['content.upload', 'رفع محتوى'], ['content.approve', 'اعتماد محتوى'], ['grade', 'تصحيح واجب'], ['user.create', 'إضافة مستخدم'],
-  ['user.activate', 'تفعيل حساب'], ['notice.send', 'إرسال إشعار'], ['lesson.complete', 'إكمال درس'], ['quiz.submit', 'تسليم اختبار'], ['settings.update', 'تعديل الإعدادات']
+  ['user.activate', 'تفعيل حساب'], ['notice.send', 'إرسال إعلان'], ['lesson.complete', 'إكمال درس'], ['quiz.submit', 'تسليم تقييم'], ['settings.update', 'تعديل الإعدادات']
 ]
 export function activityLog() {
   return respond(() => {

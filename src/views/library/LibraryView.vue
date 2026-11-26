@@ -10,7 +10,7 @@
         <div><b>{{ facets.stats.total }}</b><span>{{ t('library.stats.total') }}</span></div>
         <div><b>{{ facets.stats.videos }}</b><span>{{ t('library.stats.videos') }}</span></div>
         <div v-if="curator"><b>{{ facets.stats.pending }}</b><span>{{ t('library.stats.pending') }}</span></div>
-        <RouterLink to="/app/activities" class="lib__act"><i class="pi pi-pencil" /> الواجبات والاختبارات في «بنك الأنشطة»</RouterLink>
+        <RouterLink to="/app/activities" class="lib__act"><i class="pi pi-pencil" /> الواجبات والتقييمات في «بنك الأنشطة»</RouterLink>
       </div>
     </header>
 

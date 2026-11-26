@@ -19,7 +19,7 @@
       ]" />
       <RecordTable :rows="r.subjects" :columns="[
         { field: 'name', label: 'المادة' }, { field: 'progress', label: 'التقدّم', type: 'progress' },
-        { field: 'quizzesLabel', label: 'الاختبارات' }, { field: 'homeworkLabel', label: 'الواجبات' }, { field: 'average', label: 'المعدل /20' }, { field: 'appreciation', label: 'التقدير' }
+        { field: 'quizzesLabel', label: 'التقييمات' }, { field: 'homeworkLabel', label: 'الواجبات' }, { field: 'average', label: 'المعدل /20' }, { field: 'appreciation', label: 'التقدير' }
       ]" unit="مادة" />
     </template>
   </div>

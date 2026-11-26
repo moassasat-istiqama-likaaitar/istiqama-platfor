@@ -8,7 +8,7 @@ import { uploads, teacherActs, findActivity, classActivityItems, normActivity, l
 import { gradeQuiz, isManual } from '@/utils/quiz'
 
 /**
- * فضاء المعلم: خطة القسم (فتح الدروس + درس الأسبوع)، التسليمات والتصحيح، المحتوى والواجبات والاختبارات.
+ * فضاء المعلم: خطة القسم (فتح الدروس + درس الأسبوع)، التسليمات والتصحيح، المحتوى والواجبات والتقييمات.
  */
 
 const plans = collection('classPlans', [])
@@ -249,7 +249,7 @@ export function removeUpload(id) {
   return respond(() => uploads().remove(id))
 }
 
-/* ——— الأنشطة (واجبات واختبارات) ——— */
+/* ——— الأنشطة (واجبات وتقييمات) ——— */
 
 /**
  * POST /api/teacher/activities — يُنشر لأقسام المعلم فوراً (targets) بآخر أجل،
@@ -270,7 +270,7 @@ export function submitActivity(id) {
   return respond(() => teacherActs().update(id, { status: 'review' }))
 }
 
-/** بنك الأسئلة: أسئلة اختبارات المنصة والمعتمدة من المعلمين لمستوى ومادة */
+/** بنك الأسئلة: أسئلة تقييمات المنصة والمعتمدة من المعلمين لمستوى ومادة */
 export function questionBank(levelId, subjectId) {
   return respond(() => {
     const plat = activities.filter((a) => a.type === 'quiz' && a.levelId === levelId && (!subjectId || a.subjectId === subjectId))

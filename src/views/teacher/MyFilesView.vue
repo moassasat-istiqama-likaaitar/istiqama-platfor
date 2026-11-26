@@ -5,7 +5,7 @@
     <div class="legend"><span v-for="(v, k) in LIFECYCLE" :key="k"><StatusTag :status="k" /> <small class="muted">{{ v.hint }}</small></span></div>
     <div class="tabs">
       <button type="button" class="pill" :class="{ 'is-active': tab === 'files' }" @click="tab = 'files'"><i class="pi pi-folder" /> المحتوى <span class="pill__count">{{ files.length }}</span></button>
-      <button type="button" class="pill" :class="{ 'is-active': tab === 'acts' }" @click="tab = 'acts'"><i class="pi pi-pencil" /> الواجبات والاختبارات <span class="pill__count">{{ acts.length }}</span></button>
+      <button type="button" class="pill" :class="{ 'is-active': tab === 'acts' }" @click="tab = 'acts'"><i class="pi pi-pencil" /> الواجبات والتقييمات <span class="pill__count">{{ acts.length }}</span></button>
       <button type="button" class="pill" :class="{ 'is-active': tab === 'offline' }" @click="tab = 'offline'"><i class="pi pi-print" /> الاختبارات الحضورية <span class="pill__count">{{ offline.length }}</span></button>
     </div>
     <RecordTable v-if="tab === 'offline'" :rows="offline" :columns="[{ field: 'title', label: 'العنوان' }, { field: 'kind', label: 'النوع' }, { field: 'subjectName', label: 'المادة' }, { field: 'levelName', label: 'المستوى' }, { field: 'season', label: 'الموسم' }, { field: 'semLabel', label: 'السداسي' }, { field: 'at', label: 'نُشر', type: 'date' }]" :search-keys="['title']" unit="اختبار" empty-text="لم ترفع اختباراً حضورياً بعد">
@@ -58,7 +58,7 @@ const cols = computed(() => tab.value === 'files'
 async function load() {
   files.value = (await myUploads(auth.person.id)).map((u) => ({ ...u, typeLabel: cat.TYPE_LABEL[u.type], classLabel: classLabel(u.classification || u.proposedClass) + (u.classification ? '' : ' (مقترح)') }))
   offline.value = (await myOfflineUploads(auth.person.id)).map((t) => ({ ...t, semLabel: t.semester === 1 ? 'الأول' : 'الثاني' }))
-  acts.value = (await listMyActivities(auth.person.id)).map((a) => ({ ...a, kindLabel: a.kind === 'quiz' ? 'اختبار' : 'واجب', count: a.questions?.length || '—', subjectName: cat.subjects.find((s) => s.id === a.subjectId)?.name }))
+  acts.value = (await listMyActivities(auth.person.id)).map((a) => ({ ...a, kindLabel: a.kind === 'quiz' ? 'تقييم' : 'واجب', count: a.questions?.length || '—', subjectName: cat.subjects.find((s) => s.id === a.subjectId)?.name }))
 }
 onMounted(load)
 async function send(row) {

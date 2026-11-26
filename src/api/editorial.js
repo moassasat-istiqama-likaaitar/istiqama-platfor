@@ -75,7 +75,7 @@ export function recentDecisions() {
   return respond(() => reviewLog.all().slice(0, 30))
 }
 
-/** GET /api/editor/activities → اختبارات وواجبات المنصة */
+/** GET /api/editor/activities → تقييمات وواجبات المنصة */
 export function listActivities() {
   return respond(() => [
     ...teacherActs().all().map((a) => ({ id: a.id, title: a.title, type: a.kind === 'quiz' ? 'quiz' : 'homework', levelName: levels.find((l) => l.id === (a.levelId || ''))?.name || '—', subjectName: subjects.find((s) => s.id === a.subjectId)?.name || '—', authorName: a.authorName, count: a.questions?.length || 0, status: a.status === 'published' ? 'approved' : a.status, questions: a.questions || [], at: a.at })),

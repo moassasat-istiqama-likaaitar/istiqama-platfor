@@ -16,7 +16,7 @@ const tickets = collection('tickets', () => {
   }))
   const more = [
     ['لا أستطيع الدخول بحساب ابني', 'account', 'open', 'high'], ['الصوت غير واضح في فيديو التجويد', 'content', 'in_progress', 'normal'], ['اقتراح: تحميل الدروس للمشاهدة دون إنترنت', 'suggestion', 'open', 'low'],
-    ['خطأ في علامة اختبار الفقه', 'content', 'waiting', 'normal'], ['التطبيق بطيء مساءً', 'technical', 'in_progress', 'high'], ['تغيير رقم هاتف الولي', 'account', 'resolved', 'low']
+    ['خطأ في علامة تقييم الفقه', 'content', 'waiting', 'normal'], ['التطبيق بطيء مساءً', 'technical', 'in_progress', 'high'], ['تغيير رقم هاتف الولي', 'account', 'resolved', 'low']
   ].map(([title, type, status, priority], i) => {
     const p = persons.filter((x) => x.generated)[i * 17 + 3]
     const at = new Date(Date.now() - (i + 1) * 5 * 36e5).toISOString()

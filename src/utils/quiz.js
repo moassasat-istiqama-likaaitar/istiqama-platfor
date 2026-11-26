@@ -69,7 +69,7 @@ export function gradeQuestion(q, ans) {
   }
 }
 
-/** تصحيح اختبار كامل → { perQuestion[], auto, manualMax, total, needsManual } */
+/** تصحيح تقييم كامل → { perQuestion[], auto, manualMax, total, needsManual } */
 export function gradeQuiz(questions, answers) {
   const perQuestion = questions.map((q, i) => gradeQuestion(q, answers[i]))
   const auto = perQuestion.filter((r) => !r.manual).reduce((n, r) => n + r.score, 0)

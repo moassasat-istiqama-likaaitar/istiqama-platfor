@@ -43,7 +43,7 @@
         <section v-if="l.activities.length" class="sp">
           <h3>الأعمال المطلوبة</h3>
           <RouterLink v-for="a in l.activities" :key="a.id" :to="`/app/activity/${a.id}`" class="ai">
-            <span>{{ a.type === 'quiz' ? 'اختبار' : 'واجب' }}</span>
+            <span>{{ a.type === 'quiz' ? 'تقييم' : 'واجب' }}</span>
             <span class="ai__s" :class="`s-${a.state}`">{{ t(`student.state.${a.state}`) }}<template v-if="a.score !== null"> · {{ a.score }}/{{ a.maxScore }}</template></span>
           </RouterLink>
         </section>

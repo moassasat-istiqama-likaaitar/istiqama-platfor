@@ -33,7 +33,7 @@
 
       <table class="grid">
         <thead>
-          <tr><th>المادة</th><th>الدروس المنجزة</th><th>نسبة التقدّم</th><th>الاختبارات</th><th>الواجبات</th><th>المعدل /20</th><th>التقدير</th></tr>
+          <tr><th>المادة</th><th>الدروس المنجزة</th><th>نسبة التقدّم</th><th>التقييمات</th><th>الواجبات</th><th>المعدل /20</th><th>التقدير</th></tr>
         </thead>
         <tbody>
           <tr v-for="s in r.subjects" :key="s.id">

@@ -80,7 +80,7 @@ const route = useRoute()
 const { children, child, select } = useChild()
 const TABS = [
   { key: 'lessons', label: 'الدروس', icon: 'pi pi-book' },
-  { key: 'tasks', label: 'الأعمال', icon: 'pi pi-pencil' },
+  { key: 'tasks', label: 'الواجبات والتقييمات', icon: 'pi pi-pencil' },
   { key: 'grades', label: 'النتائج', icon: 'pi pi-chart-line' },
   { key: 'profile', label: 'الملف', icon: 'pi pi-id-card' }
 ]
@@ -93,7 +93,7 @@ watch(child, async (c) => {
   r.value = null
   const [rep, a] = await Promise.all([learning.progressReport(c.id, c.levelId), learning.myActivities(c.id, c.levelId)])
   acts.value = a.map((x) => ({
-    ...x, subjectName: x.subject?.name, typeLabel: x.type === 'quiz' ? 'اختبار' : 'واجب',
+    ...x, subjectName: x.subject?.name, typeLabel: x.type === 'quiz' ? 'تقييم' : 'واجب',
     stateTag: x.state === 'todo' ? 'open' : x.state, scoreLabel: x.score !== null ? `${x.score}/${x.maxScore}` : '—'
   }))
   r.value = rep

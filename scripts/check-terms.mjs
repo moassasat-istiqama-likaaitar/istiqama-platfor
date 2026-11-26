@@ -1,0 +1,42 @@
+/**
+ * فحص المصطلحات: مفهوم واحد = عبارة واحدة (انظر docs/GLOSSARY.md).
+ * يبحث في نصوص الواجهة العربية عن العبارات المرفوضة، ويوقف البناء إن وجدها.
+ * التشغيل: npm run terms   (ويعمل تلقائياً قبل كل بناء)
+ */
+import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { join } from 'node:path'
+
+// [العبارة المرفوضة، البديل المعتمد، استثناء (سطر يحتوي هذا مسموح)]
+const RULES = [
+  [/أستاذ/, 'معلم / معلمة'],
+  [/طالب|طلاب/, 'تلميذ / تلاميذ'],
+  [/اختبار/, 'تقييم (الإلكتروني) — «اختبار» للحضوري الورقي فقط', /حضوري|offline|Offline|ob\d|exam|ليلة الاختبار|الفصل الأول|وثيقة الاختبار|العطل والاختبارات/],
+  [/\bQuiz\b|كويز/, 'تقييم', /^\s*(\/\/|\*|<!--)|import |function |sendQuiz|submitQuiz|gradeQuiz|isQuiz|startQuiz/],
+  [/إشعارات المدرسة|إشعار للمدرسة/, 'إعلانات المدرسة'],
+  [/تتبعي الدراسي/, 'تقدمي'],
+  [/المحتوى الرقمي|المكتبة الرقمية/, 'المكتبة المركزية'],
+  [/مدير المنصة المدرسية/, 'مدير المدرسة'],
+  [/أولياء الأمور|ولي الأمر/, 'الولي / الأولياء'],
+  [/منشئ الاختبارات/, 'منشئ التقييمات'],
+  [/شكراً على تقييمك|الأقل تقييما/, 'التقدير (النجوم) — «التقييم» للنشاط']
+]
+// ملفات الاختبار الحضوري (الورقي): «اختبار» فيها صحيح
+const SKIP = ['locales/en.js', 'locales/fr.js', 'scripts/check-terms.mjs', 'OfflineTestsView.vue', 'OfflineTestPrint.vue']
+const files = []
+const walk = (d) => readdirSync(d).forEach((f) => {
+  const p = join(d, f)
+  if (statSync(p).isDirectory()) walk(p)
+  else if (/\.(vue|js)$/.test(f) && !SKIP.some((s) => p.endsWith(s))) files.push(p)
+})
+walk('src')
+const hits = []
+files.forEach((f) => readFileSync(f, 'utf8').split('\n').forEach((line, i) => {
+  RULES.forEach(([bad, good, allow]) => {
+    if (bad.test(line) && !(allow && allow.test(line))) hits.push(`${f}:${i + 1}  «${line.match(bad)[0]}» ← استعمل: ${good}`)
+  })
+}))
+if (hits.length) {
+  console.error(`\n✗ ${hits.length} مصطلح غير موحّد:\n` + hits.join('\n'))
+  process.exit(1)
+}
+console.log('✓ المصطلحات موحّدة')

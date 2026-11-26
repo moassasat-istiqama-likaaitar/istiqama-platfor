@@ -87,7 +87,7 @@
       <section class="panel">
         <h3>تفاصيل المقررات</h3>
         <table class="t-table">
-          <thead><tr><th>المقرر</th><th>الدروس</th><th>الاختبارات</th><th>الواجبات</th><th>التفاعلات</th><th>المعدل</th></tr></thead>
+          <thead><tr><th>المادة</th><th>الدروس</th><th>التقييمات</th><th>الواجبات</th><th>التفاعلات</th><th>المعدل</th></tr></thead>
           <tbody>
             <tr v-for="s in r.subjects" :key="s.id">
               <td><span class="sq" :style="{ background: s.color }" />{{ s.name }}</td>

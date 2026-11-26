@@ -58,7 +58,7 @@ const cur = ref(null)
 const preview = computed(() => (cur.value?.kind === 'upload' ? normUpload(uploads().find(cur.value.id)) : null))
 async function load() {
   const ids = [...new Set(assignments.filter((a) => a.role === 'teacher' && a.schoolId === auth.active.school.id).map((a) => a.personId))]
-  rows.value = (await managerQueue(ids)).map((r) => ({ ...r, kindLabel: r.kind === 'activity' ? (r.type === 'quiz' ? 'اختبار' : 'واجب') : cat.TYPE_LABEL[r.type] }))
+  rows.value = (await managerQueue(ids)).map((r) => ({ ...r, kindLabel: r.kind === 'activity' ? (r.type === 'quiz' ? 'تقييم' : 'واجب') : cat.TYPE_LABEL[r.type] }))
 }
 onMounted(load)
 async function approve(r) {

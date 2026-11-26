@@ -1,8 +1,8 @@
 <template>
-  <!-- وضع التركيز: داخل الدرس أو الاختبار لا إشعارات ولا نجوم ولا قوائم — فقط المحتوى وزر الخروج -->
+  <!-- وضع التركيز: داخل الدرس أو التقييم لا إشعارات ولا نجوم ولا قوائم — فقط المحتوى وزر الخروج -->
   <div class="f-shell">
     <header class="f-top">
-      <button type="button" class="f-exit" @click="exit"><i class="pi pi-times" /> <span>{{ isQuiz ? 'الخروج من الاختبار' : 'الخروج من الدرس' }}</span></button>
+      <button type="button" class="f-exit" @click="exit"><i class="pi pi-times" /> <span>{{ isQuiz ? 'الخروج من التقييم' : 'الخروج من الدرس' }}</span></button>
       <span class="f-mode"><i class="pi pi-eye" /> وضع التركيز</span>
     </header>
     <main class="f-main"><slot /></main>

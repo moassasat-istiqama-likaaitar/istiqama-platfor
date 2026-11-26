@@ -1,5 +1,5 @@
 <template>
-  <!-- ST06: واجباتي / مهامي — الواجبات والاختبارات المصادَق عليها -->
+  <!-- ST06: واجباتي / مهامي — الواجبات والتقييمات المصادَق عليها -->
   <div class="sa" :class="`sa--${theme}`">
     <header class="sa__head">
       <h1>{{ titles[theme] }}</h1>
@@ -26,7 +26,7 @@
     <div v-else-if="theme === 'juniors'" class="j-log">
       <RouterLink v-for="a in visible" :key="a.id" :to="`/app/activity/${a.id}`" class="j-item" :style="{ '--c': a.subject.color }">
         <span class="j-item__box" :class="a.state"><i :class="a.state === 'graded' || a.state === 'submitted' ? 'pi pi-check' : a.type === 'quiz' ? 'pi pi-question' : 'pi pi-pencil'" /></span>
-        <div class="j-item__b"><small>{{ a.subject.name }} · {{ a.type === 'quiz' ? 'تحدي' : 'مهمة' }}</small><strong>{{ a.label }}</strong></div>
+        <div class="j-item__b"><small>{{ a.subject.name }} · {{ a.type === 'quiz' ? 'تقييم' : 'واجب' }}</small><strong>{{ a.label }}</strong></div>
         <span v-if="a.state === 'graded'" class="j-item__score">{{ a.score }}/{{ a.maxScore }}</span>
         <span v-else class="chip" :data-hue="a.state === 'submitted' ? 'blue' : due(a).hue">{{ a.state === 'submitted' ? 'بانتظار المعلم' : due(a).text }}</span>
         <span class="j-item__xp">{{ a.type === 'quiz' ? `حتى +${10 + 5 * (a.questionsCount || 0)}` : '+15' }} نقطة</span>
@@ -38,7 +38,7 @@
       <thead><tr><th>العمل</th><th class="hide-sm">المقرر</th><th>الأجل</th><th>الحالة</th><th>العلامة</th></tr></thead>
       <tbody>
         <tr v-for="a in visible" :key="a.id" @click="$router.push(`/app/activity/${a.id}`)">
-          <td><span class="type">{{ a.type === 'quiz' ? 'اختبار' : 'واجب' }}</span> {{ a.label }} <span v-if="a.required" class="req">إلزامي</span></td>
+          <td><span class="type">{{ a.type === 'quiz' ? 'تقييم' : 'واجب' }}</span> {{ a.label }} <span v-if="a.required" class="req">إلزامي</span></td>
           <td class="hide-sm"><span class="sq" :style="{ background: a.subject.color }" />{{ a.subject.name }}</td>
           <td class="num">{{ shortDate(a.due) }}</td>
           <td><span class="st" :class="`st--${a.state}`">{{ t(`student.state.${a.state}`) }}</span></td>
@@ -66,7 +66,7 @@ const theme = computed(() => student.theme)
 const all = ref([])
 const tab = ref('todo')
 const tabs = ['todo', 'submitted', 'graded']
-const titles = { kids: 'تحدياتي', juniors: 'سجل المهام', teens: 'الأعمال' }
+const titles = { kids: 'تحدياتي', juniors: 'سجل المهام', teens: 'واجباتي وتقييماتي' }
 const tabLabels = {
   kids: { todo: 'تنتظرني', submitted: 'أرسلتها', graded: 'نجومي' },
   juniors: { todo: 'مهام مفتوحة', submitted: 'بانتظار المعلم', graded: 'مكتملة' },

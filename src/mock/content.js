@@ -1,7 +1,7 @@
 /**
  * المحتوى التعليمي التجريبي.
  * المواد والمحاور وعناوين الدروس مأخوذة من شيت "سيرورة الدروس" (البرنامج الموحد) للمؤسسة.
- * المحتوى نفسه (فيديو، عروض، مذكرات، صور، اختبارات) تجريبي ويُستبدل بمحتوى المعلمين.
+ * المحتوى نفسه (فيديو، عروض، مذكرات، صور، تقييمات) تجريبي ويُستبدل بمحتوى المعلمين.
  */
 import CURRICULUM from './curriculum.json'
 
@@ -172,7 +172,7 @@ Object.entries(CURRICULUM).forEach(([levelId, rows]) => {
       const due = daysFromNow(((li * 3 + si) % 10) - 2)
       if (f?.quiz || li % 3 === 0) {
         activities.push({
-          id: `ac-${lessonId}-q`, lessonId, subjectId, levelId, type: 'quiz', title: `اختبار: ${name}`,
+          id: `ac-${lessonId}-q`, lessonId, subjectId, levelId, type: 'quiz', title: `تقييم: ${name}`,
           required: li % 2 === 0, mandatory: true, authorId: author.id, authorName: author.name, status: 'approved',
           questions: f?.quiz || GENERIC_QUIZ(name), due, maxScore: 10
         })

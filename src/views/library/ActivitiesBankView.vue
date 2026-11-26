@@ -1,12 +1,12 @@
 <template>
-  <!-- TE/ED: بنك الأنشطة المركزي — واجبات واختبارات المنصة والمعتمدة من المعلمين؛ يربطها أي معلم بقسمه -->
+  <!-- TE/ED: بنك الأنشطة المركزي — واجبات وتقييمات المنصة والمعتمدة من المعلمين؛ يربطها أي معلم بقسمه -->
   <div>
-    <PageHeader title="بنك الأنشطة" subtitle="واجبات واختبارات جاهزة من المنصة ومن زملائك (المعتمدة). اختر نشاطاً وأدرجه في قسمك بدرسه وآخر أجله." />
+    <PageHeader title="بنك الأنشطة" subtitle="واجبات وتقييمات جاهزة من المنصة ومن زملائك (المعتمدة). اختر نشاطاً وأدرجه في قسمك بدرسه وآخر أجله." />
     <div class="abar panel">
       <IconField class="q"><InputIcon class="pi pi-search" /><InputText v-model="q" placeholder="ابحث بالعنوان أو الدرس" fluid /></IconField>
       <Select v-model="level" :options="levelOpts" placeholder="كل المستويات" show-clear option-label="label" option-value="value" />
       <Select v-model="subject" :options="subjectOpts" placeholder="كل المواد" show-clear option-label="label" option-value="value" />
-      <Select v-model="kind" :options="[{ label: 'اختبارات', value: 'quiz' }, { label: 'واجبات', value: 'homework' }]" option-label="label" option-value="value" placeholder="اختبارات وواجبات" show-clear />
+      <Select v-model="kind" :options="[{ label: 'التقييمات', value: 'quiz' }, { label: 'الواجبات', value: 'homework' }]" option-label="label" option-value="value" placeholder="التقييمات والواجبات" show-clear />
       <Select v-model="qt" :options="Object.entries(QTYPES).map(([value, x]) => ({ value, label: x.label }))" option-label="label" option-value="value" placeholder="كل أنواع الأسئلة" show-clear />
       <span class="grow" />
       <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;تقييم جديد</RouterLink>
