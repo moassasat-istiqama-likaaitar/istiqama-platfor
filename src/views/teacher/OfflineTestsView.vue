@@ -55,7 +55,7 @@
         </label>
       </div>
       <label class="fl full"><span>ملاحظات للزملاء</span><Textarea v-model="f.notes" rows="2" auto-resize fluid placeholder="مثال: يناسب حصة ساعة، ركّزت فيه على التطبيق" /></label>
-      <p class="muted small full"><i class="pi pi-info-circle" /> يُنشر مباشرة في البنك لمعلمي المستوى نفسه، ويظهر في «ملفاتي». لا يُدرج في الأقسام ولا يراه التلاميذ.</p>
+      <p class="muted small full"><i class="pi pi-info-circle" /> يُنشر مباشرة في البنك لمعلمي المستوى نفسه، ويظهر في «محتواي وواجباتي وتقييماتي». لا يُدرج في الأقسام ولا يراه التلاميذ.</p>
       <div class="full act"><Button type="submit" label="نشر في البنك" icon="pi pi-upload" :loading="busy" :disabled="!valid" /></div>
     </form>
   </div>
@@ -102,7 +102,7 @@ async function send() {
   busy.value = true
   try {
     await uploadOfflineTest(auth.person, JSON.parse(JSON.stringify(f)))
-    toast.add({ severity: 'success', summary: 'نُشر في البنك', detail: 'متاح لمعلمي المستوى، ويظهر في ملفاتي', life: 2800 })
+    toast.add({ severity: 'success', summary: 'نُشر في البنك', detail: 'متاح لمعلمي المستوى، ويظهر في «محتواي وواجباتي وتقييماتي»', life: 2800 })
     Object.assign(f, blank())
     tab.value = 'bank'
     load()

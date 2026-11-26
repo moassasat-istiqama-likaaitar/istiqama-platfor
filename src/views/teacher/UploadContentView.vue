@@ -42,7 +42,7 @@
         <ul class="recent">
           <li v-for="u in mine.slice(0, 7)" :key="u.id"><div><b>{{ u.title }}</b><small class="muted">{{ cat.TYPE_LABEL[u.type] }} · {{ u.levelName }}</small></div><StatusTag :status="u.status" /></li>
         </ul>
-        <RouterLink to="/app/my-files" class="lnk">كل ملفاتي <i class="pi pi-arrow-left flip" /></RouterLink>
+        <RouterLink to="/app/my-files" class="lnk">كل محتواي <i class="pi pi-arrow-left flip" /></RouterLink>
       </aside>
     </div>
   </div>

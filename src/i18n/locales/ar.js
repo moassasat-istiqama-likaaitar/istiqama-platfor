@@ -22,11 +22,11 @@ export default {
     customization: 'تخصيص المنصة', announcements: 'الإعلانات', calendar: 'الرزنامة', communication: 'إعدادات التواصل',
     'import-export': 'الاستيراد والتصدير', tickets: 'البلاغات', 'quiz-builder': 'منشئ التقييمات',
     'editor-reports': 'التقارير', teachers: 'المعلمون', students: 'التلاميذ', parents: 'الأولياء',
-    activation: 'تفعيل الحسابات', 'school-classes': 'الأقسام', 'teacher-files-review': 'مصادقة ملفات المعلمين',
+    activation: 'تفعيل الحسابات', 'school-classes': 'الأقسام', 'teacher-files-review': 'مصادقة محتوى المعلمين',
     'content-follow': 'متابعة المحتوى والواجبات والتقييمات', performance: 'تقارير الأداء', 'school-notice': 'إعلانات المدرسة', 'school-identity': 'هوية المدرسة', 'branding-requests': 'اعتماد هويات المدارس',
     'my-classes': 'أقسامي', 'class-library': 'مكتبة القسم', submissions: 'التسليمات والتصحيح',
     'central-library': 'المكتبة المركزية', 'upload-content': 'رفع محتوى', 'new-homework': 'واجب منزلي جديد',
-    'my-files': 'ملفاتي وأنشطتي', 'offline-tests': 'بنك الاختبارات الحضورية', 'my-lessons': 'دروسي',
+    'my-files': 'محتواي وواجباتي وتقييماتي', 'offline-tests': 'بنك الاختبارات الحضورية', 'my-lessons': 'دروسي',
     'my-assignments': 'واجباتي وتقييماتي', 'my-progress': 'تقدمي', children: 'الأبناء',
     'child-report': 'تقارير الأبناء', incidents: 'سجل الأعطال', 'support-team': 'فريق الدعم',
     feedback: 'البلاغات والمقترحات', profile: 'الملف الشخصي', notifications: 'الإشعارات', messages: 'الرسائل'

@@ -255,7 +255,7 @@ export function unlinkItem(id, personId, role) {
 
 /* ——— بنك الواجبات والتقييمات ——— */
 
-/** GET /api/activities-bank → أنشطة المنصة + أنشطة المعلمين المعتمدة (ونشاطاتي بكل حالاتها) */
+/** GET /api/activities-bank → أنشطة المنصة + أنشطة المعلمين المعتمدة (وما أنشأتُه بكل حالاته) */
 export function activitiesBank({ personId, scopeLevels } = {}) {
   return respond(() => {
     const plat = activities.map(normActivity)

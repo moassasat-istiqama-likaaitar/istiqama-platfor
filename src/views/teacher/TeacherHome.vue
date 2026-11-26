@@ -6,7 +6,7 @@
       { label: 'أقسامي', value: d.classes.length, icon: 'pi pi-th-large', to: { name: 'screen', params: { key: 'my-classes' } } },
       { label: 'تلاميذي', value: d.students, icon: 'pi pi-users', tone: 'purple' },
       { label: 'بانتظار التصحيح', value: d.pendingCount, icon: 'pi pi-inbox', tone: d.pendingCount ? 'amber' : 'green', to: { name: 'screen', params: { key: 'submissions' } } },
-      { label: 'ملفاتي قيد المراجعة', value: d.uploads.review, icon: 'pi pi-clock', tone: 'blue', hint: `من ${d.uploads.total} ملفاً`, to: { name: 'screen', params: { key: 'my-files' } } }
+      { label: 'محتواي قيد المراجعة', value: d.uploads.review, icon: 'pi pi-clock', tone: 'blue', hint: `من ${d.uploads.total} عنصراً`, to: { name: 'screen', params: { key: 'my-files' } } }
     ]" />
 
     <div class="th-grid">

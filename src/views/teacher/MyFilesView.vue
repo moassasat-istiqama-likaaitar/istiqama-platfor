@@ -1,7 +1,7 @@
 <template>
-  <!-- TE16: ملفاتي وأنشطتي — حالة كل ما رفعته أو أنشأته، وملاحظات المحرر عند طلب التعديل أو الرفض -->
+  <!-- TE16: محتواي وواجباتي وتقييماتي — حالة كل ما رفعته أو أنشأته، وملاحظات المحرر عند طلب التعديل أو الرفض -->
   <div>
-    <PageHeader title="ملفاتي وأنشطتي" subtitle="المسودات عندك وحدك حتى ترسلها. ما طلب المحرر تعديله يعود مسودة مع ملاحظته." />
+    <PageHeader title="محتواي وواجباتي وتقييماتي" subtitle="المسودات عندك وحدك حتى ترسلها. ما طلب المحرر تعديله يعود مسودة مع ملاحظته." />
     <div class="legend"><span v-for="(v, k) in LIFECYCLE" :key="k"><StatusTag :status="k" /> <small class="muted">{{ v.hint }}</small></span></div>
     <div class="tabs">
       <button type="button" class="pill" :class="{ 'is-active': tab === 'files' }" @click="tab = 'files'"><i class="pi pi-folder" /> المحتوى <span class="pill__count">{{ files.length }}</span></button>

@@ -28,7 +28,7 @@
 | رفع محتوى | TE13 | `#/app/upload-content` | `src/views/teacher/UploadContentView.vue` | teacher, editor |
 | واجب منزلي جديد | TE14 | `#/app/new-homework` | `src/views/teacher/NewHomeworkView.vue` | teacher, editor |
 | منشئ التقييمات | TE15 | `#/app/quiz-builder` | `src/views/teacher/QuizBuilderView.vue` | teacher, editor |
-| ملفاتي وأنشطتي | TE16 | `#/app/my-files` | `src/views/teacher/MyFilesView.vue` | teacher, editor |
+| محتواي وواجباتي وتقييماتي | TE16 | `#/app/my-files` | `src/views/teacher/MyFilesView.vue` | teacher, editor |
 | بنك الاختبارات الحضورية | TE17 | `#/app/offline-tests` | `src/views/teacher/OfflineTestsView.vue` | teacher, editor |
 | فتح الدروس | ED07 | `#/app/lesson-opening` | `src/views/editor/LessonOpeningView.vue` | editor |
 | مراجعة الواجبات والتقييمات | ED03 | `#/app/activities-review` | `src/views/editor/ReviewView.vue` | editor, admin, super_admin |
@@ -40,7 +40,7 @@
 | الأولياء | SM04 | `#/app/parents` | `src/views/users/UsersView.vue` | الكل |
 | تفعيل الحسابات | SM05 | `#/app/activation` | `src/views/manager/ActivationView.vue` | school_manager |
 | الأقسام | SM06 | `#/app/school-classes` | `src/views/manager/SchoolClassesView.vue` | school_manager |
-| مصادقة ملفات المعلمين | SM07 | `#/app/teacher-files-review` | `src/views/manager/TeacherFilesReview.vue` | school_manager |
+| مصادقة محتوى المعلمين | SM07 | `#/app/teacher-files-review` | `src/views/manager/TeacherFilesReview.vue` | school_manager |
 | متابعة المحتوى والواجبات والتقييمات | SM08 | `#/app/content-follow` | `src/views/manager/ContentFollowView.vue` | school_manager |
 | تقارير الأداء | SM09 | `#/app/performance` | `src/views/manager/PerformanceView.vue` | school_manager |
 | إشعار للمدرسة | SM10 | `#/app/school-notice` | `src/views/manager/SchoolNoticeView.vue` | school_manager |
