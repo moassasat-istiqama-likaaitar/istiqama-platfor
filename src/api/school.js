@@ -120,7 +120,7 @@ export function contentFollow(schoolId) {
   )
 }
 
-/* ——— الإشعارات المدرسية ——— */
+/* ——— إعلانات المدرسة ——— */
 export function listNotices(schoolId) {
   return respond(() => notices.all().filter((n) => !schoolId || n.schoolId === schoolId))
 }
