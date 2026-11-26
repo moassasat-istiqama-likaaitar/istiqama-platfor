@@ -12,7 +12,7 @@
       <template #cell-title="{ row }"><b>{{ row.title }}</b><small v-if="row.hidden" class="note rejected">أخفاه المحرر</small></template>
       <template #toolbar><RouterLink to="/app/offline-tests" class="p-button p-component p-button-sm"><i class="pi pi-upload" />&nbsp;رفع اختبار حضوري</RouterLink></template>
     </RecordTable>
-    <RecordTable v-else :rows="tab === 'files' ? files : acts" :columns="cols" :search-keys="['title', 'subjectName']" :filters="[{ key: 'status', label: 'الحالة', options: Object.entries(LIFECYCLE).map(([value, x]) => ({ value, label: x.label })) }]" :unit="tab === 'files' ? 'ملف' : 'نشاط'" empty-text="لا شيء بعد">
+    <RecordTable v-else :rows="tab === 'files' ? files : acts" :columns="cols" :search-keys="['title', 'subjectName']" :filters="[{ key: 'status', label: 'الحالة', options: Object.entries(LIFECYCLE).map(([value, x]) => ({ value, label: x.label })) }]" :unit="عنصر" empty-text="لا شيء بعد">
       <template #cell-title="{ row }"><b>{{ row.title }}</b><small v-if="row.note" class="note" :class="row.status"><i class="pi pi-comment" /> {{ row.status === 'rejected' ? 'سبب الرفض' : 'المطلوب تعديله' }}: {{ row.note }}</small></template>
       <template #actions="{ row }">
         <template v-if="row.status === 'draft'">
