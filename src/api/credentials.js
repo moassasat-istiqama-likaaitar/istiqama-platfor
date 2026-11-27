@@ -1,30 +1,50 @@
 import { respond, ApiError } from './client'
-import { persons, assignments, classes, schools } from '@/mock/db'
+import { persons, assignments, classes, schools, levels } from '@/mock/db'
 import { collection } from '@/mock/collections'
 
 /**
- * أوراق الدخول: المنصة تولّد لكل تلميذ (ووليّه اختيارياً) كلمة مرور مؤقتة،
- * ويطبعها المدير أو المعلم أوراقاً لقسم كامل ويوزّعها. تغيير كلمة المرور إجباري عند أول دخول.
+ * أوراق الدخول — عمل إداري (مدير المدرسة، والإدارة العامة مع التصفية بالمدرسة).
+ * ثلاث حالات فقط:
+ *   الجميع: عند الإدراج أول مرة، مرتبة بالأقسام (لا تمسّ من غيّر كلمة مروره).
+ *   الجدد: من سُجّل لاحقاً ولم تُطبع له ورقة.
+ *   شخص: من نسي ورقته أو أراد تغيير كلمة مروره (بحث بالاسم أو اللقب) → كلمة مؤقتة جديدة.
+ * الفئات: التلاميذ، الأولياء، المعلمون، الطاقم الإداري (للإدارة العامة).
  * في الخادم الحقيقي: كلمة المرور المؤقتة تُخزَّن مشفّرة وتعوّض القديمة، ولا تُعرض إلا لحظة الطباعة.
  */
 
 // { id: personId, temp, issuedAt, by }
 const temps = () => collection('tempPasswords', [])
-// { id: personId, at } — أول دخول بكلمة المرور الخاصة (لتمييز من لم يدخل بعد)
+// { id: personId, at } — أول دخول بكلمة المرور الخاصة
 const logins = () => collection('firstLogins', [])
-export const markLogin = (personId) => { if (!logins().find(personId)) logins().insert({ id: personId, at: new Date().toISOString() }) }
-const loggedOnce = (p) => !!logins().find(p.id)
-// أسماء المستخدمين التي ولّدتها المنصة لمن ليس له حساب دخول بعد (تُحفظ وتُطبَّق عند التشغيل)
+// { id: personId, at, by } — آخر طباعة لورقة هذا الشخص
+const prints = () => collection('sheetPrints', [])
+// أسماء المستخدمين التي ولّدتها المنصة لمن ليس له حساب دخول بعد
 const usernames = () => collection('usernames', [])
-usernames().all().forEach((u) => { const p = persons.find((x) => x.id === u.id); if (p && !p.username) p.username = u.username })
 // كلمات المرور التي غيّرها أصحابها (النموذج يحفظها في المتصفح؛ الخادم يحفظها مشفّرة)
 const ownPw = () => collection('ownPasswords', [])
+
+usernames().all().forEach((u) => { const p = persons.find((x) => x.id === u.id); if (p && !p.username) p.username = u.username })
 ownPw().all().forEach((u) => { const p = persons.find((x) => x.id === u.id); if (p) p.password = u.pw })
+
+export const markLogin = (personId) => { if (!logins().find(personId)) logins().insert({ id: personId, at: new Date().toISOString() }) }
+export const tempOf = (personId) => temps().find(personId)?.temp || null
+export const clearTemp = (personId) => temps().remove(personId)
 export function setOwnPassword(p, pw) {
   p.password = pw
   if (ownPw().find(p.id)) ownPw().update(p.id, { pw })
   else ownPw().insert({ id: p.id, pw })
 }
+
+// حروف وأرقام لا تلتبس عند القراءة من ورقة (بلا 0/O ولا 1/l/I)
+const ALPHA = 'abcdefghjkmnpqrstuvwxyz23456789'
+const makeTemp = () => Array.from({ length: 6 }, () => ALPHA[Math.floor(Math.random() * ALPHA.length)]).join('')
+const personOf = (id) => persons.find((p) => p.id === id)
+const fullName = (p) => `${p.firstName} ${p.lastName}`
+const loggedOnce = (p) => !!logins().find(p.id) && !temps().find(p.id)
+const schoolOf = (id) => schools.find((s) => s.id === id)
+const levelOrder = (c) => levels.find((l) => l.id === c?.levelId)?.order ?? 99
+const ROLE_LABEL = { school_manager: 'مدير مدرسة', editor: 'محرر', admin: 'مشرف عام', support: 'الدعم الفني' }
+
 function ensureUsername(p) {
   if (p.username) return p.username
   let base = `u${String(p.id).replace(/\D/g, '') || Date.now() % 100000}`
@@ -34,67 +54,101 @@ function ensureUsername(p) {
   return base
 }
 
-// حروف وأرقام لا تلتبس عند القراءة من ورقة (بلا 0/O ولا 1/l/I)
-const ALPHA = 'abcdefghjkmnpqrstuvwxyz23456789'
-const makeTemp = () => Array.from({ length: 6 }, () => ALPHA[Math.floor(Math.random() * ALPHA.length)]).join('')
+/**
+ * أشخاص الفئة في النطاق، كل واحد بمجموعته (القسم، أو المدرسة، أو الدور) ومفتاح ترتيبه.
+ * schoolId فارغ = كل المدارس (للإدارة العامة).
+ */
+function people(category, schoolId) {
+  const out = []
+  const seen = new Set()
+  const add = (o) => { if (o.p && !seen.has(o.p.id)) { seen.add(o.p.id); out.push(o) } }
+  if (category === 'students') {
+    for (const a of assignments.filter((x) => x.role === 'student')) {
+      const c = classes.find((x) => x.id === a.classId)
+      if (!c || (schoolId && c.schoolId !== schoolId)) continue
+      const s = schoolOf(c.schoolId)
+      add({ p: personOf(a.personId), group: schoolId ? c.name : `${s?.short || s?.name} — ${c.name}`, sort: [s?.name, String(levelOrder(c)).padStart(2, '0'), c.name], sub: `تلميذ · ${c.name}`, school: s })
+    }
+  } else if (category === 'parents') {
+    // الولي: ورقة واحدة، في قسم أكبر أبنائه
+    for (const a of assignments.filter((x) => x.role === 'parent')) {
+      const kids = (a.childIds || []).map((id) => ({ p: personOf(id), a: assignments.find((x) => x.personId === id && x.role === 'student') })).filter((k) => k.p && k.a)
+      if (!kids.length) continue
+      kids.sort((x, y) => String(x.p.birthDate || '9').localeCompare(String(y.p.birthDate || '9')))
+      const c = classes.find((x) => x.id === kids[0].a.classId)
+      if (!c || (schoolId && c.schoolId !== schoolId)) continue
+      const s = schoolOf(c.schoolId)
+      add({ p: personOf(a.personId), group: schoolId ? c.name : `${s?.short || s?.name} — ${c.name}`, sort: [s?.name, String(levelOrder(c)).padStart(2, '0'), c.name], sub: `ولي ${kids.map((k) => k.p.firstName).join(' و')} · ${c.name}`, school: s })
+    }
+  } else if (category === 'teachers') {
+    for (const a of assignments.filter((x) => x.role === 'teacher')) {
+      if (schoolId && a.schoolId !== schoolId) continue
+      const s = schoolOf(a.schoolId)
+      const others = assignments.filter((x) => x.role === 'teacher' && x.personId === a.personId && x.schoolId !== a.schoolId).map((x) => schoolOf(x.schoolId)?.name).filter(Boolean)
+      add({ p: personOf(a.personId), group: s?.name || '', sort: [s?.name], sub: `معلم · ${s?.short || s?.name}`, school: s, otherSchools: others })
+    }
+  } else if (category === 'staff') {
+    for (const a of assignments.filter((x) => ROLE_LABEL[x.role])) {
+      if (schoolId && a.schoolId !== schoolId) continue
+      const s = schoolOf(a.schoolId)
+      add({ p: personOf(a.personId), group: ROLE_LABEL[a.role], sort: [String(Object.keys(ROLE_LABEL).indexOf(a.role))], sub: s ? `${ROLE_LABEL[a.role]} · ${s.short || s.name}` : ROLE_LABEL[a.role], school: s })
+    }
+  }
+  const key = (o) => [...o.sort, fullName(o.p)].join('|')
+  return out.sort((x, y) => key(x).localeCompare(key(y), 'ar'))
+}
 
-const personOf = (id) => persons.find((p) => p.id === id)
-const parentsOf = (studentId) => assignments.filter((a) => a.role === 'parent' && (a.childIds || []).includes(studentId)).map((a) => personOf(a.personId)).filter(Boolean)
-
-/** كلمة المرور المؤقتة السارية لهذا الشخص (إن وُجدت) */
-export const tempOf = (personId) => temps().find(personId)?.temp || null
-/** تُستعمل بعد تغيير كلمة المرور: تنتهي المؤقتة */
-export const clearTemp = (personId) => temps().remove(personId)
-
-/** GET /api/classes/:id/login-sheets → تلاميذ القسم وحالة دخولهم (دون كلمات المرور) */
-export function loginSheetRoster(classId) {
+/** GET /api/login-sheets/summary?category&schoolId → أعداد الأزرار */
+export function sheetsSummary(category, schoolId = null) {
   return respond(() => {
-    const c = classes.find((x) => x.id === classId)
-    if (!c) throw new ApiError('not_found', 'القسم غير موجود')
-    return assignments.filter((a) => a.role === 'student' && a.classId === classId).map((a) => {
-      const p = personOf(a.personId)
-      const t = temps().find(p.id)
-      return { id: p.id, name: `${p.firstName} ${p.lastName}`, username: p.username || '— (يُنشأ عند الطباعة)', state: t ? 'temp' : loggedOnce(p) ? 'own' : 'never', issuedAt: t?.issuedAt || null, parents: parentsOf(p.id).map((x) => `${x.firstName} ${x.lastName}`) }
-    })
+    const list = people(category, schoolId)
+    const pending = list.filter((o) => !loggedOnce(o.p))
+    return { total: list.length, toPrint: pending.length, fresh: pending.filter((o) => !prints().find(o.p.id)).length, logged: list.length - pending.length }
+  })
+}
+
+/** GET /api/login-sheets/search?category&schoolId&q → بحث بالاسم أو اللقب (لورقة شخص) */
+export function searchSheetPeople(category, schoolId, q) {
+  return respond(() => {
+    const k = String(q || '').trim()
+    if (k.length < 2) return []
+    return people(category, schoolId).filter((o) => fullName(o.p).includes(k) || `${o.p.lastName} ${o.p.firstName}`.includes(k)).slice(0, 15).map((o) => ({
+      id: o.p.id, name: fullName(o.p), username: o.p.username || '', sub: o.sub, printedAt: prints().find(o.p.id)?.at || null, logged: loggedOnce(o.p), otherSchools: o.otherSchools || []
+    }))
   })
 }
 
 /**
- * POST /api/classes/:id/login-sheets { scope: 'new'|'all'|'ids', ids?, withParents }
- * يولّد كلمات مرور مؤقتة ويعيد بيانات الطباعة. «all» يعيد تعيين كلمات مرور تلاميذ القسم كلهم.
- * «new»: من لم يغيّر كلمة مروره بعد (يبقى له رمزه الحالي، ومن لا رمز له يُولَّد له).
+ * POST /api/login-sheets { category, schoolId, mode: 'all'|'new'|'one', personId }
+ * يعيد مجموعات الطباعة: [{ name, rows: [{ name, username, temp, sub, slug }] }]
  */
-export function issueLoginSheets(classId, { scope = 'new', ids = [], withParents = false } = {}, by = null) {
+export function issueSheets({ category, schoolId = null, mode = 'all', personId = null }, by = null) {
   return respond(() => {
-    const c = classes.find((x) => x.id === classId)
-    if (!c) throw new ApiError('not_found', 'القسم غير موجود')
-    const school = schools.find((s) => s.id === c.schoolId)
-    let studs = assignments.filter((a) => a.role === 'student' && a.classId === classId).map((a) => personOf(a.personId))
-    if (scope === 'ids') studs = studs.filter((p) => ids.includes(p.id))
-    if (scope === 'new') studs = studs.filter((p) => !loggedOnce(p))
-    if (!studs.length) throw new ApiError('empty', 'لا تلاميذ في هذا الاختيار')
+    let list = people(category, schoolId)
+    if (mode === 'one') list = list.filter((o) => o.p.id === personId)
+    else list = list.filter((o) => !loggedOnce(o.p))
+    if (mode === 'new') list = list.filter((o) => !prints().find(o.p.id))
+    if (!list.length) throw new ApiError('empty', mode === 'new' ? 'لا جدد: كل من في هذه الفئة طُبعت له ورقة' : 'لا أحد في هذا الاختيار')
     const at = new Date().toISOString()
-    const issue = (p, fresh) => {
+    const groups = []
+    for (const o of list) {
+      const p = o.p
       ensureUsername(p)
-      const cur = temps().find(p.id)
-      if (cur && !fresh) return cur.temp
-      const temp = makeTemp()
-      if (cur) temps().update(p.id, { temp, issuedAt: at, by: by?.id || null })
-      else temps().insert({ id: p.id, temp, issuedAt: at, by: by?.id || null })
-      return temp
+      if (mode === 'one') {
+        // ورقة جديدة لشخص: كلمة مؤقتة جديدة تلغي كلمته الحالية وأي ورقة سابقة
+        setOwnPassword(p, `!reset-${makeTemp()}${makeTemp()}`)
+        logins().remove(p.id)
+        temps().remove(p.id)
+      }
+      // الطباعة الجماعية تعيد استعمال الكلمة المؤقتة السارية حتى لا تُلغى ورقة وُزّعت
+      if (!temps().find(p.id)) temps().insert({ id: p.id, temp: makeTemp(), issuedAt: at, by: by?.id || null })
+      if (prints().find(p.id)) prints().update(p.id, { at, by: by?.id || null })
+      else prints().insert({ id: p.id, at, by: by?.id || null })
+      let g = groups.find((x) => x.name === o.group)
+      if (!g) groups.push((g = { name: o.group, rows: [] }))
+      g.rows.push({ name: fullName(p), username: p.username, temp: temps().find(p.id).temp, sub: o.sub, slug: o.school?.slug || '', schoolName: o.school?.name || '' })
     }
-    const fresh = scope !== 'new'
-    const done = new Set()
-    const rows = studs.map((p) => ({
-      temp: issue(p, fresh), name: `${p.firstName} ${p.lastName}`, username: p.username, role: 'student',
-      parents: withParents ? parentsOf(p.id).map((x) => {
-        // الولي: يُعاد استعمال رمزه الساري (قد يكون له أبناء في أقسام أخرى)، ولا يُولَّد إلا إن لم يكن له رمز
-        const first = !done.has(x.id)
-        done.add(x.id)
-        const temp = loggedOnce(x) && !temps().find(x.id) ? null : issue(x, false)
-        return { name: `${x.firstName} ${x.lastName}`, username: x.username, temp, repeat: !first }
-      }) : []
-    }))
-    return { className: c.name, schoolId: school?.id, schoolName: school?.name, slug: school?.slug, issuedAt: at, rows }
+    const school = schoolId ? schoolOf(schoolId) : null
+    return { category, mode, schoolId, schoolName: school?.name || 'كل المدارس', issuedAt: at, count: list.length, groups }
   })
 }

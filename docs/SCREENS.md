@@ -39,7 +39,7 @@
 | التلاميذ | SM03 | `#/app/students` | `src/views/users/UsersView.vue` | الكل |
 | الأولياء | SM04 | `#/app/parents` | `src/views/users/UsersView.vue` | الكل |
 | تفعيل الحسابات | SM05 | `#/app/activation` | `src/views/manager/ActivationView.vue` | school_manager |
-| أوراق الدخول | SM12 / TE18 | `#/app/login-sheets` (والطباعة `#/print/login-sheets`) | `src/views/manager/LoginSheetsView.vue`، `src/views/print/LoginSheetsPrint.vue` | school_manager، teacher |
+| أوراق الدخول | SM12 / AD21 | `#/app/login-sheets` (والطباعة `#/print/login-sheets`) | `src/views/manager/LoginSheetsView.vue`، `src/views/print/LoginSheetsPrint.vue` | school_manager، super_admin، admin |
 | الأقسام | SM06 | `#/app/school-classes` | `src/views/manager/SchoolClassesView.vue` | school_manager |
 | مصادقة محتوى المعلمين | SM07 | `#/app/teacher-files-review` | `src/views/manager/TeacherFilesReview.vue` | school_manager |
 | متابعة المحتوى والواجبات والتقييمات | SM08 | `#/app/content-follow` | `src/views/manager/ContentFollowView.vue` | school_manager |

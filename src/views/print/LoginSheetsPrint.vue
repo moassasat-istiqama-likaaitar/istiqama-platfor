@@ -1,21 +1,23 @@
 <template>
-  <!-- طباعة أوراق الدخول: 8 أوراق في صفحة A4، تُقصّ على الخطوط المتقطعة وتُوزَّع على التلاميذ -->
+  <!-- طباعة أوراق الدخول: 8 أوراق في صفحة A4 تُقصّ على الخطوط المتقطعة. كل مجموعة (قسم، مدرسة، دور) تبدأ صفحة جديدة على رأسها اسمها -->
   <div class="pp">
     <div class="tools no-print">
       <Button label="رجوع" icon="pi pi-arrow-right flip" text severity="secondary" @click="router.back()" />
-      <span v-if="data" class="muted">{{ data.className }} · {{ cards.length }} ورقة</span>
+      <span v-if="data" class="muted">{{ data.schoolName }} · {{ data.count }} ورقة · {{ data.groups.length }} مجموعة</span>
       <Button label="طباعة / حفظ PDF" icon="pi pi-print" :disabled="!data" @click="print" />
     </div>
     <p v-if="!data" class="empty no-print">لا أوراق للطباعة. ولّدها من شاشة «أوراق الدخول».</p>
     <article v-for="(page, pi) in pages" :key="pi" class="sheet" :style="vars">
-      <div v-for="(c, i) in page" :key="i" class="card" :class="{ parent: c.kind === 'parent' }">
+      <h2 class="grp">{{ page.group }}<small v-if="page.part > 1"> (تابع {{ page.part }})</small></h2>
+      <div class="grid">
+      <div v-for="(c, i) in page.cards" :key="i" class="card" :class="{ alt: data.category !== 'students' }">
         <header class="hd">
           <InstitutionMark :size="30" />
-          <div class="hd__t"><b>{{ tr('app.name') }}</b><small>{{ data.schoolName }}</small></div>
-          <SchoolLogo :school="brand.school" :branding="brand.branding" :size="30" />
+          <div class="hd__t"><b>{{ tr('app.name') }}</b><small>{{ c.schoolName || data.schoolName }}</small></div>
+          <SchoolLogo v-if="data.schoolId" :school="brand.school" :branding="brand.branding" :size="30" />
         </header>
         <div class="who">
-          <small>{{ c.kind === 'parent' ? `ولي التلميذ ${c.child}` : `تلميذ · ${data.className}` }}</small>
+          <small>{{ c.sub }}</small>
           <b>{{ c.name }}</b>
         </div>
         <div class="body">
@@ -25,8 +27,9 @@
           </dl>
           <img v-if="qr[c.username]" :src="qr[c.username]" alt="رمز QR لصفحة الدخول" class="qr" />
         </div>
-        <p class="link" dir="ltr">{{ loginUrl }}</p>
+        <p class="link" dir="ltr">{{ urlOf(c) }}</p>
         <p class="note">عند أول دخول تطلب منك المنصة كلمة مرور جديدة. احفظها ولا تعطها لأحد.</p>
+      </div>
       </div>
     </article>
   </div>
@@ -50,21 +53,16 @@ const auth = useAuthStore()
 const brand = useBrandStore()
 const data = ref(storage.get('ist.loginSheets'))
 const qr = ref({})
-// رابط صفحة دخول المدرسة؛ ورمز QR يفتحها واسم المستخدم مكتوب مسبقاً
-const loginUrl = computed(() => `${location.origin}${location.pathname}#/s/${data.value?.slug || ''}`)
-// ورقة لكل تلميذ، ثم ورقة لكل ولي (مرة واحدة، ولمن له رمز)
-const cards = computed(() => {
-  if (!data.value) return []
-  const out = data.value.rows.map((r) => ({ kind: 'student', name: r.name, username: r.username, temp: r.temp }))
-  data.value.rows.forEach((r) => r.parents.filter((x) => !x.repeat && x.temp).forEach((x) => out.push({ kind: 'parent', name: x.name, username: x.username, temp: x.temp, child: r.name })))
-  return out
-})
-const pages = computed(() => Array.from({ length: Math.ceil(cards.value.length / 8) }, (_, i) => cards.value.slice(i * 8, i * 8 + 8)))
+// رابط صفحة دخول المدرسة (أو صفحة الدخول العامة للطاقم)؛ ورمز QR يفتحها واسم المستخدم مكتوب مسبقاً
+const urlOf = (c) => `${location.origin}${location.pathname}#/${c.slug ? 's/' + c.slug : 'login'}`
+// كل مجموعة تبدأ صفحة جديدة، 8 أوراق في الصفحة
+const pages = computed(() => (data.value?.groups || []).flatMap((g) => Array.from({ length: Math.ceil(g.rows.length / 8) }, (_, i) => ({ group: g.name, part: i + 1, cards: g.rows.slice(i * 8, i * 8 + 8) }))))
+const cards = computed(() => (data.value?.groups || []).flatMap((g) => g.rows))
 const vars = computed(() => ({ '--s1': brand.branding?.primary || '#233b85', '--s2': brand.branding?.secondary || '#ffc96b' }))
 onMounted(async () => {
   await brand.sync(auth.active)
   const out = {}
-  for (const c of cards.value) out[c.username] = await QRCode.toDataURL(`${loginUrl.value}?u=${encodeURIComponent(c.username)}`, { margin: 0, width: 160 })
+  for (const c of cards.value) out[c.username] = await QRCode.toDataURL(`${urlOf(c)}?u=${encodeURIComponent(c.username)}`, { margin: 0, width: 160 })
   qr.value = out
 })
 const print = () => window.print()
@@ -74,9 +72,12 @@ const print = () => window.print()
 .pp { min-height: 100vh; background: #e9ecf2; padding: 1.5rem 1rem 3rem; font-family: Cairo, sans-serif; color: #1a1f36; }
 .tools { max-width: 210mm; margin: 0 auto 1rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
 .empty { text-align: center; color: #64748b; }
-.sheet { width: 210mm; height: 297mm; margin: 0 auto 1rem; background: #fff; padding: 8mm; box-sizing: border-box; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 1fr); }
+.sheet { width: 210mm; height: 297mm; margin: 0 auto 1rem; background: #fff; padding: 6mm 8mm 8mm; box-sizing: border-box; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); display: flex; flex-direction: column; }
+.grp { margin: 0 0 3mm; font-size: 12pt; color: var(--s1); border-bottom: 1px solid #cbd5e1; padding-bottom: 1.5mm; }
+.grp small { font-size: 9pt; color: #64748b; font-weight: 400; }
+.grid { flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 1fr); }
 .card { border: 1px dashed #9aa6b8; padding: 4mm 5mm; display: flex; flex-direction: column; gap: 2mm; overflow: hidden; }
-.card.parent { background: #fbfaf4; }
+.card.alt { background: #fbfaf4; }
 .hd { display: flex; align-items: center; gap: 2mm; border-bottom: 2px solid var(--s1); padding-bottom: 2mm; }
 .hd__t { flex: 1; display: flex; flex-direction: column; line-height: 1.25; }
 .hd__t b { font-size: 9pt; }

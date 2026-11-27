@@ -17,7 +17,8 @@ const adminMenu = [
     item('users-list', 'pi pi-id-card', ['AD02', 'AD03'], 7),
     item('users-import', 'pi pi-file-import', ['AD04'], 7),
     item('users-duplicates', 'pi pi-clone', ['AD05'], 7),
-    item('activity-log', 'pi pi-history', ['AD06'], 7)
+    item('activity-log', 'pi pi-history', ['AD06'], 7),
+    item('login-sheets', 'pi pi-id-card', ['AD21'], 7)
   ]),
   group('content', 'pi pi-book', [
     item('library-manage', 'pi pi-book', ['ED02'], 5),
@@ -101,7 +102,6 @@ export const MENUS = {
   teacher: [
     item('home', 'pi pi-home', ['TE01'], 4),
     item('my-classes', 'pi pi-th-large', ['TE02', 'TE03', 'TE06', 'TE07'], 4),
-    item('login-sheets', 'pi pi-id-card', ['TE18'], 4),
     item('class-library', 'pi pi-bookmark', ['TE04', 'TE05'], 4),
     item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4),
     item('central-library', 'pi pi-book', ['TE11', 'TE12'], 4),

@@ -59,7 +59,7 @@ const routes = [
       { path: 'teachers', name: 'teachers', component: () => import('@/views/users/UsersView.vue'), props: { role: 'teacher', title: 'المعلمون', subtitle: 'معلمو المدرسة وأقسامهم وموادهم.' }, meta: { roles: ['school_manager'] } },
       { path: 'students', name: 'students', component: () => import('@/views/users/UsersView.vue'), props: { role: 'student', title: 'التلاميذ', subtitle: 'تلاميذ المدرسة وتقدّمهم ومعدلاتهم.' }, meta: { roles: ['school_manager'] } },
       { path: 'parents', name: 'parents', component: () => import('@/views/users/UsersView.vue'), props: { role: 'parent', title: 'الأولياء', subtitle: 'أولياء تلاميذ المدرسة وأبناؤهم.' }, meta: { roles: ['school_manager'] } },
-      { path: 'login-sheets', name: 'login-sheets', component: () => import('@/views/manager/LoginSheetsView.vue'), meta: { roles: ['school_manager', 'teacher'] } },
+      { path: 'login-sheets', name: 'login-sheets', component: () => import('@/views/manager/LoginSheetsView.vue'), meta: { roles: ['school_manager', 'super_admin', 'admin'] } },
       { path: 'activation', name: 'activation', component: () => import('@/views/manager/ActivationView.vue'), meta: { roles: ['school_manager'] } },
       { path: 'school-classes', name: 'school-classes', component: () => import('@/views/manager/SchoolClassesView.vue'), meta: { roles: ['school_manager'] } },
       { path: 'teacher-files-review', name: 'teacher-files-review', component: () => import('@/views/manager/TeacherFilesReview.vue'), meta: { roles: ['school_manager'] } },
@@ -103,7 +103,7 @@ const routes = [
   },
   // صفحات الطباعة (خارج القالب)
   { path: '/print/offline-test/:id', name: 'offline-print', component: () => import('@/views/print/OfflineTestPrint.vue'), meta: { auth: true, roles: ['teacher', 'editor'] } },
-  { path: '/print/login-sheets', name: 'login-sheets-print', component: () => import('@/views/print/LoginSheetsPrint.vue'), meta: { auth: true, roles: ['school_manager', 'teacher'] } },
+  { path: '/print/login-sheets', name: 'login-sheets-print', component: () => import('@/views/print/LoginSheetsPrint.vue'), meta: { auth: true, roles: ['school_manager', 'super_admin', 'admin'] } },
   { path: '/print/report-card', name: 'report-card', component: () => import('@/views/print/ReportCardView.vue'), meta: { auth: true, roles: ['student', 'parent'] } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/errors/NotFoundView.vue') }
 ]
