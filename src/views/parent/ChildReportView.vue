@@ -3,6 +3,7 @@
   <div>
     <PageHeader title="التقرير الدوري" subtitle="ملخص أداء ابنك في الفترة، قابل للطباعة." />
     <ChildSwitcher v-if="children.length > 1" :children="children" :model-value="child?.id" @update:model-value="select" />
+    <PastSeasonsTabs data-key="reports" label="كشوف النقاط">
     <template v-if="child && r">
       <div class="rp-actions">
         <RouterLink :to="{ name: 'report-card', query: { child: child.id } }" class="p-button p-component"><i class="pi pi-print" />&nbsp; طباعة كشف النقاط</RouterLink>
@@ -22,6 +23,8 @@
         { field: 'quizzesLabel', label: 'التقييمات' }, { field: 'homeworkLabel', label: 'الواجبات' }, { field: 'average', label: 'المعدل /20' }, { field: 'appreciation', label: 'التقدير' }
       ]" unit="مادة" />
     </template>
+    <template #past="{ season }"><p class="muted">كشف نقاط {{ child?.firstName }} لموسم {{ season.name }} محفوظ للقراءة.</p><RouterLink v-if="child" :to="{ name: 'report-card', query: { child: child.id, season: season.id } }" class="p-button p-component p-button-outlined p-button-sm"><i class="pi pi-print" />&nbsp; عرض الكشف وطباعته</RouterLink></template>
+    </PastSeasonsTabs>
   </div>
 </template>
 
@@ -31,6 +34,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import ChildSwitcher from '@/components/parent/ChildSwitcher.vue'
 import StatTiles from '@/components/ui/StatTiles.vue'
 import RecordTable from '@/components/ui/RecordTable.vue'
+import PastSeasonsTabs from '@/components/ui/PastSeasonsTabs.vue'
 import { useChild } from '@/composables/useChild'
 import * as learning from '@/api/learning'
 

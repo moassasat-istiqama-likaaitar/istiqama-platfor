@@ -27,6 +27,7 @@ const routes = [
       { path: 'home', name: 'home', component: () => import('@/views/common/HomeView.vue') },
       { path: 'profile', name: 'profile', component: () => import('@/views/common/ProfileView.vue') },
       { path: 'notifications', name: 'notifications', component: () => import('@/views/common/NotificationsView.vue') },
+      { path: 'notices', name: 'notices', component: () => import('@/views/common/NoticesView.vue') },
       { path: 'messages/:id?', name: 'messages', component: () => import('@/views/common/MessagesView.vue') },
       { path: 'feedback', name: 'feedback', component: () => import('@/views/common/FeedbackView.vue') },
       // ——— فضاء التلميذ ———

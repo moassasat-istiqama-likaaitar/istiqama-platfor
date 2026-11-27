@@ -24,10 +24,12 @@
     </Drawer>
 
     <div class="shell__main">
+      <div class="topwrap">
       <header class="topbar">
         <Button class="topbar__burger" icon="pi pi-bars" text rounded severity="secondary" :aria-label="t('layout.openMenu')" @click="drawer = true" />
         <DateBadge class="topbar__date" />
         <div class="topbar__spacer" />
+        <SeasonSwitcher />
         <LangSwitcher compact />
         <RouterLink :to="{ name: 'messages' }" custom v-slot="{ navigate }">
           <OverlayBadge v-if="inbox.unreadMessages" :value="inbox.unreadMessages" severity="danger" size="small">
@@ -39,6 +41,8 @@
         <RoleSwitcher />
         <UserMenu />
       </header>
+      <SeasonBanner />
+      </div>
 
       <main class="content">
         <RouterView v-slot="{ Component, route }">
@@ -63,6 +67,8 @@ import SideNav from '@/components/SideNav.vue'
 import DateBadge from '@/components/DateBadge.vue'
 import LangSwitcher from '@/components/LangSwitcher.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
+import SeasonSwitcher from '@/components/SeasonSwitcher.vue'
+import SeasonBanner from '@/components/SeasonBanner.vue'
 import RoleSwitcher from '@/components/RoleSwitcher.vue'
 import UserMenu from '@/components/UserMenu.vue'
 import StudentShell from '@/layouts/StudentShell.vue'
@@ -126,9 +132,9 @@ watch(
 }
 
 .shell__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.topwrap { position: sticky; top: 0; z-index: 10; }
 .topbar {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 10;
   display: flex;
   align-items: center;

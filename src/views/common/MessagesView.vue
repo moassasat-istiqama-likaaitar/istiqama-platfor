@@ -14,7 +14,7 @@
           <InputIcon class="pi pi-search" />
           <InputText v-model="q" :placeholder="t('messages.search')" fluid size="small" />
         </IconField>
-        <div class="seasons">
+        <div v-if="seeArchive" class="seasons">
           <button type="button" class="pill" :class="{ 'is-active': !showArchive }" @click="showArchive = false">الموسم الحالي</button>
           <button type="button" class="pill" :class="{ 'is-active': showArchive }" @click="showArchive = true"><i class="pi pi-box" /> المواسم السابقة <span v-if="archivedCount" class="pill__count">{{ archivedCount }}</span></button>
         </div>
@@ -134,6 +134,7 @@ import InputIcon from 'primevue/inputicon'
 import PageHeader from '@/components/PageHeader.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import * as messagesApi from '@/api/messages'
+import { canSeeArchive } from '@/api/admin'
 import { useAuthStore } from '@/stores/auth'
 import { useInboxStore } from '@/stores/inbox'
 import { useAssignmentLabel } from '@/composables/useAssignmentLabel'
@@ -144,6 +145,8 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const auth = useAuthStore()
+// تبويب «المواسم السابقة» حسب مصفوفة رؤية الأرشيف
+const seeArchive = computed(() => canSeeArchive(auth.role, 'messages'))
 const inbox = useInboxStore()
 const label = useAssignmentLabel()
 

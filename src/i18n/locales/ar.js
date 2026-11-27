@@ -13,7 +13,7 @@ export default {
   menu: {
     teaching: 'أقسامي', 'my-library': 'مكتبة القسم',
     home: 'الرئيسية', users: 'المستخدمون', 'users-list': 'قائمة المستخدمين', 'users-import': 'الاستيراد الجماعي',
-    'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل العمليات', library: 'المكتبة', content: 'المحتوى', review: 'المراجعة والمصادقة', banks: 'بنوك التقييم', production: 'إنتاجي',
+    'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل العمليات', notices: 'الإعلانات', library: 'المكتبة', content: 'المحتوى', review: 'المراجعة والمصادقة', banks: 'بنوك التقييم', production: 'إنتاجي',
     'library-manage': 'المكتبة المركزية', 'lesson-opening': 'فتح الدروس', 'activities-review': 'مراجعة الواجبات والتقييمات', 'library-review': 'مراجعة المحتوى', activities: 'بنك الواجبات والتقييمات',
     'activities-group': 'الواجبات والتقييمات', reports: 'التقارير', 'reports-general': 'تقارير عامة',
     'reports-schools': 'أداء المدارس', 'reports-files': 'إحصائيات المحتوى', 'reports-engagement': 'جودة التفاعل',
@@ -34,7 +34,7 @@ export default {
   layout: {
     switchRole: 'تبديل الدور', currentRole: 'الدور الحالي', myRoles: 'أدواري', profile: 'الملف الشخصي',
     logout: 'تسجيل الخروج', language: 'اللغة', openMenu: 'القائمة', demoMode: 'نموذج تجريبي',
-    allSchools: 'كل المدارس', viewAll: 'عرض الكل', noNotifications: 'لا توجد إشعارات'
+    allSchools: 'كل المدارس', viewAll: 'عرض الكل', allNotices: 'كل الإعلانات', noNotifications: 'لا توجد إشعارات'
   },
   auth: {
     welcome: 'مرحباً بكم', loginTitle: 'تسجيل الدخول', loginHint: 'ادخل بحسابك للوصول إلى فضائك',

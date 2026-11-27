@@ -38,7 +38,7 @@
       </div>
 
       <div v-if="visible.length" class="list">
-        <NotificationItem v-for="n in visible" :key="n.id" :item="n" @open="inbox.markRead(n.id)" />
+        <NotificationItem v-for="n in visible" :key="n.id" :item="n" @open="openItem(n)" />
       </div>
       <EmptyState v-else icon="pi pi-bell" :text="t('notifications.empty')" />
     </div>
@@ -46,6 +46,7 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
@@ -59,6 +60,12 @@ import { useAssignmentLabel } from '@/composables/useAssignmentLabel'
 
 const { t } = useI18n()
 const inbox = useInboxStore()
+const router = useRouter()
+// إشعار إعلان يفتح الإعلان في صفحة الإعلانات
+function openItem(n) {
+  inbox.markRead(n.id)
+  if (n.link) router.push(n.link)
+}
 const auth = useAuthStore()
 const label = useAssignmentLabel()
 

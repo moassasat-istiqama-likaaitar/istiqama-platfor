@@ -20,7 +20,7 @@
           <span><b>{{ s.snapshot.classes }}</b> قسم</span><span><b>{{ s.snapshot.students }}</b> تلميذ</span><span><b>{{ s.snapshot.reportCards }}</b> كشف</span><span><b>{{ s.snapshot.messages }}</b> رسالة</span>
         </div>
         <p v-if="s.status === 'archived'" class="muted small"><i class="pi pi-box" /> أُرشف {{ fmt(s.archivedAt) }} — للقراءة فقط.</p>
-        <p v-if="s.reopened" class="warn small"><i class="pi pi-unlock" /> مفتوح للتصحيح حتى {{ fmtTime(s.reopen.until) }} — السبب: {{ s.reopen.reason }} ({{ s.reopen.by }})</p>
+        <p v-if="s.reopened" class="warn small"><i class="pi pi-unlock" /> مفتوح للتصحيح حتى {{ fmtTime(s.reopen.until) }} — السبب: {{ s.reopen.reason }} ({{ s.reopen.by }})<br />{{ scopeText(s.reopen) }}</p>
         <p v-if="s.status === 'closing'" class="small muted"><i class="pi pi-lock" /> قيد الإقفال: أقفل العلامات واطبع الكشوف واعتمد الترقية، ثم أطلق الموسم الجديد من بطاقته.</p>
         <p v-if="s.launch" class="small muted"><i class="pi pi-check-circle" /> أُطلق: {{ s.launch.promoted }} مُرقّى · {{ s.launch.repeat }} معيد · {{ s.launch.leave }} منسحب</p>
 
@@ -40,7 +40,31 @@
     <section class="panel scope">
       <div><h3><i class="pi pi-box" /> يُؤرشف مع الموسم (للقراءة فقط)</h3><ul><li v-for="x in ARCHIVE_SCOPE.archived" :key="x">{{ x }}</li></ul></div>
       <div><h3><i class="pi pi-sync" /> يبقى مستمراً خارج الموسم</h3><ul><li v-for="x in ARCHIVE_SCOPE.kept" :key="x">{{ x }}</li></ul></div>
-      <p class="muted small full">بعد الأرشفة يرى الولي والتلميذ كشوف المواسم السابقة في «سجلّي». ما يُخفى ليراه الإشراف العام فقط يُضبط لاحقاً.</p>
+    </section>
+
+    <!-- مصفوفة رؤية الأرشيف -->
+    <section class="panel avm">
+      <h3><i class="pi pi-eye" /> من يرى ماذا من المواسم السابقة</h3>
+      <p class="muted small">تظهر المواسم السابقة في تبويب «المواسم السابقة» داخل كل شاشة مسموحة، وكل نطاق في حدوده (الولي: أبناؤه، المعلم: أقسامه، المدير: مدرسته، المحرر: مستوياته). الإدارة العامة ترى كل شيء.</p>
+      <div class="mx-wrap">
+        <table class="avt">
+          <thead><tr><th>البيانات</th><th v-for="r in ARCHIVE_ROLES" :key="r.key">{{ r.label }}</th></tr></thead>
+          <tbody>
+            <tr v-for="d in ARCHIVE_DATA" :key="d.key">
+              <th>{{ d.label }}</th>
+              <td v-for="r in ARCHIVE_ROLES" :key="r.key">
+                <button type="button" class="tg" :class="avm[d.key][r.key]" :aria-label="`${d.label} — ${r.label}`" @click="avm[d.key][r.key] = avm[d.key][r.key] === 'on' ? 'off' : 'on'">
+                  <i :class="avm[d.key][r.key] === 'on' ? 'pi pi-check' : 'pi pi-times'" /><small v-if="avm[d.key][r.key] === 'on' && r.own">{{ r.own }}</small>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="avm__foot">
+        <Button label="استعادة الافتراضي" icon="pi pi-undo" text size="small" @click="Object.assign(avm, clone(DEFAULT_ARCHIVE_MATRIX))" />
+        <Button label="حفظ" icon="pi pi-save" size="small" @click="saveAvm" />
+      </div>
     </section>
 
     <FormDialog v-model:visible="dlg" wide :title="cur ? 'تعديل الموسم' : 'إعداد موسم جديد'" :fields="SEASON_FIELDS" :value="formValue" @save="save" />
@@ -92,11 +116,16 @@
     </Dialog>
 
     <!-- إعادة الفتح المؤقت -->
-    <Dialog v-model:visible="re.open" modal header="إعادة فتح مؤقت للتصحيح" :style="{ width: 'min(520px, 95vw)' }">
-      <p class="muted small">يُفتح الموسم {{ re.season?.name }} للتعديل مدةً محددة (لتصحيح علامة مثلاً)، ثم يعود مؤرشفاً تلقائياً. يُسجَّل ذلك في سجل النشاط.</p>
+    <Dialog v-model:visible="re.open" modal header="إعادة فتح مؤقت للتصحيح" :style="{ width: 'min(560px, 95vw)' }">
+      <p class="muted small">يُفتح الموسم {{ re.season?.name }} مدةً محددة لمدارس وأشخاص بعينهم، ثم يعود مؤرشفاً تلقائياً. يُعدَّل فيه: العلامات وكشوف النقاط وقرارات الترقية فقط؛ المراسلات تبقى للقراءة. كل دخول وتعديل مسجَّل.</p>
+      <label class="fl"><span>المدارس *</span><MultiSelect v-model="re.schoolIds" :options="cat.schoolOptions" option-label="label" option-value="value" display="chip" filter fluid placeholder="اختر المدرسة أو المدارس" /></label>
+      <div class="fl"><span>من يعدّل</span>
+        <SelectButton v-model="re.editors" :options="EDITORS" option-label="label" option-value="value" :allow-empty="false" class="eds" />
+      </div>
+      <label v-if="re.editors === 'manager_teachers'" class="fl"><span>الأقسام (معلموها يعدّلون) *</span><MultiSelect v-model="re.classIds" :options="reClassOpts" option-label="label" option-value="value" display="chip" filter fluid :disabled="!re.schoolIds.length" /></label>
       <label class="fl"><span>السبب *</span><Textarea v-model="re.reason" rows="2" auto-resize fluid placeholder="مثال: تصحيح علامة تلميذ في كشف السداسي الثاني" /></label>
       <label class="fl"><span>المدة</span><Select v-model="re.hours" :options="[{ label: '24 ساعة', value: 24 }, { label: '48 ساعة', value: 48 }, { label: '7 أيام', value: 168 }]" option-label="label" option-value="value" fluid /></label>
-      <template #footer><Button label="إلغاء" text severity="secondary" @click="re.open = false" /><Button label="فتح للتصحيح" icon="pi pi-unlock" :disabled="!re.reason.trim()" @click="reopen" /></template>
+      <template #footer><Button label="إلغاء" text severity="secondary" @click="re.open = false" /><Button label="فتح للتصحيح" icon="pi pi-unlock" :disabled="!re.reason.trim() || !re.schoolIds.length || (re.editors === 'manager_teachers' && !re.classIds.length)" @click="reopen" /></template>
     </Dialog>
   </div>
 </template>
@@ -116,7 +145,11 @@ import FormDialog from '@/components/ui/FormDialog.vue'
 import StatusTag from '@/components/ui/StatusTag.vue'
 import { useAuthStore } from '@/stores/auth'
 import { fullName } from '@/api/people'
-import { listSeasons, createSeason, updateSeason, setClosing, promotionPreview, launchSeason, reopenSeason, endReopen, ARCHIVE_SCOPE, SEMESTER_NAMES } from '@/api/admin'
+import { listSeasons, createSeason, updateSeason, setClosing, promotionPreview, launchSeason, reopenSeason, endReopen, ARCHIVE_SCOPE, SEMESTER_NAMES, ARCHIVE_ROLES, ARCHIVE_DATA, DEFAULT_ARCHIVE_MATRIX, archiveMatrix, saveArchiveMatrix } from '@/api/admin'
+import MultiSelect from 'primevue/multiselect'
+import SelectButton from 'primevue/selectbutton'
+import { useCatalog } from '@/composables/useCatalog'
+import { useSeasonStore } from '@/stores/season'
 
 const auth = useAuthStore()
 const toast = useToast()
@@ -201,14 +234,33 @@ async function launch() {
   }
 }
 
-const re = reactive({ open: false, season: null, reason: '', hours: 48 })
-const openReopen = (s) => Object.assign(re, { open: true, season: s, reason: '', hours: 48 })
+const cat = useCatalog()
+const season = useSeasonStore()
+const EDITORS = [{ label: 'المدير فقط', value: 'manager' }, { label: 'المدير ومعلمو أقسام محددة', value: 'manager_teachers' }]
+const re = reactive({ open: false, season: null, reason: '', hours: 48, schoolIds: [], editors: 'manager', classIds: [] })
+const openReopen = (s) => Object.assign(re, { open: true, season: s, reason: '', hours: 48, schoolIds: [], editors: 'manager', classIds: [] })
+const reClassOpts = computed(() => cat.classOptions().filter((c) => re.schoolIds.includes(cat.classes.find((x) => x.id === c.value)?.schoolId)))
+const scopeText = (r) => {
+  const sch = (r.schoolIds || []).map((id) => cat.schools.find((x) => x.id === id)?.short || cat.schools.find((x) => x.id === id)?.name).join('، ')
+  return `${sch || '—'} · ${r.editors === 'manager_teachers' ? `المدير ومعلمو ${r.classIds.length} قسم` : 'المدير فقط'}`
+}
+const clone = (o) => JSON.parse(JSON.stringify(o))
+const avm = reactive(clone(archiveMatrix()))
+async function saveAvm() {
+  try {
+    await saveArchiveMatrix(clone(avm), auth.role)
+    toast.add({ severity: 'success', summary: 'حُفظت رؤية الأرشيف', life: 2000 })
+  } catch (e) {
+    err(e)
+  }
+}
 async function reopen() {
   try {
-    await reopenSeason(re.season.id, { reason: re.reason, hours: re.hours }, fullName(auth.person), auth.role)
+    await reopenSeason(re.season.id, { reason: re.reason, hours: re.hours, schoolIds: re.schoolIds, editors: re.editors, classIds: re.classIds }, fullName(auth.person), auth.role)
     toast.add({ severity: 'success', summary: 'فُتح الموسم مؤقتاً للتصحيح', life: 2500 })
     re.open = false
     load()
+    season.check()
   } catch (e) {
     err(e)
   }
@@ -217,6 +269,7 @@ async function endRe(s) {
   await endReopen(s.id)
   toast.add({ severity: 'info', summary: 'عاد الموسم مؤرشفاً', life: 2000 })
   load()
+  season.check()
 }
 </script>
 
@@ -261,5 +314,16 @@ async function endRe(s) {
 .sum { display: flex; gap: 1.2rem; font-size: 0.95rem; }
 .fl { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.6rem; }
 .fl > span { font-weight: 700; font-size: 0.86rem; }
+.avm { margin-top: 1.2rem; }
+.avm h3 { font-size: 0.95rem; margin: 0 0 0.3rem; display: flex; gap: 0.4rem; align-items: center; }
+.mx-wrap { overflow-x: auto; margin-top: 0.6rem; }
+.avt { border-collapse: collapse; width: 100%; font-size: 0.86rem; min-width: 520px; }
+.avt th, .avt td { padding: 0.4rem; border-bottom: 1px solid var(--line); text-align: center; }
+.avt tbody th { text-align: start; font-weight: 600; white-space: nowrap; }
+.tg { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 0.25rem 0.5rem; cursor: pointer; display: inline-flex; gap: 0.3rem; align-items: center; font: inherit; color: var(--p-text-muted-color); }
+.tg.on { background: #e7f6ec; border-color: #9fd6b0; color: #17733f; }
+.tg small { font-size: 0.72rem; }
+.avm__foot { display: flex; justify-content: flex-end; gap: 0.4rem; margin-top: 0.6rem; }
+.eds { display: flex; flex-wrap: wrap; }
 @media (max-width: 860px) { .life, .scope { grid-template-columns: minmax(0, 1fr); } }
 </style>

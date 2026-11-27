@@ -1,3 +1,4 @@
+import { TOP_ROLES } from '@/config/roles'
 import { respond, ApiError, newId } from './client'
 import { schools, levels, seasons, classes, assignments, persons, schoolBranding } from '@/mock/db'
 import { subjects, lessons, contents, activities } from '@/mock/content'
@@ -162,18 +163,75 @@ export function launchSeason(id, { promotion = [], copyClasses = true, proposeAs
     return seasonCol.update(id, { status: 'active', launchedAt: new Date().toISOString(), launch: { promoted, repeat: promotion.reduce((t, p) => t + p.repeat, 0), leave: promotion.reduce((t, p) => t + p.leave, 0), copyClasses, proposeAssignments } })
   }, 600)
 }
-/** POST /api/seasons/:id/reopen { reason, hours } — إعادة فتح مؤقت للتصحيح (يُسجَّل) */
-export function reopenSeason(id, { reason, hours = 48 }, by, role) {
+/**
+ * POST /api/seasons/:id/reopen — إعادة فتح مؤقت وموجَّه للتصحيح (يُسجَّل):
+ * schoolIds: المدارس المعنية · editors: 'manager' (المدير فقط) أو 'manager_teachers' (المدير ومعلمو أقسام محددة) · classIds.
+ * ما يُعدَّل: العلامات وكشوف النقاط وقرارات الترقية. المراسلات تبقى للقراءة دائماً.
+ */
+export function reopenSeason(id, { reason, hours = 48, schoolIds = [], editors = 'manager', classIds = [] }, by, role) {
   return respond(() => {
     if (!ADMINS.includes(role)) throw new ApiError('forbidden', 'إعادة الفتح من صلاحية الإدارة العامة')
     if (!reason?.trim()) throw new ApiError('required', 'سبب إعادة الفتح إجباري')
+    if (!schoolIds.length) throw new ApiError('required', 'اختر مدرسة واحدة على الأقل')
+    if (editors === 'manager_teachers' && !classIds.length) throw new ApiError('required', 'اختر الأقسام التي يعدّل معلموها')
     const until = new Date(Date.now() + hours * 36e5).toISOString()
     const s = seasonCol.find(id)
-    return seasonCol.update(id, { reopen: { reason, until, by, at: new Date().toISOString() }, reopenLog: [...(s.reopenLog || []), { reason, hours, by, at: new Date().toISOString() }] })
+    const scope = { schoolIds, editors, classIds: editors === 'manager_teachers' ? classIds : [] }
+    return seasonCol.update(id, { reopen: { reason, until, by, at: new Date().toISOString(), ...scope }, reopenLog: [...(s.reopenLog || []), { reason, hours, by, at: new Date().toISOString(), ...scope }] })
   })
 }
 export function endReopen(id) {
   return respond(() => seasonCol.update(id, { reopen: null }))
+}
+/** المواسم المفتوحة مؤقتاً التي يحق لهذا الإسناد التعديل فيها (الإدارة العامة: كلها) */
+export function editableSeasons(given) {
+  if (!given) return []
+  const assignment = assignments.find((x) => x.id === given.id) || given
+  return seasonCol.all().map(decorateSeason).filter((s) => s.reopened).filter((s) => {
+    const r = s.reopen
+    if (ADMINS.includes(assignment.role)) return true
+    if (!r.schoolIds?.includes(assignment.schoolId)) return false
+    if (assignment.role === 'school_manager') return true
+    return assignment.role === 'teacher' && r.editors === 'manager_teachers' && (assignment.classIds || []).some((c) => r.classIds.includes(c))
+  })
+}
+/** POST /api/seasons/:id/edits — كل دخول للتعديل في موسم مفتوح مؤقتاً يُسجَّل (والخادم يسجّل كل تعديل فعلي) */
+export function logSeasonEdit(id, entry) {
+  const s = seasonCol.find(id)
+  if (s) seasonCol.update(id, { editLog: [...(s.editLog || []), { ...entry, at: new Date().toISOString() }] })
+}
+
+/* ——— مصفوفة رؤية الأرشيف: ماذا يرى كل دور من المواسم السابقة (الإدارة العامة ترى كل شيء) ——— */
+export const ARCHIVE_ROLES = [
+  { key: 'parent', label: 'الولي', own: '' }, { key: 'student', label: 'التلميذ', own: '' },
+  { key: 'teacher', label: 'المعلم', own: 'أقسامه' }, { key: 'school_manager', label: 'مدير المدرسة', own: 'مدرسته' }, { key: 'editor', label: 'المحرر', own: 'مستوياته' }
+]
+export const ARCHIVE_DATA = [
+  { key: 'reports', label: 'كشوف النقاط' }, { key: 'grades', label: 'العلامات والتسليمات' }, { key: 'progress', label: 'التقدّم والشارات' },
+  { key: 'messages', label: 'المراسلات (قراءة)' }, { key: 'library', label: 'مكتبة القسم' }, { key: 'notices', label: 'إعلانات المدرسة' }, { key: 'performance', label: 'تقارير الأداء' }
+]
+/** on = يرى (في حدود نطاقه: أبناؤه/نفسه/أقسامه/مدرسته/مستوياته) · off = لا يرى */
+export const DEFAULT_ARCHIVE_MATRIX = {
+  reports: { parent: 'on', student: 'on', teacher: 'on', school_manager: 'on', editor: 'off' },
+  grades: { parent: 'on', student: 'on', teacher: 'on', school_manager: 'on', editor: 'off' },
+  progress: { parent: 'on', student: 'on', teacher: 'on', school_manager: 'on', editor: 'off' },
+  messages: { parent: 'on', student: 'on', teacher: 'on', school_manager: 'on', editor: 'on' },
+  library: { parent: 'off', student: 'off', teacher: 'on', school_manager: 'on', editor: 'on' },
+  notices: { parent: 'off', student: 'off', teacher: 'off', school_manager: 'on', editor: 'off' },
+  performance: { parent: 'off', student: 'off', teacher: 'off', school_manager: 'on', editor: 'on' }
+}
+const archiveCol = collection('archiveVisibility', () => [{ id: 'matrix', matrix: DEFAULT_ARCHIVE_MATRIX }])
+export const archiveMatrix = () => archiveCol.find('matrix')?.matrix || DEFAULT_ARCHIVE_MATRIX
+/** هل يرى هذا الدور هذه البيانات من المواسم السابقة؟ */
+export function canSeeArchive(role, dataKey) {
+  if (TOP_ROLES.includes(role)) return true
+  return archiveMatrix()[dataKey]?.[role] === 'on'
+}
+export function saveArchiveMatrix(matrix, role) {
+  return respond(() => {
+    if (!TOP_ROLES.includes(role)) throw new ApiError('forbidden', 'ضبط رؤية الأرشيف من صلاحية الإدارة العامة')
+    return archiveCol.update('matrix', { matrix }).matrix
+  })
 }
 
 export function listSubjects() {

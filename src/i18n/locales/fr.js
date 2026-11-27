@@ -34,7 +34,7 @@ export default {
   layout: {
     switchRole: 'Changer de rôle', currentRole: 'Rôle actuel', myRoles: 'Mes rôles', profile: 'Profil',
     logout: 'Déconnexion', language: 'Langue', openMenu: 'Menu', demoMode: 'Prototype',
-    allSchools: 'Toutes les écoles', viewAll: 'Tout voir', noNotifications: 'Aucune notification'
+    allSchools: 'Toutes les écoles', viewAll: 'Tout voir', allNotices: 'Toutes les annonces', noNotifications: 'Aucune notification'
   },
   auth: {
     welcome: 'Bienvenue', loginTitle: 'Connexion', loginHint: 'Connectez-vous pour accéder à votre espace',

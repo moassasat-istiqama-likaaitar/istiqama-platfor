@@ -13,7 +13,7 @@ export default {
   menu: {
     teaching: 'My classes', 'my-library': 'Class library',
     home: 'Home', users: 'Users', 'users-list': 'User list', 'users-import': 'Bulk import',
-    'users-duplicates': 'Duplicate accounts', 'activity-log': 'Activity log', library: 'Library', content: 'Content', review: 'Review & approval', banks: 'Assessment banks', production: 'My production',
+    'users-duplicates': 'Duplicate accounts', 'activity-log': 'Activity log', notices: 'Announcements', library: 'Library', content: 'Content', review: 'Review & approval', banks: 'Assessment banks', production: 'My production',
     'library-manage': 'Central library', 'lesson-opening': 'Lesson opening', 'activities-review': 'Activities review', 'library-review': 'Review & approval', activities: 'Activities & assessments',
     'activities-group': 'Activities & assessments', reports: 'Reports', 'reports-general': 'General reports',
     'reports-schools': 'School performance', 'reports-files': 'File statistics', 'reports-engagement': 'Engagement quality',
@@ -34,7 +34,7 @@ export default {
   layout: {
     switchRole: 'Switch role', currentRole: 'Current role', myRoles: 'My roles', profile: 'Profile',
     logout: 'Log out', language: 'Language', openMenu: 'Menu', demoMode: 'Prototype',
-    allSchools: 'All schools', viewAll: 'View all', noNotifications: 'No notifications'
+    allSchools: 'All schools', viewAll: 'View all', allNotices: 'All announcements', noNotifications: 'No notifications'
   },
   auth: {
     welcome: 'Welcome', loginTitle: 'Sign in', loginHint: 'Sign in to access your space',

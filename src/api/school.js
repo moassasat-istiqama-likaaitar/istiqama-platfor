@@ -7,7 +7,8 @@ import { classInfo, studentSnapshot, fullName, personOf } from './people'
 /**
  * إدارة المدرسة (مدير المدرسة) — والإحصائيات نفسها تخدم تقارير الإدارة العامة لكل مدرسة.
  */
-const notices = collection('notices', () => [
+const notices = collection('notices2', () => [
+  { id: 'nt0', schoolId: 'all', schoolIds: [], title: 'عطلة الشتاء', body: 'تبدأ عطلة الشتاء يوم الخميس 18 ديسمبر، وتُستأنف الدراسة يوم الأحد 4 جانفي.', audience: ['students', 'parents', 'teachers'], classIds: [], status: 'published', at: new Date(Date.now() - 2 * 864e5).toISOString(), author: 'الإدارة العامة' },
   { id: 'nt1', schoolId: 's1', title: 'اجتماع الأولياء', body: 'يُعقد اجتماع الأولياء يوم السبت القادم على الساعة العاشرة صباحاً بقاعة المدرسة.', audience: ['parents'], classIds: [], status: 'published', at: new Date(Date.now() - 3 * 864e5).toISOString(), author: 'محمد بن عيسى' },
   { id: 'nt2', schoolId: 's1', title: 'تذكير بمواعيد الفروض', body: 'نذكّر المعلمين بإدخال علامات الفروض قبل نهاية الشهر.', audience: ['teachers'], classIds: [], status: 'published', at: new Date(Date.now() - 6 * 864e5).toISOString(), author: 'محمد بن عيسى' }
 ])
@@ -131,6 +132,38 @@ export function createNotice(schoolId, author, data) {
     return notices.insert({ id: newId('nt'), schoolId, author: fullName(author), status: data.schedule ? 'scheduled' : 'published', at: data.schedule || new Date().toISOString(), reach, ...data })
   }, 400)
 }
+/**
+ * من يستلم الإعلان؟ يُحسب عند القراءة (لا تُنسخ الإعلانات لكل شخص):
+ * إعلان مدرسة → فئاته في تلك المدرسة (وأقسامها إن حُدّدت)؛ إعلان عام → فئاته في كل المدارس أو المحدّدة منها.
+ */
+function noticeTargets(n, personId) {
+  if (n.status !== 'published' && !(n.status === 'scheduled' && n.at <= new Date().toISOString())) return false
+  if (n.at > new Date().toISOString()) return false
+  const inScope = (schoolId) => (n.schoolId === 'all' ? !n.schoolIds?.length || n.schoolIds.includes(schoolId) : n.schoolId === schoolId)
+  const inClasses = (classIds) => !n.classIds?.length || classIds.some((c) => n.classIds.includes(c))
+  const mine = assignments.filter((a) => a.personId === personId)
+  return mine.some((a) => {
+    if (a.role === 'student' && n.audience.includes('students')) return inScope(a.schoolId) && inClasses([a.classId])
+    if (a.role === 'teacher' && n.audience.includes('teachers')) return inScope(a.schoolId) && inClasses(a.classIds || [])
+    if (a.role === 'parent' && n.audience.includes('parents')) return (a.childIds || []).some((c) => { const k = assignments.find((x) => x.personId === c && x.role === 'student'); return k && inScope(k.schoolId) && inClasses([k.classId]) })
+    return false
+  })
+}
+const noticeReads = () => collection('noticeReads', [])
+const fromLabel = (n) => (n.schoolId === 'all' ? 'الإدارة العامة' : `إدارة ${schools.find((s) => s.id === n.schoolId)?.name || 'المدرسة'}`)
+/** GET /api/me/notices → إعلانات المستخدم (كل أدواره)، الأحدث أولاً */
+export function myNoticesSync(personId) {
+  return notices.all().filter((n) => noticeTargets(n, personId)).sort((a, b) => b.at.localeCompare(a.at))
+    .map((n) => ({ ...n, from: fromLabel(n), read: !!noticeReads().find(`${n.id}:${personId}`) }))
+}
+export function myNotices(personId) {
+  return respond(() => myNoticesSync(personId))
+}
+export function markNoticeRead(noticeId, personId) {
+  const key = `${noticeId}:${personId}`
+  if (!noticeReads().find(key)) noticeReads().insert({ id: key, at: new Date().toISOString() })
+}
+
 export function removeNotice(id) {
   return respond(() => notices.remove(id))
 }

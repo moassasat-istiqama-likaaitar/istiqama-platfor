@@ -30,7 +30,7 @@ export const useInboxStore = defineStore('inbox', {
       const n = this.notifications.find((x) => x.id === id)
       if (n && !n.read) {
         n.read = true
-        await notificationsApi.markRead(id)
+        await notificationsApi.markRead(id, n.personId)
       }
     },
     async markAllRead(personId) {

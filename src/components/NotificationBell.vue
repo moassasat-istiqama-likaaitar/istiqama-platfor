@@ -20,7 +20,10 @@
         <NotificationItem v-for="n in latest" :key="n.id" :item="n" compact @open="open" />
       </div>
       <p v-else class="bell__empty">{{ t('layout.noNotifications') }}</p>
-      <Button :label="t('layout.viewAll')" text class="bell__all" @click="goAll" />
+      <div class="bell__foot">
+        <Button :label="t('layout.viewAll')" text class="bell__all" @click="goAll" />
+        <Button :label="t('layout.allNotices')" icon="pi pi-megaphone" text class="bell__all" @click="goNotices" />
+      </div>
     </div>
   </Popover>
 </template>
@@ -46,6 +49,12 @@ const latest = computed(() => inbox.notifications.slice(0, 5))
 
 function open(n) {
   inbox.markRead(n.id)
+  // إشعار إعلان: يفتح الإعلان في صفحة الإعلانات
+  if (n.link) { pop.value.hide(); router.push(n.link) }
+}
+function goNotices() {
+  pop.value.hide()
+  router.push({ name: 'notices' })
 }
 function goAll() {
   pop.value.hide()
@@ -57,6 +66,7 @@ function goAll() {
 .bell { width: min(360px, 86vw); display: flex; flex-direction: column; gap: 0.25rem; }
 .bell__head { display: flex; align-items: center; justify-content: space-between; padding: 0 0.25rem 0.25rem; }
 .bell__list { display: flex; flex-direction: column; gap: 2px; max-height: 360px; overflow: auto; }
+.bell__foot { display: flex; justify-content: space-between; flex-wrap: wrap; }
 .bell__empty { text-align: center; color: var(--p-text-muted-color); padding: 1rem; margin: 0; }
 .bell__all { width: 100%; }
 </style>

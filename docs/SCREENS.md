@@ -11,6 +11,7 @@
 | الرئيسية | SU01 | `#/app/home` | `src/views/common/HomeView.vue` | الكل |
 | الملف الشخصي |  | `#/app/profile` | `src/views/common/ProfileView.vue` | الكل |
 | الإشعارات |  | `#/app/notifications` | `src/views/common/NotificationsView.vue` | الكل |
+| الإعلانات (المستلَمة) | C07 | `#/app/notices` | `src/views/common/NoticesView.vue` | الكل — تُفتح من الجرس «كل الإعلانات»، ليست في القائمة |
 | الرسائل |  | `#/app/messages/:id?` | `src/views/common/MessagesView.vue` | الكل |
 | البلاغات والمقترحات | F08 | `#/app/feedback` | `src/views/common/FeedbackView.vue` | الكل |
 | دروسي | ST02,ST03,ST04,ST05 | `#/app/my-lessons` | `src/views/student/StudentLessons.vue` | student |
@@ -44,7 +45,7 @@
 | مصادقة محتوى المعلمين | SM07 | `#/app/teacher-files-review` | `src/views/manager/TeacherFilesReview.vue` | school_manager |
 | متابعة المحتوى والواجبات والتقييمات | SM08 | `#/app/content-follow` | `src/views/manager/ContentFollowView.vue` | school_manager |
 | تقارير الأداء | SM09 | `#/app/performance` | `src/views/manager/PerformanceView.vue` | school_manager |
-| إشعار للمدرسة | SM10 | `#/app/school-notice` | `src/views/manager/SchoolNoticeView.vue` | school_manager |
+| إعلانات المدرسة (الإرسال) | SM10 | `#/app/school-notice` | `src/views/manager/SchoolNoticeView.vue` | school_manager |
 | قائمة المستخدمين | AD02,AD03 | `#/app/users-list` | `src/views/users/UsersView.vue` | الكل |
 | الاستيراد الجماعي | AD04 | `#/app/users-import` | `src/views/admin/ImportView.vue` | admin, super_admin |
 | الحسابات المكررة | AD05 | `#/app/users-duplicates` | `src/views/admin/DuplicatesView.vue` | admin, super_admin |
@@ -55,7 +56,7 @@
 | جودة التفاعل | AD17 | `#/app/reports-engagement` | `src/views/admin/ReportsView.vue` | الكل |
 | المدارس | AD07 | `#/app/schools` | `src/views/admin/SchoolsView.vue` | admin, super_admin |
 | الأطوار والمستويات | AD08 | `#/app/levels` | `src/views/admin/LevelsView.vue` | admin, super_admin |
-| المواسم الدراسية | AD09 | `#/app/seasons` | `src/views/admin/SeasonsView.vue` | admin, super_admin |
+| المواسم الدراسية | AD09 | `#/app/seasons` | `src/views/admin/SeasonsView.vue` | admin, super_admin — إعادة فتح موجَّهة + مصفوفة رؤية الأرشيف |
 | الأقسام | AD10 | `#/app/classes-all` | `src/views/manager/SchoolClassesView.vue` | الكل |
 | المواد والدروس | AD11 | `#/app/subjects` | `src/views/admin/SubjectsView.vue` | admin, super_admin |
 | الأدوار والصلاحيات | AD12 | `#/app/permissions` | `src/views/admin/PermissionsView.vue` | admin, super_admin |
@@ -87,6 +88,6 @@
 | `src/api/` | طبقة الخدمات الوهمية — كل دالة تمثّل نقطة API سيبنيها المطوّر (التعليق فوقها يذكر المسار) |
 | `src/mock/` | البيانات التجريبية (المدارس، الأشخاص، المحتوى) والتخزين المحلي |
 | `src/config/` | القوائم، الثيمات، الصلاحيات (roles.js)، مصفوفة المراسلة (messaging.js)، التأثيرات (effects.js) |
-| `src/stores/` | الحالة المشتركة (Pinia): الدخول، الهوية، المنصة، التلميذ، الإشعارات |
+| `src/stores/` | الحالة المشتركة (Pinia): الدخول، الهوية، المنصة، التلميذ، الإشعارات، سياق الموسم (season) |
 | `src/utils/` | أدوات: التصحيح الآلي للأسئلة (quiz.js)، نموذج الاستيراد (importTemplate.js)، التواريخ... |
 | `src/i18n/` | النصوص بالعربية والفرنسية والإنجليزية |
