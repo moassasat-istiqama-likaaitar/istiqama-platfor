@@ -133,8 +133,8 @@ function soon() {
 .field { display: flex; flex-direction: column; gap: 0.4rem; font-weight: 600; font-size: 0.875rem; }
 .actions, .full { grid-column: 1 / -1; }
 @media (max-width: 900px) {
-  .grid { grid-template-columns: 1fr; }
-  .form.two { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .form.two { grid-template-columns: minmax(0, 1fr); }
   .hide-sm { display: none; }
 }
 </style>

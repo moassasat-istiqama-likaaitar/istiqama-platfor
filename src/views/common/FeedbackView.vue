@@ -155,5 +155,5 @@ function attach() {
 .report__top { display: flex; justify-content: space-between; gap: 0.5rem; align-items: center; }
 .report__body p { margin: 0.3rem 0; color: var(--p-text-muted-color); font-size: 0.875rem; }
 .report__body small { color: var(--p-text-muted-color); font-size: 0.75rem; }
-@media (max-width: 480px) { .types { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .types { grid-template-columns: minmax(0, 1fr); } }
 </style>

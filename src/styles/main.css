@@ -157,3 +157,14 @@ a { color: inherit; }
 
 /* ——— هوية المدرسة: شريط رفيع بلوني المدرسة (مساحة المدرسة، مستقلة عن الثيم) ——— */
 .school-ribbon { height: 4px; background: linear-gradient(90deg, var(--school-1, transparent), var(--school-2, transparent)); }
+
+/* الهاتف: لا عنصر عام أعرض من الشاشة */
+.p-toast { max-width: calc(100vw - 1.5rem); }
+.p-datatable { max-width: 100%; }
+.p-datatable-table-container { overflow-x: auto; }
+.p-tabpanels, .p-tabpanel { min-width: 0; }
+/* حاوية التنبيهات الفارغة لا تأخذ مكاناً (كانت توسّع الصفحة على الهاتف) */
+.p-toast:not(:has(.p-toast-message)) { display: none; }
+@media (max-width: 600px) {
+  .p-toast { left: 0.75rem !important; right: auto !important; width: calc(100vw - 1.5rem) !important; max-width: none; transform: none !important; }
+}

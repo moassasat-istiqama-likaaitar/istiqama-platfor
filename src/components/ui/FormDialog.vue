@@ -62,5 +62,5 @@ function save() {
 .fd__sw { display: flex; align-items: center; gap: 0.6rem; }
 .req { color: #e5484d; margin-inline-start: 0.2rem; }
 .err { color: #b42318; }
-@media (max-width: 560px) { .fd { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .fd { grid-template-columns: minmax(0, 1fr); } }
 </style>

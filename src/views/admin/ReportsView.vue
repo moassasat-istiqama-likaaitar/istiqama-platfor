@@ -68,5 +68,5 @@ onMounted(async () => (r.value = await globalReport()))
 .g h3 { margin: 0 0 0.85rem; font-size: 1rem; }
 .mt { margin-top: 1rem; }
 .note { margin-top: 1rem; }
-@media (max-width: 900px) { .g { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .g { grid-template-columns: minmax(0, 1fr); } }
 </style>

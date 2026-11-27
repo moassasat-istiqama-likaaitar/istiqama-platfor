@@ -272,13 +272,13 @@ function google() {
 .acc__info small { font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 @media (max-width: 960px) {
-  .login { grid-template-columns: 1fr; }
+  .login { grid-template-columns: minmax(0, 1fr); }
   .brand__inner { padding-bottom: 1.5rem; }
   .aud { display: none; }
   .brand h1 { margin-top: 0.5rem; }
 }
 @media (max-width: 480px) {
-  .demo__list { grid-template-columns: 1fr; }
+  .demo__list { grid-template-columns: minmax(0, 1fr); }
   .card { padding: 1.4rem; }
 }
 </style>

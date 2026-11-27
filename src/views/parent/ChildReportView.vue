@@ -13,7 +13,7 @@
       </section>
       <StatTiles :items="[
         { label: 'الدروس المنجزة', value: `${r.totals.lessons}/${r.totals.lessonsAll}`, icon: 'pi pi-book' },
-        { label: 'الأعمال المنجزة', value: r.totals.activities, icon: 'pi pi-check-square', tone: 'green' },
+        { label: 'الواجبات والتقييمات المنجزة', value: r.totals.activities, icon: 'pi pi-check-square', tone: 'green' },
         { label: 'المعدل العام', value: avg ?? '—', icon: 'pi pi-chart-line', tone: 'purple', hint: 'على 20' },
         { label: 'الشارات', value: r.badges.length, icon: 'pi pi-trophy', tone: 'amber' }
       ]" />

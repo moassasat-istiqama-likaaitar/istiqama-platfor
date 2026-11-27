@@ -224,8 +224,8 @@ const fmt = (iso) => new Date(iso).toLocaleDateString('ar-DZ', { day: 'numeric',
 .status--rejected { background: #fdeeee; border-color: #f3c2c2; color: #a12a2a; }
 
 .sid__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
-.sid__form { display: flex; flex-direction: column; gap: 1rem; }
-.sid__preview { position: sticky; top: 80px; }
+.sid__form { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
+.sid__preview { position: sticky; top: 80px; min-width: 0; overflow: hidden; }
 .blk__h { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
 .blk__h > span { width: 28px; height: 28px; border-radius: 50%; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 800; flex-shrink: 0; }
 .blk__h h2 { margin: 0; font-size: 1.05rem; }
@@ -241,11 +241,11 @@ const fmt = (iso) => new Date(iso).toLocaleDateString('ar-DZ', { day: 'numeric',
 .preset { display: flex; width: 54px; height: 30px; border-radius: 8px; overflow: hidden; border: 2px solid transparent; padding: 0; cursor: pointer; box-shadow: 0 0 0 1px var(--line); }
 .preset span { flex: 1; }
 .preset.on { border-color: var(--ink); }
-.colors { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.colors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; }
 .color > span { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.3rem; }
 .color__in { display: flex; align-items: center; gap: 0.5rem; border: 1px solid var(--line); border-radius: 10px; padding: 0.3rem; background: var(--surface); }
 .color__in input[type='color'] { width: 40px; height: 32px; border: 0; padding: 0; background: none; cursor: pointer; }
-.hex { flex: 1; min-width: 0; border: 0; font: inherit; font-family: monospace; background: none; color: var(--ink); outline: none; }
+.hex { flex: 1; min-width: 0; width: 100%; border: 0; font: inherit; font-family: monospace; background: none; color: var(--ink); outline: none; }
 .checks { display: flex; flex-direction: column; gap: 0.35rem; margin-top: 0.85rem; }
 .chk { font-size: 0.84rem; display: flex; gap: 0.4rem; align-items: center; }
 .chk.ok { color: #146c3c; }
@@ -267,7 +267,8 @@ const fmt = (iso) => new Date(iso).toLocaleDateString('ar-DZ', { day: 'numeric',
 .pv-note { font-size: 0.8rem; margin: 0.75rem 0 0; }
 
 @media (max-width: 1100px) {
-  .sid__grid { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr): العمود لا يتمدّد بأعرض عنصر فيه، فلا تخرج الصفحة عن عرض الهاتف */
+  .sid__grid { grid-template-columns: minmax(0, 1fr); }
   .sid__preview { position: static; order: -1; }
 }
 </style>

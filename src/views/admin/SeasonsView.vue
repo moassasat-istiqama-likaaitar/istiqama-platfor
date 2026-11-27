@@ -261,5 +261,5 @@ async function endRe(s) {
 .sum { display: flex; gap: 1.2rem; font-size: 0.95rem; }
 .fl { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.6rem; }
 .fl > span { font-weight: 700; font-size: 0.86rem; }
-@media (max-width: 860px) { .life, .scope { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .life, .scope { grid-template-columns: minmax(0, 1fr); } }
 </style>

@@ -363,5 +363,5 @@ const soon = () => toast.add({ severity: 'info', summary: t('common.comingSoon')
 .graded__score small { font-size: 0.9rem; color: var(--muted); }
 .graded p { margin: 0.2rem 0 0; }
 .model { margin-top: 0.75rem; padding: 0.9rem; border-radius: var(--radius); background: #fff8e1; }
-@media (max-width: 760px) { .hw { grid-template-columns: 1fr; } .opts--two { grid-template-columns: 1fr; } }
+@media (max-width: 760px) { .hw { grid-template-columns: minmax(0, 1fr); } .opts--two { grid-template-columns: minmax(0, 1fr); } }
 </style>

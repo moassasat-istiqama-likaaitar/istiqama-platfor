@@ -219,5 +219,5 @@ async function give() {
 .star:disabled { opacity: 0.3; cursor: not-allowed; }
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .stats h3 { font-size: 1rem; margin: 0 0 0.85rem; }
-@media (max-width: 900px) { .stats { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .stats { grid-template-columns: minmax(0, 1fr); } }
 </style>

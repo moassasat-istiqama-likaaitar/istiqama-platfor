@@ -79,7 +79,7 @@ const ago = (iso) => {
 </script>
 
 <style scoped>
-.tk { display: grid; grid-template-columns: 1fr; gap: 1rem; align-items: start; }
+.tk { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; align-items: start; }
 .tk:has(.th) { grid-template-columns: 1.3fr 1fr; }
 .d { display: block; font-size: 0.76rem; }
 :deep(.row-on) { background: color-mix(in srgb, var(--brand) 7%, #fff) !important; }
@@ -97,5 +97,5 @@ const ago = (iso) => {
 .m p { margin: 0.2rem 0; font-size: 0.9rem; }
 .m small { font-size: 0.72rem; color: var(--p-text-muted-color); }
 .reply { display: flex; justify-content: space-between; gap: 0.5rem; }
-@media (max-width: 1000px) { .tk:has(.th) { grid-template-columns: 1fr; } .th { position: static; max-height: none; } }
+@media (max-width: 1000px) { .tk:has(.th) { grid-template-columns: minmax(0, 1fr); } .th { position: static; max-height: none; } }
 </style>

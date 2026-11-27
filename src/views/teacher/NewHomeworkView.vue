@@ -1,7 +1,7 @@
 <template>
   <!-- TE14: واجب منزلي جديد — مع معاينة كما يراه التلميذ -->
   <div>
-    <PageHeader title="واجب منزلي جديد" subtitle="يصل الواجب لتلاميذ الأقسام المختارة ويظهر في «أعمالي» ومخطط الأسبوع عندهم، ويُشعَر أولياؤهم." />
+    <PageHeader title="واجب منزلي جديد" subtitle="يصل الواجب لتلاميذ الأقسام المختارة ويظهر في «واجباتي وتقييماتي» ومخطط الأسبوع عندهم، ويُشعَر أولياؤهم." />
     <div class="hw">
       <form class="panel hw__form" @submit.prevent="submit(true)">
         <label class="fl full"><span>عنوان الواجب *</span><InputText v-model="f.title" fluid placeholder="مثال: تمارين التاء المربوطة" /></label>
@@ -100,5 +100,6 @@ async function submit(publish) {
 .sec { font-size: 0.95rem; margin: 0.75rem 0 0.4rem; }
 .mine { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.45rem; }
 .mine li { display: flex; justify-content: space-between; gap: 0.5rem; font-size: 0.86rem; }
-@media (max-width: 960px) { .hw { grid-template-columns: 1fr; } .preview { position: static; } }
+@media (max-width: 960px) { .hw { grid-template-columns: minmax(0, 1fr); } .preview { position: static; } }
+@media (max-width: 600px) { .hw__form { grid-template-columns: minmax(0, 1fr); } }
 </style>

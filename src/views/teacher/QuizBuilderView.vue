@@ -227,5 +227,5 @@ async function save(publish) {
 .bq.on { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 5%, #fff); }
 .bq b { display: block; font-size: 0.9rem; }
 .bq small { font-size: 0.78rem; }
-@media (max-width: 960px) { .types { grid-template-columns: repeat(2, 1fr); } .qb { grid-template-columns: 1fr; } .meta { position: static; } }
+@media (max-width: 960px) { .types { grid-template-columns: repeat(2, minmax(0, 1fr)); } .qb { grid-template-columns: minmax(0, 1fr); } .meta { position: static; } }
 </style>

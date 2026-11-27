@@ -226,5 +226,5 @@ async function bulk(status) {
 .asg__d { font-size: 0.86rem; flex: 1; }
 .add-asg { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; padding: 0.7rem; background: var(--bg); border-radius: 10px; }
 .add-asg > * { min-width: 150px; }
-@media (max-width: 600px) { .ud__grid { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .ud__grid { grid-template-columns: minmax(0, 1fr); } }
 </style>

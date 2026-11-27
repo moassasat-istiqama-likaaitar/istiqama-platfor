@@ -155,5 +155,5 @@ async function act(decision) {
 .chk { display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; margin-bottom: 0.35rem; }
 .f { display: flex; flex-direction: column; gap: 0.3rem; margin-top: 0.75rem; }
 .f > span { font-weight: 700; font-size: 0.86rem; }
-@media (max-width: 820px) { .rv { grid-template-columns: 1fr; } }
+@media (max-width: 820px) { .rv { grid-template-columns: minmax(0, 1fr); } }
 </style>

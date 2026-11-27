@@ -1,7 +1,7 @@
 <template>
-  <!-- PA02–PA04: ملف الابن — الدروس، الأعمال، النتائج، الملف -->
+  <!-- PA02–PA04: ملف الابن — الدروس، الواجبات والتقييمات، النتائج، الملف -->
   <div>
-    <PageHeader title="أبنائي" subtitle="متابعة تفصيلية لكل ابن: ما درسه، ما عليه من أعمال، ونتائجه." />
+    <PageHeader title="أبنائي" subtitle="متابعة تفصيلية لكل ابن: ما درسه، ما عليه من واجبات وتقييمات، ونتائجه." />
     <ChildSwitcher :children="children" :model-value="child?.id" @update:model-value="select" />
 
     <template v-if="child && r">
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <!-- الأعمال -->
+      <!-- الواجبات والتقييمات -->
       <RecordTable v-else-if="tab === 'tasks'" :rows="acts" :columns="[
         { field: 'title', label: 'العمل' }, { field: 'subjectName', label: 'المادة' }, { field: 'typeLabel', label: 'النوع' },
         { field: 'due', label: 'آخر أجل', type: 'date' }, { field: 'stateTag', label: 'الحالة', type: 'status' }, { field: 'scoreLabel', label: 'العلامة' }
@@ -125,5 +125,5 @@ watch(child, async (c) => {
 .profile dt { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .profile dd { margin: 0.15rem 0 0; font-weight: 700; }
 .note { margin: 1.25rem 0 0; font-size: 0.86rem; }
-@media (max-width: 900px) { .grades-g { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .grades-g { grid-template-columns: minmax(0, 1fr); } }
 </style>

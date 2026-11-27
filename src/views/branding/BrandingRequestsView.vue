@@ -171,7 +171,7 @@ const fmt = (iso) => new Date(iso).toLocaleDateString('ar-DZ', { day: 'numeric',
 .note { margin: 0.75rem 0 0; color: #a12a2a; font-size: 0.9rem; }
 .req__f { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
 @media (max-width: 760px) {
-  .cmp { grid-template-columns: 1fr; }
+  .cmp { grid-template-columns: minmax(0, 1fr); }
   .cmp__arrow { transform: rotate(-90deg); justify-self: center; }
 }
 </style>

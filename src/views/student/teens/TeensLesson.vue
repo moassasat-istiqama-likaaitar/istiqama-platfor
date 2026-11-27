@@ -41,7 +41,7 @@
           </button>
         </section>
         <section v-if="l.activities.length" class="sp">
-          <h3>الأعمال المطلوبة</h3>
+          <h3>الواجبات والتقييمات المطلوبة</h3>
           <RouterLink v-for="a in l.activities" :key="a.id" :to="`/app/activity/${a.id}`" class="ai">
             <span>{{ a.type === 'quiz' ? 'تقييم' : 'واجب' }}</span>
             <span class="ai__s" :class="`s-${a.state}`">{{ t(`student.state.${a.state}`) }}<template v-if="a.score !== null"> · {{ a.score }}/{{ a.maxScore }}</template></span>
@@ -119,5 +119,5 @@ function queueSave() {
 .s-graded { color: #15803d; }
 .notes textarea { width: 100%; min-height: 160px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; padding: 0.6rem; font: inherit; font-size: 0.88rem; background: #fffdf3; color: var(--ink); outline: none; line-height: 1.8; }
 .notes textarea:focus { border-color: var(--c); }
-@media (max-width: 960px) { .tl__grid { grid-template-columns: 1fr; } .tl__side { position: static; } }
+@media (max-width: 960px) { .tl__grid { grid-template-columns: minmax(0, 1fr); } .tl__side { position: static; } }
 </style>

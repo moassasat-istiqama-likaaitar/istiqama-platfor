@@ -9,16 +9,16 @@
       </div>
       <div class="kpis">
         <div class="kpi"><small>التقدّم العام</small><b>{{ d.progress }}%</b></div>
-        <div class="kpi"><small>أعمال مطلوبة</small><b>{{ d.todoCount }}</b></div>
+        <div class="kpi"><small>واجبات وتقييمات مطلوبة</small><b>{{ d.todoCount }}</b></div>
         <div class="kpi"><small>المواظبة</small><b>{{ d.streak }} <span>يوم</span></b></div>
       </div>
     </header>
 
     <!-- مخطط الأسبوع -->
     <section class="panel">
-      <header class="ph"><h2>هذا الأسبوع</h2><RouterLink to="/app/my-assignments" class="link">كل الأعمال</RouterLink></header>
+      <header class="ph"><h2>هذا الأسبوع</h2><RouterLink to="/app/my-assignments" class="link">كل الواجبات والتقييمات</RouterLink></header>
       <div class="week">
-        <div v-for="(day, i) in d.week" :key="i" class="day" :class="{ today: i === 0 }">
+        <div v-for="(day, i) in d.week" :key="i" class="day" :class="{ today: i === 0, empty: !day.items.length }">
           <div class="day__head"><span>{{ wd(day.date) }}</span><b>{{ new Date(day.date).getDate() }}</b></div>
           <RouterLink v-for="a in day.items" :key="a.id" :to="`/app/activity/${a.id}`" class="task" :style="{ '--c': a.subject.color }">
             <small>{{ a.type === 'quiz' ? 'تقييم' : 'واجب' }}</small>{{ a.label }}
@@ -27,7 +27,7 @@
         </div>
       </div>
       <div v-if="late.length" class="late">
-        <i class="pi pi-exclamation-circle" /> {{ late.length }} أعمال متأخرة:
+        <i class="pi pi-exclamation-circle" /> واجبات وتقييمات متأخرة ({{ late.length }}):
         <RouterLink v-for="a in late.slice(0, 3)" :key="a.id" :to="`/app/activity/${a.id}`">{{ a.label }}</RouterLink>
       </div>
     </section>
@@ -42,7 +42,7 @@
       </RouterLink>
 
       <section class="panel">
-        <header class="ph"><h2>المقررات</h2></header>
+        <header class="ph"><h2>المواد</h2></header>
         <table class="tbl">
           <tbody>
             <tr v-for="s in d.subjects" :key="s.id">
@@ -122,8 +122,17 @@ onMounted(async () => {
 .num { text-align: end; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
 @media (max-width: 900px) {
   .week { grid-template-columns: repeat(7, 140px); overflow-x: auto; }
-  .th__grid { grid-template-columns: 1fr; }
+  .th__grid { grid-template-columns: minmax(0, 1fr); }
   .kpis { width: 100%; }
   .kpi { flex: 1; min-width: 0; }
+}
+/* الهاتف: الأسبوع قائمة عمودية (اليوم بجانب مهامه) بدل أعمدة تُقصّ، والأيام الفارغة مخفية إلا اليوم */
+@media (max-width: 600px) {
+  .week { grid-template-columns: minmax(0, 1fr); overflow: visible; }
+  .day { min-height: 0; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .day__head { flex-direction: column; align-items: center; min-width: 52px; }
+  .day .task { flex: 1 1 200px; }
+  .day.empty:not(.today) { display: none; }
+  .day__free { margin: 0; }
 }
 </style>

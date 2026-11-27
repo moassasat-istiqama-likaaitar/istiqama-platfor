@@ -53,5 +53,5 @@ onMounted(async () => (s.value = await contentStats()))
 .g { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .g h3 { margin: 0 0 0.85rem; font-size: 1rem; }
 .span { grid-column: 1 / -1; }
-@media (max-width: 900px) { .g { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .g { grid-template-columns: minmax(0, 1fr); } }
 </style>

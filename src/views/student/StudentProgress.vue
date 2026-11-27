@@ -60,7 +60,7 @@
       <div class="sp-head"><h1>التحليلات</h1><RouterLink :to="{ name: 'report-card' }" class="print-btn"><i class="pi pi-print" /> كشف النقاط للطباعة</RouterLink></div>
       <div class="t-kpis">
         <div><small>الدروس المكتملة</small><b>{{ r.totals.lessons }}<span>/{{ r.totals.lessonsAll }}</span></b></div>
-        <div><small>الأعمال المنجزة</small><b>{{ r.totals.activities }}</b></div>
+        <div><small>الواجبات والتقييمات المنجزة</small><b>{{ r.totals.activities }}</b></div>
         <div><small>المعدل العام</small><b>{{ overall ?? '—' }}<span v-if="overall">/20</span></b></div>
         <div><small>المواظبة</small><b>{{ r.streak }}<span> يوم</span></b></div>
       </div>
@@ -81,11 +81,11 @@
             <circle v-for="(p, i) in pts" :key="i" :cx="p[0]" :cy="p[1]" r="3.5" fill="var(--brand)" />
           </svg>
           <p v-else class="muted">لا توجد علامات كافية بعد</p>
-          <small class="muted">آخر {{ r.history.length }} أعمال مصحّحة (على 20)</small>
+          <small class="muted">آخر {{ r.history.length }} واجبات وتقييمات مصحّحة (على 20)</small>
         </section>
       </div>
       <section class="panel">
-        <h3>تفاصيل المقررات</h3>
+        <h3>تفاصيل المواد</h3>
         <table class="t-table">
           <thead><tr><th>المادة</th><th>الدروس</th><th>التقييمات</th><th>الواجبات</th><th>التفاعلات</th><th>المعدل</th></tr></thead>
           <tbody>
@@ -200,7 +200,7 @@ const linePts = computed(() => pts.value.map((p) => p.join(',')).join(' '))
 .t-table td { padding: 0.6rem; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
 @media (max-width: 860px) {
   .t-kpis { grid-template-columns: 1fr 1fr; }
-  .t-grid, .j-grid { grid-template-columns: 1fr; }
+  .t-grid, .j-grid { grid-template-columns: minmax(0, 1fr); }
   .k-jar { flex-wrap: wrap; }
   .k-bars { gap: 0.8rem; }
   .k-bar__tube { width: 46px; height: 140px; }

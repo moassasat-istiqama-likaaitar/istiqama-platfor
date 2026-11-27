@@ -144,7 +144,7 @@ async function save() {
 .fx-card.wide { grid-column: 1 / -1; }
 .fx-card i { color: var(--brand); font-size: 1.2rem; }
 .fx-card small { color: var(--p-text-muted-color); font-size: 0.8rem; }
-@media (max-width: 900px) { .fx__body { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .fx__body { grid-template-columns: minmax(0, 1fr); } }
 .mb { margin-bottom: 1rem; }
 .cz { display: grid; grid-template-columns: 1.6fr 1fr; gap: 1rem; align-items: start; }
 .cz__f h3, aside h3 { margin: 0 0 0.75rem; font-size: 1rem; }
@@ -165,5 +165,5 @@ async function save() {
 .pv-login { background: linear-gradient(140deg, #1b2a5e, #2d4bb1); color: #fff; border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: 0.35rem; }
 .pv-login small { opacity: 0.85; }
 .small { font-size: 0.82rem; margin-top: 0.75rem; }
-@media (max-width: 900px) { .cz { grid-template-columns: 1fr; } .g2 { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .cz { grid-template-columns: minmax(0, 1fr); } .g2 { grid-template-columns: minmax(0, 1fr); } }
 </style>

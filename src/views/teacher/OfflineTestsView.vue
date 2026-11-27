@@ -152,5 +152,5 @@ async function del(t) {
 .drop input { display: none; }
 .small { font-size: 0.8rem; margin: 0; }
 .act { display: flex; justify-content: flex-end; }
-@media (max-width: 860px) { .up, .files-in { grid-template-columns: 1fr; } }
+@media (max-width: 860px) { .up, .files-in { grid-template-columns: minmax(0, 1fr); } }
 </style>

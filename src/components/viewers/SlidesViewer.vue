@@ -73,5 +73,5 @@ const prev = () => i.value > 0 && go(i.value - 1)
 .slide-f-enter-active, .slide-f-leave-active, .slide-b-enter-active, .slide-b-leave-active { transition: all 0.3s ease; }
 .slide-f-enter-from, .slide-b-leave-to { opacity: 0; transform: translateX(-40px); }
 .slide-f-leave-to, .slide-b-enter-from { opacity: 0; transform: translateX(40px); }
-@media (max-width: 600px) { .sv__slide { grid-template-columns: 1fr; grid-template-rows: auto 1fr; } .sv__art { display: none; } }
+@media (max-width: 600px) { .sv__slide { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; } .sv__art { display: none; } }
 </style>

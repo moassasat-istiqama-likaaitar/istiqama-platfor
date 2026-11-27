@@ -104,5 +104,5 @@ async function del(e) {
 .item b { display: block; }
 .item small { font-size: 0.78rem; }
 .tools { display: flex; }
-@media (max-width: 960px) { .cal { grid-template-columns: 1fr; } }
+@media (max-width: 960px) { .cal { grid-template-columns: minmax(0, 1fr); } }
 </style>

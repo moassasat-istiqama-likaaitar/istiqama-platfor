@@ -125,5 +125,5 @@ function reset() {
 .done { text-align: center; padding: 2.5rem 1rem; }
 .done > i { font-size: 3rem; color: #17a077; }
 .done p { max-width: 520px; margin: 0.5rem auto 1rem; }
-@media (max-width: 700px) { .grid2 { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .grid2 { grid-template-columns: minmax(0, 1fr); } }
 </style>

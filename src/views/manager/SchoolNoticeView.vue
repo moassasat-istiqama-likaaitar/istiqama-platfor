@@ -93,5 +93,5 @@ async function del(n) {
 .item p { margin: 0.4rem 0; font-size: 0.9rem; line-height: 1.7; }
 .item small { font-size: 0.78rem; }
 .del { position: absolute; top: 0.5rem; inset-inline-end: 0.4rem; }
-@media (max-width: 900px) { .nt { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .nt { grid-template-columns: minmax(0, 1fr); } }
 </style>

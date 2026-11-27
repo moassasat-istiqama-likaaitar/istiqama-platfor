@@ -117,5 +117,5 @@ const doneCount = computed(() => tasks.value.filter((x) => x.done).length)
 .finish { margin-top: 0.4rem; background: #8ac926 !important; border-color: #8ac926 !important; box-shadow: 0 4px 0 #5f9a12; }
 .hint { margin: 0; font-size: 0.75rem; color: var(--muted); text-align: center; }
 .next { margin-top: 0.3rem; font-weight: 700; font-size: 0.85rem; color: var(--c); text-decoration: none; display: flex; justify-content: space-between; gap: 0.5rem; padding: 0.6rem 0.7rem; border-radius: 12px; background: color-mix(in srgb, var(--c) 8%, #fff); }
-@media (max-width: 960px) { .jl__grid { grid-template-columns: 1fr; } .missions { position: static; order: -1; } }
+@media (max-width: 960px) { .jl__grid { grid-template-columns: minmax(0, 1fr); } .missions { position: static; order: -1; } }
 </style>

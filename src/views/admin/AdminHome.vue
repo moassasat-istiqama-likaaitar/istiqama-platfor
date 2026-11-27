@@ -67,5 +67,5 @@ onMounted(async () => {
 .todo a:hover { border-color: var(--brand); }
 .todo i { color: var(--brand); }
 .todo b { margin-inline-start: auto; background: var(--bg); padding: 0 0.55rem; border-radius: 999px; }
-@media (max-width: 900px) { .g { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .g { grid-template-columns: minmax(0, 1fr); } }
 </style>

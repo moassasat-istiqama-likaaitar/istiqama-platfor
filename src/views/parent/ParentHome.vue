@@ -10,7 +10,7 @@
       <StatTiles :items="[
         { label: 'التقدّم في الدروس', value: d.progress + '%', icon: 'pi pi-book', hint: `${d.doneLessons} من ${d.totalLessons} درساً` },
         { label: 'المعدل العام', value: avg ?? '—', icon: 'pi pi-chart-line', tone: avg !== null && avg < 10 ? 'red' : 'green', hint: 'على 20' },
-        { label: 'أعمال متأخرة', value: late.length, icon: 'pi pi-exclamation-circle', tone: late.length ? 'red' : 'green', hint: late.length ? 'تحتاج متابعتك' : 'لا شيء متأخر' },
+        { label: 'واجبات وتقييمات متأخرة', value: late.length, icon: 'pi pi-exclamation-circle', tone: late.length ? 'red' : 'green', hint: late.length ? 'تحتاج متابعتك' : 'لا شيء متأخر' },
         { label: 'المواظبة', value: d.streak + ' يوم', icon: 'pi pi-bolt', tone: 'amber', hint: 'أيام متتالية من التعلم' }
       ]" />
 
@@ -24,7 +24,7 @@
         </section>
 
         <section class="panel">
-          <h2 class="sec"><i class="pi pi-calendar" /> أعمال هذا الأسبوع</h2>
+          <h2 class="sec"><i class="pi pi-calendar" /> واجبات وتقييمات هذا الأسبوع</h2>
           <ul v-if="week.length" class="tasks">
             <li v-for="a in week" :key="a.id">
               <span class="tk__ic" :style="{ background: a.subject?.color }"><i :class="a.type === 'quiz' ? 'pi pi-question' : 'pi pi-pencil'" /></span>
@@ -32,7 +32,7 @@
               <StatusTag :status="a.state === 'todo' ? 'open' : a.state" />
             </li>
           </ul>
-          <p v-else class="muted">لا أعمال مبرمجة هذا الأسبوع.</p>
+          <p v-else class="muted">لا واجبات ولا تقييمات مبرمجة هذا الأسبوع.</p>
         </section>
 
         <section class="panel">
@@ -150,5 +150,5 @@ const dueText = (iso) => {
 .tc b { display: block; font-size: 0.9rem; }
 .tc small { color: var(--p-text-muted-color); font-size: 0.78rem; }
 .tc__msg { margin-inline-start: auto; font-size: 0.82rem; color: var(--brand); text-decoration: none; font-weight: 700; white-space: nowrap; }
-@media (max-width: 900px) { .ph__grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .ph__grid { grid-template-columns: minmax(0, 1fr); } }
 </style>

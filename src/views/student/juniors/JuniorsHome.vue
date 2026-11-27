@@ -141,5 +141,5 @@ onMounted(async () => (d.value = await student.refresh()))
 .region__pct { font-size: 0.75rem; font-weight: 700; color: var(--c); }
 .badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .badge { display: inline-flex; gap: 0.4rem; align-items: center; padding: 0.4rem 0.85rem; border-radius: 999px; background: #effad9; color: #4a7a10; font-weight: 700; font-size: 0.85rem; }
-@media (max-width: 900px) { .jh__grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .jh__grid { grid-template-columns: minmax(0, 1fr); } .regions { grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); } }
 </style>

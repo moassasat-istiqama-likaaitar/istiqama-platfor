@@ -22,7 +22,7 @@
       </section>
       <section class="panel span">
         <header class="hd"><h3><i class="pi pi-exclamation-triangle" /> تلاميذ يحتاجون متابعة</h3><RouterLink to="/app/performance" class="lnk">تقارير الأداء</RouterLink></header>
-        <RecordTable :rows="d.atRisk" :columns="[{ field: 'name', label: 'التلميذ', type: 'person', sub: 'className' }, { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'late', label: 'أعمال متأخرة' }]" :page-size="8" unit="تلميذ" empty-text="لا أحد — ممتاز" />
+        <RecordTable :rows="d.atRisk" :columns="[{ field: 'name', label: 'التلميذ', type: 'person', sub: 'className' }, { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'late', label: 'واجبات وتقييمات متأخرة' }]" :page-size="8" unit="تلميذ" empty-text="لا أحد — ممتاز" />
       </section>
     </div>
   </div>
@@ -54,5 +54,5 @@ onMounted(async () => (d.value = await schoolOverview(auth.active.school.id)))
 .small { font-size: 0.85rem; margin: 0.75rem 0 0; }
 .hd { display: flex; justify-content: space-between; align-items: center; }
 .lnk { font-size: 0.85rem; color: var(--brand); font-weight: 700; text-decoration: none; }
-@media (max-width: 900px) { .g { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .g { grid-template-columns: minmax(0, 1fr); } }
 </style>

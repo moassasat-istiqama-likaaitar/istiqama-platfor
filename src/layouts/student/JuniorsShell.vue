@@ -83,7 +83,7 @@ const tap = () => chime('tap', 'juniors')
 .j-icon { position: relative; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; color: #fff; text-decoration: none; }
 .j-icon:hover { background: rgba(255, 255, 255, 0.15); }
 .j-icon b { position: absolute; top: 0; inset-inline-end: 0; min-width: 17px; height: 17px; border-radius: 999px; background: #ff5a5f; font-size: 0.66rem; display: grid; place-items: center; }
-.j-tabs { display: flex; gap: 0.25rem; padding: 0 clamp(0.75rem, 3vw, 2rem); max-width: 1240px; margin: 0 auto; overflow-x: auto; }
+.j-tabs { display: flex; gap: 0.25rem; padding: 0 clamp(0.75rem, 3vw, 2rem); max-width: 1240px; margin: 0 auto; overflow-x: auto; min-width: 0; }
 .j-tab { display: flex; align-items: center; gap: 0.45rem; padding: 0.65rem 1rem; color: rgba(255, 255, 255, 0.85); text-decoration: none; font-weight: 700; border-radius: 14px 14px 0 0; white-space: nowrap; }
 .j-tab.on { background: var(--bg); color: var(--brand); }
 .j-main { max-width: 1240px; margin: 0 auto; padding: 1.25rem clamp(0.75rem, 3vw, 2rem) 2.5rem; }
@@ -93,5 +93,13 @@ const tap = () => chime('tap', 'juniors')
   .j-logo :deep(.pair__names) { display: none; }
   .j-top__row { gap: 0.5rem; }
   .j-tab span { font-size: 0.82rem; }
+}
+/* الهواتف الصغيرة: مسافات أضيق، والمواظبة تبقى أيقونة ورقماً فقط */
+@media (max-width: 420px) {
+  .j-top__row { gap: 0.3rem; padding-inline: 0.6rem; }
+  .j-level { padding: 0.2rem; }
+  .j-streak { padding: 0.3rem 0.5rem; }
+  .j-top__end { gap: 0; }
+  .j-icon { width: 34px; }
 }
 </style>

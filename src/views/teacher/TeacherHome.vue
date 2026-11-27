@@ -27,7 +27,7 @@
         <ul v-if="d.atRisk.length" class="list">
           <li v-for="s in d.atRisk" :key="s.id">
             <span class="av warn">{{ s.name.charAt(0) }}</span>
-            <div><b>{{ s.name }}</b><small>{{ s.className }} · تقدّم {{ s.progress }}%{{ s.late ? ` · ${s.late} أعمال متأخرة` : '' }}</small></div>
+            <div><b>{{ s.name }}</b><small>{{ s.className }} · تقدّم {{ s.progress }}%{{ s.late ? ` · ${s.late} متأخرة` : '' }}</small></div>
           </li>
         </ul>
         <p v-else class="muted">كل التلاميذ في المسار.</p>
@@ -47,7 +47,7 @@
       </section>
 
       <section class="panel span2">
-        <header class="sec"><h2><i class="pi pi-calendar" /> أعمال قادمة في أقسامي</h2><RouterLink to="/app/new-homework" class="lnk">+ واجب جديد</RouterLink></header>
+        <header class="sec"><h2><i class="pi pi-calendar" /> واجبات وتقييمات قادمة في أقسامي</h2><RouterLink to="/app/new-homework" class="lnk">+ واجب جديد</RouterLink></header>
         <ul class="list">
           <li v-for="a in d.upcoming" :key="a.id">
             <span class="av ic"><i :class="a.type === 'quiz' ? 'pi pi-question' : 'pi pi-pencil'" /></span>
@@ -92,5 +92,5 @@ watch(() => auth.activeAssignmentId, async () => (d.value = await teacherHome(au
 .cl__bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 0.4rem; }
 .cl__bar i { display: block; height: 100%; background: var(--brand); }
 .cl__risk { font-size: 0.78rem; color: #b42318; }
-@media (max-width: 900px) { .th-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .th-grid { grid-template-columns: minmax(0, 1fr); } }
 </style>

@@ -44,5 +44,5 @@ async function save(v) {
 .th small { display: block; font-size: 0.78rem; }
 .th p { margin: 0.35rem 0 0; font-size: 0.84rem; }
 .tag { font-size: 0.78rem; font-weight: 700; padding: 0.1rem 0.6rem; border-radius: 999px; background: color-mix(in srgb, var(--c) 14%, #fff); color: var(--c); }
-@media (max-width: 900px) { .themes { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .themes { grid-template-columns: minmax(0, 1fr); } }
 </style>

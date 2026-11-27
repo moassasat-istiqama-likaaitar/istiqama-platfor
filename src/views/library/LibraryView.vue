@@ -220,4 +220,21 @@ onMounted(async () => {
 .pv__act .opts span.ok { background: #dcf7e3; color: #16803c; font-weight: 700; }
 .pre { white-space: pre-wrap; }
 @media (max-width: 860px) { .filters { grid-template-columns: 1fr 1fr; } .filters__search { grid-column: 1 / -1; } }
+/* الهاتف: ترويسة مضغوطة لا تخرج عن الشاشة، وبطاقات في عمودين بصورة صغيرة */
+@media (max-width: 600px) {
+  .lib__hero { padding: 1rem; }
+  .lib__hero h1 { font-size: 1.3rem; }
+  .lib__hero p { font-size: 0.85rem; }
+  .lib__stats { width: 100%; flex-wrap: wrap; gap: 0.4rem; }
+  .lib__stats div { flex: 1; min-width: 0; padding: 0.4rem 0.3rem; }
+  .lib__stats b { font-size: 1.15rem; }
+  .lib__act { max-width: none; flex-basis: 100%; text-align: center; padding: 0.5rem; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .card__thumb { aspect-ratio: 16 / 10; }
+  .card__play { width: 34px; height: 34px; }
+  .card__body { padding: 0.5rem 0.6rem 0.6rem; gap: 0.2rem; }
+  .card__title { font-size: 0.84rem; }
+  .card__lesson, .card__meta { font-size: 0.72rem; }
+  .card__foot { font-size: 0.68rem; }
+}
 </style>

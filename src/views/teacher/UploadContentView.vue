@@ -134,5 +134,5 @@ async function send(submit) {
 .recent b { display: block; font-size: 0.86rem; }
 .recent small { font-size: 0.76rem; }
 .lnk { font-size: 0.86rem; color: var(--brand); text-decoration: none; font-weight: 700; }
-@media (max-width: 960px) { .up__grid, .flow { grid-template-columns: 1fr; } .up__form { grid-template-columns: 1fr; } }
+@media (max-width: 960px) { .up__grid, .flow { grid-template-columns: minmax(0, 1fr); } .up__form { grid-template-columns: minmax(0, 1fr); } }
 </style>

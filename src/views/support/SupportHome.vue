@@ -46,5 +46,5 @@ const byType = computed(() => Object.entries({ technical: 'تقني', content: '
 .list a { text-decoration: none; color: inherit; }
 .list b { display: block; font-size: 0.9rem; }
 .list small { font-size: 0.76rem; }
-@media (max-width: 900px) { .g { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .g { grid-template-columns: minmax(0, 1fr); } }
 </style>

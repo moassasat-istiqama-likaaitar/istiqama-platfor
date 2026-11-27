@@ -99,7 +99,7 @@ const parts = computed(() => String(props.q.q || '').split(/_{3,}/))
 
 <style scoped>
 .hint { display: block; color: var(--p-text-muted-color); margin-bottom: 0.5rem; }
-.opts { display: grid; grid-template-columns: 1fr; gap: 0.55rem; }
+.opts { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.55rem; }
 .opts.two { grid-template-columns: 1fr 1fr; }
 .opt { display: flex; align-items: center; gap: 0.7rem; padding: 0.8rem 1rem; border: 2px solid var(--line); border-radius: 14px; background: var(--surface); font: inherit; font-size: 1.02rem; color: var(--ink); text-align: start; cursor: pointer; }
 .opt:hover:not(:disabled) { border-color: var(--c, var(--brand)); }
@@ -119,5 +119,5 @@ const parts = computed(() => String(props.q.q || '').split(/_{3,}/))
 .order__b button:disabled { opacity: 0.3; }
 .fill { font-size: 1.1rem; line-height: 2.4; margin: 0; }
 .fill__in { width: 130px; margin: 0 0.3rem; padding: 0.3rem 0.5rem; border: 0; border-bottom: 2px solid var(--c, var(--brand)); background: color-mix(in srgb, var(--c, var(--brand)) 6%, #fff); font: inherit; text-align: center; border-radius: 6px 6px 0 0; }
-@media (max-width: 600px) { .match__row { grid-template-columns: 1fr; } .match__row > i { display: none; } .opts.two { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .match__row { grid-template-columns: minmax(0, 1fr); } .match__row > i { display: none; } .opts.two { grid-template-columns: minmax(0, 1fr); } }
 </style>

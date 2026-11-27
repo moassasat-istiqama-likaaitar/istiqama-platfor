@@ -77,7 +77,7 @@ async function del(row) {
 <style scoped>
 .legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.2rem; margin-bottom: 1rem; font-size: 0.82rem; }
 .legend span { display: inline-flex; gap: 0.4rem; align-items: center; }
-.tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
 .note { display: block; font-size: 0.78rem; margin-top: 0.15rem; color: #a15c00; }
 .note.rejected { color: #b42318; }
 </style>

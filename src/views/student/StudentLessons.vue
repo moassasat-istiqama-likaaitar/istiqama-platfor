@@ -77,7 +77,7 @@ const { t } = useI18n()
 const route = useRoute()
 const student = useStudentStore()
 const theme = computed(() => student.theme)
-const titles = { kids: 'دروسي', juniors: 'مناطق الاستكشاف', teens: 'المقررات' }
+const titles = { kids: 'دروسي', juniors: 'مناطق الاستكشاف', teens: 'دروسي' }
 const subjects = ref([])
 const q = ref(route.query.q || '')
 const type = ref('all')
@@ -149,5 +149,5 @@ async function run() {
 .num { font-variant-numeric: tabular-nums; color: var(--muted); }
 .w { width: 35%; }
 .new { font-size: 0.7rem; background: color-mix(in srgb, var(--brand) 12%, #fff); color: var(--brand); padding: 0.05rem 0.4rem; border-radius: 6px; margin-inline-start: 0.4rem; }
-@media (max-width: 560px) { .k-tiles { grid-template-columns: 1fr 1fr; } .k-tile__icon { width: 70px; height: 70px; } .k-tile strong { font-size: 1.15rem; text-align: center; } .j-regions { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .k-tiles { grid-template-columns: 1fr 1fr; } .k-tile__icon { width: 70px; height: 70px; } .k-tile strong { font-size: 1.15rem; text-align: center; } .j-regions { grid-template-columns: minmax(0, 1fr); } }
 </style>

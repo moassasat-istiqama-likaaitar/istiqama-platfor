@@ -14,7 +14,7 @@
     </div>
     <RecordTable :rows="d.classes" :columns="[
       { field: 'name', label: 'القسم' }, { field: 'levelName', label: 'المستوى' }, { field: 'students', label: 'التلاميذ' }, { field: 'teachersLabel', label: 'المعلمون' },
-      { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'late', label: 'أعمال متأخرة' }, { field: 'atRisk', label: 'متعثرون' }
+      { field: 'progress', label: 'التقدّم', type: 'progress' }, { field: 'average', label: 'المعدل' }, { field: 'late', label: 'واجبات وتقييمات متأخرة' }, { field: 'atRisk', label: 'متعثرون' }
     ]" unit="قسم">
       <template #toolbar><Button label="تصدير" icon="pi pi-download" size="small" outlined severity="secondary" @click="exportCsv('أداء-الأقسام.csv', d.classes, cols)" /></template>
     </RecordTable>
@@ -41,5 +41,5 @@ onMounted(async () => (d.value = await schoolOverview(auth.active.school.id)))
 <style scoped>
 .g { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
 .g h3 { margin: 0 0 0.85rem; font-size: 1rem; }
-@media (max-width: 900px) { .g { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .g { grid-template-columns: minmax(0, 1fr); } }
 </style>

@@ -93,5 +93,5 @@ async function save() {
 .hours { display: flex; gap: 1rem; padding: 0.5rem 0; }
 .hours label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
 .act { display: flex; justify-content: flex-end; margin-top: 1rem; }
-@media (max-width: 1100px) { .cm { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .cm { grid-template-columns: minmax(0, 1fr); } }
 </style>

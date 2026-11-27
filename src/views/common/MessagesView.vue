@@ -307,7 +307,7 @@ async function start() {
 .contact-opt small { color: var(--p-text-muted-color); }
 
 @media (max-width: 860px) {
-  .mail { grid-template-columns: 1fr; height: calc(100vh - 170px); }
+  .mail { grid-template-columns: minmax(0, 1fr); height: calc(100vh - 170px); }
   .mail__thread { display: none; }
   .mail.has-thread .mail__list { display: none; }
   .mail.has-thread .mail__thread { display: flex; }
