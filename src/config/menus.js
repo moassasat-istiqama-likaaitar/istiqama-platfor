@@ -84,7 +84,8 @@ export const MENUS = {
       item('teachers', 'pi pi-user', ['SM02'], 6),
       item('students', 'pi pi-users', ['SM03'], 6),
       item('parents', 'pi pi-user-plus', ['SM04'], 6),
-      item('activation', 'pi pi-check-circle', ['SM05'], 6)
+      item('activation', 'pi pi-check-circle', ['SM05'], 6),
+      item('login-sheets', 'pi pi-id-card', ['SM12'], 6)
     ]),
     item('school-classes', 'pi pi-th-large', ['SM06'], 6),
     group('content', 'pi pi-book', [
@@ -100,6 +101,7 @@ export const MENUS = {
   teacher: [
     item('home', 'pi pi-home', ['TE01'], 4),
     item('my-classes', 'pi pi-th-large', ['TE02', 'TE03', 'TE06', 'TE07'], 4),
+    item('login-sheets', 'pi pi-id-card', ['TE18'], 4),
     item('class-library', 'pi pi-bookmark', ['TE04', 'TE05'], 4),
     item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4),
     item('central-library', 'pi pi-book', ['TE11', 'TE12'], 4),

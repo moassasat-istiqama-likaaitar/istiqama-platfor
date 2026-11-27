@@ -22,7 +22,7 @@ export default {
     customization: 'تخصيص المنصة', announcements: 'الإعلانات', calendar: 'الرزنامة', communication: 'إعدادات التواصل',
     'import-export': 'الاستيراد والتصدير', tickets: 'البلاغات', 'quiz-builder': 'منشئ التقييمات',
     'editor-reports': 'التقارير', teachers: 'المعلمون', students: 'التلاميذ', parents: 'الأولياء',
-    activation: 'تفعيل الحسابات', 'school-classes': 'الأقسام', 'teacher-files-review': 'مصادقة محتوى المعلمين',
+    activation: 'تفعيل الحسابات', 'login-sheets': 'أوراق الدخول', 'school-classes': 'الأقسام', 'teacher-files-review': 'مصادقة محتوى المعلمين',
     'content-follow': 'متابعة المحتوى والواجبات والتقييمات', performance: 'تقارير الأداء', 'school-notice': 'إعلانات المدرسة', 'school-identity': 'هوية المدرسة', 'branding-requests': 'اعتماد هويات المدارس',
     'my-classes': 'أقسامي', 'class-library': 'مكتبة القسم', submissions: 'التسليمات والتصحيح',
     'central-library': 'المكتبة المركزية', 'upload-content': 'رفع محتوى', 'new-homework': 'واجب منزلي جديد',

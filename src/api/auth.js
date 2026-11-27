@@ -1,5 +1,6 @@
 import { respond, ApiError } from './client'
 import { persons, assignments, schools, classes, levels } from '@/mock/db'
+import { tempOf, clearTemp, markLogin, setOwnPassword } from './credentials'
 
 /** يكمّل الدور بأسماء المدرسة والأقسام والأبناء لعرضها في الواجهة */
 export function describeAssignment(a) {
@@ -32,7 +33,8 @@ export function describeAssignment(a) {
 
 function publicPerson(p) {
   const { password, ...rest } = p
-  return rest
+  // دخل بكلمة مرور مؤقتة (من أوراق الدخول): يجب أن يغيّرها قبل أي شيء آخر
+  return { ...rest, mustChange: !!tempOf(p.id) }
 }
 
 function session(person) {
@@ -48,8 +50,10 @@ export function login(loginValue, password) {
   return respond(() => {
     const key = String(loginValue || '').trim().toLowerCase()
     const person = persons.find((p) => p.username.toLowerCase() === key || (p.email && p.email.toLowerCase() === key))
-    if (!person || person.password !== password) throw new ApiError('invalid_credentials', 'بيانات الدخول غير صحيحة')
+    const temp = person && tempOf(person.id)
+    if (!person || (person.password !== password && temp !== password)) throw new ApiError('invalid_credentials', 'بيانات الدخول غير صحيحة')
     if (person.status !== 'active') throw new ApiError('inactive', 'الحساب غير مفعّل')
+    if (!temp) markLogin(person.id)
     return session(person)
   }, 400)
 }
@@ -101,9 +105,12 @@ export function updateProfile(personId, data) {
 export function changePassword(personId, current, next) {
   return respond(() => {
     const p = persons.find((x) => x.id === personId)
-    if (p.password !== current) throw new ApiError('wrong_password', 'كلمة المرور الحالية غير صحيحة')
+    if (p.password !== current && tempOf(p.id) !== current) throw new ApiError('wrong_password', 'كلمة المرور الحالية غير صحيحة')
     if (!next || next.length < 4) throw new ApiError('weak_password', 'كلمة المرور الجديدة قصيرة جداً')
-    p.password = next
+    if (next === tempOf(p.id)) throw new ApiError('weak_password', 'اختر كلمة مرور غير المؤقتة')
+    setOwnPassword(p, next)
+    clearTemp(p.id)
+    markLogin(p.id)
     return { ok: true }
   })
 }

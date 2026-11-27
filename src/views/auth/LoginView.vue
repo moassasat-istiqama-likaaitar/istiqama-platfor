@@ -148,6 +148,8 @@ const slugError = ref('')
 const schoolLinks = ref([])
 
 onMounted(async () => {
+  // رمز QR في ورقة الدخول يحمل اسم المستخدم (?u=)
+  if (route.query.u) form.login = String(route.query.u)
   demo.value = await demoAccounts()
 })
 // نفس الصفحة تخدم الرابط العام وروابط المدارس، فنتابع تغيّر الرابط

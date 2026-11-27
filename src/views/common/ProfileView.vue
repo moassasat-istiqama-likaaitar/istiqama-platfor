@@ -37,6 +37,7 @@
 
         <section class="panel">
           <h2 class="panel__title">{{ t('profile.security') }}</h2>
+          <Message v-if="auth.person?.mustChange" severity="warn" class="must">دخلت بكلمة مرور مؤقتة (من ورقة الدخول). اختر كلمة مرور خاصة بك لتتمكّن من استعمال المنصة: اكتب الكلمة المؤقتة في الخانة الأولى، ثم كلمتك الجديدة.</Message>
           <form class="form two" @submit.prevent="changePwd">
             <label class="field"><span>{{ t('profile.currentPassword') }}</span><Password v-model="pwd.current" :feedback="false" toggle-mask fluid /></label>
             <span class="hide-sm" />
@@ -62,6 +63,7 @@ import Password from 'primevue/password'
 import Message from 'primevue/message'
 import PageHeader from '@/components/PageHeader.vue'
 import { useAuthStore } from '@/stores/auth'
+import { useRouter } from 'vue-router'
 import { updateProfile, changePassword } from '@/api/auth'
 import { ROLE_ICONS } from '@/config/menus'
 import { useAssignmentLabel } from '@/composables/useAssignmentLabel'
@@ -69,6 +71,7 @@ import { useAssignmentLabel } from '@/composables/useAssignmentLabel'
 const { t } = useI18n()
 const toast = useToast()
 const auth = useAuthStore()
+const router = useRouter()
 const label = useAssignmentLabel()
 
 const p = auth.person
@@ -100,6 +103,10 @@ async function changePwd() {
     await changePassword(p.id, pwd.current, pwd.next)
     Object.assign(pwd, { current: '', next: '', confirm: '' })
     toast.add({ severity: 'success', summary: t('profile.passwordChanged'), life: 2000 })
+    if (auth.person?.mustChange) {
+      auth.updatePerson({ ...auth.person, mustChange: false })
+      router.push({ name: 'home' })
+    }
   } catch (e) {
     pwdError.value = e.message
   } finally {
@@ -113,6 +120,7 @@ function soon() {
 </script>
 
 <style scoped>
+.must { margin-bottom: 0.9rem; }
 .grid { display: grid; grid-template-columns: 300px 1fr; gap: 1.25rem; align-items: start; }
 .main { display: flex; flex-direction: column; gap: 1.25rem; }
 .side { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; }

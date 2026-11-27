@@ -22,7 +22,7 @@ export default {
     customization: 'Personnalisation', announcements: 'Annonces', calendar: 'Calendrier', communication: 'Communication',
     'import-export': 'Import / Export', tickets: 'Signalements', 'quiz-builder': 'Créateur d’évaluations',
     'editor-reports': 'Rapports', teachers: 'Enseignants', students: 'Élèves', parents: 'Parents',
-    activation: 'Activation des comptes', 'school-classes': 'Classes', 'teacher-files-review': 'Validation des fichiers',
+    activation: 'Activation des comptes', 'login-sheets': 'Fiches de connexion', 'school-classes': 'Classes', 'teacher-files-review': 'Validation des fichiers',
     'content-follow': 'Suivi du contenu', performance: 'Rapports de performance', 'school-notice': "Notification à l'école", 'school-identity': "Identité de l'école", 'branding-requests': 'Validation des identités',
     'my-classes': 'Mes classes', 'class-library': 'Bibliothèque de classe', submissions: 'Rendus et correction',
     'central-library': 'Bibliothèque centrale', 'upload-content': 'Téléverser un contenu', 'new-homework': 'Nouveau devoir',
