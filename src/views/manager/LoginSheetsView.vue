@@ -112,6 +112,8 @@ async function issue(mode, personId = null) {
 .top { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; justify-content: space-between; margin-bottom: 1rem; }
 .school { display: flex; flex-direction: column; gap: 0.35rem; min-width: min(280px, 100%); font-size: 0.85rem; font-weight: 700; }
 .school-name { margin: 0; }
+/* الهاتف: الفئات في شبكة متساوية (2×2) بدل صف ينكسر */
+@media (max-width: 600px) { .top :deep(.p-selectbutton) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; } }
 .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 1rem; align-items: start; }
 .card { display: flex; flex-direction: column; gap: 0.6rem; }
 .card h3 { margin: 0; font-size: 1.02rem; display: flex; gap: 0.5rem; align-items: center; }

@@ -166,7 +166,7 @@ const fmt = (iso) => new Date(iso).toLocaleDateString('ar-DZ', { day: 'numeric',
 .cmp :deep(.chip.warn) { color: #a15c00; font-family: inherit; }
 .more { margin-top: 1rem; }
 .more summary { cursor: pointer; font-weight: 700; color: var(--brand); font-size: 0.9rem; }
-.more__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+.more__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
 .more__grid small { display: block; margin-bottom: 0.3rem; font-weight: 700; }
 .note { margin: 0.75rem 0 0; color: #a12a2a; font-size: 0.9rem; }
 .req__f { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }

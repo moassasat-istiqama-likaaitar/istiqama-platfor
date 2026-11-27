@@ -144,7 +144,7 @@ const dueText = (iso) => {
 .grades li { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.9rem; padding-bottom: 0.5rem; border-bottom: 1px dashed var(--line); }
 .grades b.low { color: #b42318; }
 .more { display: inline-flex; gap: 0.35rem; align-items: center; margin-top: 0.75rem; font-size: 0.86rem; color: var(--brand); text-decoration: none; font-weight: 700; }
-.teachers { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; }
+.teachers { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 0.75rem; }
 .tc { display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem; border: 1px solid var(--line); border-radius: 12px; }
 .tc__av { width: 38px; height: 38px; border-radius: 50%; background: color-mix(in srgb, var(--brand) 14%, #fff); color: var(--brand); display: grid; place-items: center; font-weight: 800; }
 .tc b { display: block; font-size: 0.9rem; }

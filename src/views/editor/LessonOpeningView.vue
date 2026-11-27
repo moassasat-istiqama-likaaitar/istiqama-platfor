@@ -68,6 +68,7 @@ async function openUntil(s, l) {
 .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: #fff; }
 .subj summary small { margin-inline-start: auto; }
 .lt { width: 100%; border-collapse: collapse; margin-top: 0.8rem; font-size: 0.88rem; }
+@media (max-width: 700px) { .lt { display: block; overflow-x: auto; } }
 .lt th { text-align: start; font-size: 0.78rem; color: var(--p-text-muted-color); padding: 0.4rem; border-bottom: 1px solid var(--line); }
 .lt td { padding: 0.45rem 0.4rem; border-bottom: 1px solid var(--line); }
 .lt tr.closed td:nth-child(2) { opacity: 0.6; }

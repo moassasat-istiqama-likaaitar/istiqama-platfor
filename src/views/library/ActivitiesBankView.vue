@@ -91,7 +91,7 @@ function link(a) {
 .q { min-width: 220px; flex: 1; }
 .grow { flex: 1; }
 .cnt { margin: 0.75rem 0; font-size: 0.85rem; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 0.9rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr)); gap: 0.9rem; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
 .card header { display: flex; gap: 0.6rem; align-items: flex-start; }
 .card header b { display: block; }

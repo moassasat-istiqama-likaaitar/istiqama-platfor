@@ -77,7 +77,7 @@ onMounted(async () => (d.value = await student.refresh()))
 .mission__play i { font-size: 1.4rem; margin-inline-start: 4px; }
 .kh__title { margin: 0.5rem 0 0; font-size: 1.6rem; display: flex; align-items: center; gap: 0.5rem; }
 .dot { background: #ef4444; color: #fff; font-size: 0.9rem; min-width: 28px; height: 28px; border-radius: 999px; display: grid; place-items: center; font-family: var(--font); }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 1rem; }
 .tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 1.75rem 1rem 1.25rem; border-radius: 32px; background: var(--c); color: #fff; text-decoration: none; box-shadow: 0 8px 0 color-mix(in srgb, var(--c) 60%, #000); transition: transform 0.15s; }
 .tile:hover { transform: translateY(-4px) rotate(-1deg); }
 .tile:active { transform: translateY(6px); box-shadow: 0 2px 0 color-mix(in srgb, var(--c) 60%, #000); }

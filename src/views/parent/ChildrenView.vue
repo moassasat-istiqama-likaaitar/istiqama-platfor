@@ -109,7 +109,7 @@ watch(child, async (c) => {
 .btn-o { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 10px; border: 1.5px solid var(--line); color: var(--ink); text-decoration: none; font-weight: 700; }
 .btn-o:hover { border-color: var(--brand); color: var(--brand); }
 .tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.subj { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.85rem; }
+.subj { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 0.85rem; }
 .sj { border-top: 4px solid var(--c); }
 .sj__h { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.6rem; }
 .sj__ic { width: 34px; height: 34px; border-radius: 10px; background: color-mix(in srgb, var(--c) 14%, #fff); color: var(--c); display: grid; place-items: center; }
@@ -121,7 +121,7 @@ watch(child, async (c) => {
 .grades-g { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .span2 { grid-column: 1 / -1; }
 .sec { font-size: 1rem; margin: 0 0 0.75rem; }
-.profile dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.85rem; margin: 0; }
+.profile dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 0.85rem; margin: 0; }
 .profile dt { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .profile dd { margin: 0.15rem 0 0; font-weight: 700; }
 .note { margin: 1.25rem 0 0; font-size: 0.86rem; }

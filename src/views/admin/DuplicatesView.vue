@@ -48,6 +48,8 @@ async function merge(g) {
 .grp { margin-bottom: 0.85rem; }
 .grp header { display: flex; gap: 0.75rem; align-items: baseline; margin-bottom: 0.6rem; }
 .t { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+/* الهاتف: الجدول يُمرَّر أفقياً داخل بطاقته بدل الخروج عنها */
+@media (max-width: 700px) { .t { display: block; overflow-x: auto; white-space: nowrap; } }
 .t th { text-align: start; font-size: 0.78rem; color: var(--p-text-muted-color); padding: 0.35rem; border-bottom: 1px solid var(--line); }
 .t td { padding: 0.4rem 0.35rem; border-bottom: 1px solid var(--line); }
 .grp footer { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }

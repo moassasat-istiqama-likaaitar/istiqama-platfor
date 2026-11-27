@@ -193,7 +193,7 @@ onMounted(async () => {
 .lib__act { align-self: center; color: #fff; text-decoration: none; font-size: 0.82rem; background: rgba(255, 255, 255, 0.14); border-radius: 14px; padding: 0.6rem 0.9rem; max-width: 170px; }
 .card__lesson { font-size: 0.78rem; color: var(--c); font-weight: 700; display: flex; gap: 0.3rem; align-items: center; }
 .sel--wide { min-width: 220px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 1rem; }
 .card { display: flex; flex-direction: column; text-align: start; padding: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); cursor: pointer; font: inherit; color: inherit; box-shadow: var(--shadow); transition: transform 0.15s, border-color 0.15s; }
 .card:hover { transform: translateY(-3px); border-color: var(--c); }
 .card__thumb { position: relative; aspect-ratio: 200 / 120; overflow: hidden; background: #f4f4f8; }
@@ -209,7 +209,7 @@ onMounted(async () => {
 .card__foot { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; }
 .star { color: #f5a400; }
 .pv { display: flex; flex-direction: column; gap: 1rem; }
-.pv__meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.6rem; margin: 0; }
+.pv__meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr)); gap: 0.6rem; margin: 0; }
 .pv__meta div { background: var(--bg); padding: 0.55rem 0.8rem; border-radius: 12px; }
 .pv__meta dt { font-size: 0.72rem; color: var(--muted); }
 .pv__meta dd { margin: 0; font-weight: 700; }
@@ -219,7 +219,7 @@ onMounted(async () => {
 .pv__act .opts span { padding: 0.15rem 0.6rem; border-radius: 8px; background: var(--bg); font-size: 0.85rem; }
 .pv__act .opts span.ok { background: #dcf7e3; color: #16803c; font-weight: 700; }
 .pre { white-space: pre-wrap; }
-@media (max-width: 860px) { .filters { grid-template-columns: 1fr 1fr; } .filters__search { grid-column: 1 / -1; } }
+@media (max-width: 860px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters__search { grid-column: 1 / -1; } }
 /* الهاتف: ترويسة مضغوطة لا تخرج عن الشاشة، وبطاقات في عمودين بصورة صغيرة */
 @media (max-width: 600px) {
   .lib__hero { padding: 1rem; }
@@ -229,7 +229,7 @@ onMounted(async () => {
   .lib__stats div { flex: 1; min-width: 0; padding: 0.4rem 0.3rem; }
   .lib__stats b { font-size: 1.15rem; }
   .lib__act { max-width: none; flex-basis: 100%; text-align: center; padding: 0.5rem; }
-  .grid { grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
   .card__thumb { aspect-ratio: 16 / 10; }
   .card__play { width: 34px; height: 34px; }
   .card__body { padding: 0.5rem 0.6rem 0.6rem; gap: 0.2rem; }

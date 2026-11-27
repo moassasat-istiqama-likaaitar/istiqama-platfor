@@ -90,7 +90,7 @@ async function save() {
 .row b { display: block; font-size: 0.88rem; font-weight: 600; }
 .row small { font-size: 0.76rem; }
 .num { font-size: 0.88rem; flex: 1; }
-.hours { display: flex; gap: 1rem; padding: 0.5rem 0; }
+.hours { display: flex; flex-wrap: wrap; gap: 0.6rem 1rem; padding: 0.5rem 0; }
 .hours label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
 .act { display: flex; justify-content: flex-end; margin-top: 1rem; }
 @media (max-width: 1100px) { .cm { grid-template-columns: minmax(0, 1fr); } }

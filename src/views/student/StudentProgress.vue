@@ -141,7 +141,7 @@ const linePts = computed(() => pts.value.map((p) => p.join(',')).join(' '))
 .k-jar span { font-size: 1.2rem; font-weight: 700; }
 .k-jar__fire { margin-inline-start: auto; background: rgba(255, 255, 255, 0.25); padding: 0.5rem 1.1rem; border-radius: 999px; font-size: 1.2rem; font-weight: 800; }
 .k-title { margin: 0.3rem 0 0; font-size: 1.6rem; }
-.k-stickers { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
+.k-stickers { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(140px, 100%), 1fr)); gap: 1rem; }
 .sticker { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; padding: 1rem 0.5rem; border-radius: 28px; background: var(--surface); box-shadow: var(--shadow); transform: rotate(-2deg); }
 .sticker:nth-child(even) { transform: rotate(2deg); }
 .sticker span { width: 80px; height: 80px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(135deg, #ff6b4a, #ffc93c); color: #fff; box-shadow: 0 5px 0 #d14d2e; }
@@ -172,7 +172,7 @@ const linePts = computed(() => pts.value.map((p) => p.join(',')).join(' '))
 .j-sub__b { flex: 1; }
 .j-sub__t { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.25rem; }
 .j-sub__t span { font-weight: 800; color: var(--c); }
-.j-badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 0.8rem; }
+.j-badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(90px, 100%), 1fr)); gap: 0.8rem; }
 .j-badge { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; text-align: center; }
 .j-badge span { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #8ac926, #0a9bdc); color: #fff; display: grid; place-items: center; transform: rotate(45deg); }
 .j-badge span i { transform: rotate(-45deg); font-size: 1.3rem; }

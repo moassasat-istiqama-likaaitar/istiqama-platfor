@@ -1,6 +1,7 @@
 /**
  * فحص الهاتف: يدخل بكل حساب تجريبي، ويفتح كل شاشة في قائمته بعرض هاتف (390 بكسل)،
- * ويُبلغ عن أي صفحة أعرض من الشاشة (تمرير أفقي). يوقف العملية إن وجد واحدة.
+ * ويُبلغ عن: صفحة أعرض من الشاشة، أو عنصر يخرج عن إطار بطاقته، أو زر/تبويب انكسر نصه على سطرين.
+ * يوقف العملية إن وجد واحدة.
  * التشغيل: npm run build && npm run mobile   (يحتاج vite preview على المنفذ 4173 أو يشغّله بنفسه)
  * المتصفح: CHROME_PATH، وإلا متصفح Playwright المثبّت (npx playwright install chromium).
  */
@@ -9,7 +10,7 @@ import { spawn } from 'node:child_process'
 
 const BASE = process.env.BASE_URL || 'http://localhost:4173/'
 const ACCOUNTS = ['admin', 'supervisor', 'editor', 'manager', 'teacher', 'aicha', 'khadija', 'anas', 'yahya', 'maryam', 'support']
-const WIDTH = 390
+const WIDTH = Number(process.env.WIDTH || 360)
 
 async function up() {
   try { await fetch(BASE); return null } catch { /* يُشغَّل */ }
@@ -46,9 +47,49 @@ for (const user of ACCOUNTS) {
     for (const href of routes) {
       await page.goto(BASE + href)
       await page.waitForTimeout(700)
-      const sw = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
+      const res = await page.evaluate(() => {
+        const out = []
+        const sw = document.documentElement.scrollWidth - document.documentElement.clientWidth
+        if (sw > 1) out.push(`أعرض من الشاشة بـ ${sw} بكسل`)
+        const vis = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(e).visibility !== 'hidden' }
+        const name = (e) => e.tagName.toLowerCase() + (e.classList.length ? '.' + [...e.classList].slice(0, 2).join('.') : '') + ` «${(e.innerText || '').trim().slice(0, 20)}»`
+        // 1) عنصر يخرج عن إطار بطاقته (الحاوية ذات الإطار أو الخلفية)
+        for (const box of document.querySelectorAll('.panel, .card, .p-card, .p-selectbutton, .p-dialog-content')) {
+          if (!vis(box) || getComputedStyle(box).overflow !== 'visible') continue
+          const b = box.getBoundingClientRect()
+          for (const e of box.querySelectorAll('*')) {
+            const cs = getComputedStyle(e)
+            if (!vis(e) || cs.position === 'absolute' || cs.position === 'fixed') continue
+            // محتوى <details> مطويّ: له أبعاد لكنه غير ظاهر
+            const det = e.closest('details:not([open])')
+            if (det && box.contains(det) && !e.closest('summary')) continue
+            if (e.closest('[style*="overflow"], .p-datatable-table-container, .p-tablist-content') && e.closest('[style*="overflow"], .p-datatable-table-container, .p-tablist-content') !== box && box.contains(e.closest('[style*="overflow"], .p-datatable-table-container, .p-tablist-content'))) continue
+            let a = e.parentElement, clipped = false
+            while (a && a !== box) { if (getComputedStyle(a).overflow !== 'visible') { clipped = true; break } a = a.parentElement }
+            if (clipped) continue
+            const r = e.getBoundingClientRect()
+            if (r.left < b.left - 2 || r.right > b.right + 2 || r.bottom > b.bottom + 2) { out.push(`يخرج عن إطاره: ${name(e)} داخل ${name(box)}`); break }
+          }
+        }
+        // 2) زر أو تبويب انكسر نصه على سطرين
+        for (const e of document.querySelectorAll('.p-togglebutton, .p-tab, .p-button:not(.p-button-icon-only)')) {
+          if (!vis(e)) continue
+          // نص انكسر: عقدة نصية واحدة تمتد على أكثر من سطر
+          const tw = document.createTreeWalker(e, NodeFilter.SHOW_TEXT)
+          let wrapped = false
+          for (let n = tw.nextNode(); n && !wrapped; n = tw.nextNode()) {
+            if (!n.textContent.trim()) continue
+            const rg = document.createRange()
+            rg.selectNodeContents(n)
+            const rs = [...rg.getClientRects()].filter((x) => x.width > 1)
+            wrapped = new Set(rs.map((x) => Math.round(x.top))).size > 1
+          }
+          if (wrapped) out.push(`نص انكسر على سطرين: ${name(e)}`)
+        }
+        return [...new Set(out)].slice(0, 5)
+      })
       checked++
-      if (sw > 1) bad.push(`${user} (دور ${r + 1}) ${href}: أعرض من الشاشة بـ ${sw} بكسل`)
+      for (const m of res) bad.push(`${user} (دور ${r + 1}) ${href}: ${m}`)
     }
   }
 }
@@ -56,7 +97,7 @@ await browser.close()
 server?.kill()
 if (errors.length) console.error('أخطاء في الصفحات:\n' + [...new Set(errors)].join('\n'))
 if (bad.length) {
-  console.error(`\n✗ ${bad.length} شاشة تخرج عن عرض الهاتف (${WIDTH} بكسل):\n` + bad.join('\n'))
+  console.error(`\n✗ ${bad.length} خطأ عرض على الهاتف (${WIDTH} بكسل):\n` + bad.join('\n'))
   process.exit(1)
 }
 console.log(`✓ ${checked} شاشة تناسب عرض الهاتف (${WIDTH} بكسل)`)

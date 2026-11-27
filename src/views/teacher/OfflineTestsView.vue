@@ -128,7 +128,7 @@ async function del(t) {
 .fbar { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .q { flex: 1; min-width: 200px; }
 .cnt { margin: 0.75rem 0; font-size: 0.85rem; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0.9rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 0.9rem; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem; display: flex; flex-direction: column; gap: 0.55rem; }
 .card.hid { opacity: 0.55; border-style: dashed; }
 .card header { display: flex; gap: 0.6rem; }

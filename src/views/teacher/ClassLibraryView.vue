@@ -133,7 +133,7 @@ async function unlink(it) {
 .empty { text-align: center; padding: 2rem; }
 .clbar__s { min-width: 170px; }
 .cnt { font-size: 0.82rem; margin-top: 0.8rem; }
-.cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem; }
+.cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 0.8rem; }
 .cc { background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--sc); border-radius: 16px; padding: 0.9rem; display: flex; flex-direction: column; gap: 0.4rem; }
 .cc[data-src='link'], .cc[data-src='mine'] { border-style: dashed; border-top-style: solid; }
 .cc header { display: flex; gap: 0.6rem; align-items: flex-start; }

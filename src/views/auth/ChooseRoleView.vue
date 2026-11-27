@@ -54,7 +54,7 @@ function logout() {
 .choose__avatar { background: var(--p-primary-color); color: var(--p-primary-contrast-color); font-weight: 700; }
 .choose__head h1 { margin: 0.75rem 0 0.25rem; font-size: 1.6rem; }
 .choose__head p { margin: 0; color: var(--p-text-muted-color); }
-.choose__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; width: min(900px, 100%); }
+.choose__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap: 1rem; width: min(900px, 100%); }
 .role-card {
   display: flex;
   align-items: center;

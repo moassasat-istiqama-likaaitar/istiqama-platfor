@@ -226,7 +226,7 @@ async function endRe(s) {
 .life b { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--brand); color: #fff; font-size: 0.75rem; }
 .life span { font-weight: 700; font-size: 0.9rem; }
 .life small { font-size: 0.76rem; color: var(--p-text-muted-color); }
-.ss { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+.ss { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 1rem; }
 .se { display: flex; flex-direction: column; gap: 0.35rem; }
 .se.active { border: 2px solid var(--brand); }
 .se.draft { border: 2px dashed var(--brand); }

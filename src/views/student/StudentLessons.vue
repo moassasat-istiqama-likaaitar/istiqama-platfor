@@ -119,7 +119,7 @@ async function run() {
 .res__body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .res__body small { color: var(--muted); }
 
-.k-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.1rem; }
+.k-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 1.1rem; }
 .k-tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; padding: 2rem 1rem 1.5rem; border-radius: 32px; background: var(--c); color: #fff; text-decoration: none; box-shadow: 0 8px 0 color-mix(in srgb, var(--c) 60%, #000); }
 .k-tile:active { transform: translateY(6px); box-shadow: 0 2px 0 color-mix(in srgb, var(--c) 60%, #000); }
 .k-tile__icon { width: 100px; height: 100px; border-radius: 50%; background: rgba(255, 255, 255, 0.22); display: grid; place-items: center; }
@@ -129,7 +129,7 @@ async function run() {
 .k-tile__bar span { display: block; height: 100%; background: #ffe066; }
 .k-tile__new { position: absolute; top: 14px; inset-inline-end: 14px; background: #fff; color: #ef4444; font-weight: 800; min-width: 36px; height: 36px; border-radius: 999px; display: grid; place-items: center; }
 
-.j-regions { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 0.9rem; }
+.j-regions { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 0.9rem; }
 .j-region { display: flex; align-items: center; gap: 0.9rem; padding: 1rem 1.1rem; border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow); text-decoration: none; color: inherit; border-inline-start: 7px solid var(--c); }
 .j-region__icon { width: 56px; height: 56px; border-radius: 16px; background: var(--c); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
 .j-region__icon i { font-size: 1.5rem; }
@@ -144,6 +144,8 @@ async function run() {
 .t-table th { text-align: start; font-size: 0.75rem; color: var(--muted); padding: 0.6rem 1rem; border-bottom: 1px solid var(--line); }
 .t-table td { padding: 0.8rem 1rem; border-bottom: 1px solid var(--line); }
 .t-table tbody tr { cursor: pointer; }
+/* الهاتف: حشو أصغر، والجدول يُمرَّر أفقياً داخل إطاره إن ضاق */
+@media (max-width: 600px) { .t-table { display: block; overflow-x: auto; } .t-table th, .t-table td { padding: 0.55rem 0.6rem; } }
 .t-table tbody tr:hover { background: var(--bg); }
 .sq { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 0.4rem; }
 .num { font-variant-numeric: tabular-nums; color: var(--muted); }

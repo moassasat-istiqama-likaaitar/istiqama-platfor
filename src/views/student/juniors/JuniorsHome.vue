@@ -128,7 +128,7 @@ onMounted(async () => (d.value = await student.refresh()))
 .quest__body span { font-size: 0.78rem; color: var(--c); font-weight: 700; }
 .quest__xp { font-weight: 800; color: #5f9a12; background: #effad9; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.8rem; white-space: nowrap; }
 
-.regions { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem; }
+.regions { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 1rem; }
 .region { display: flex; flex-direction: column; gap: 0.3rem; padding: 1.1rem; border-radius: var(--radius-lg); background: var(--surface); text-decoration: none; color: inherit; box-shadow: var(--shadow); border-top: 6px solid var(--c); transition: transform 0.15s; }
 .region:hover { transform: translateY(-3px); }
 .region__head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; }

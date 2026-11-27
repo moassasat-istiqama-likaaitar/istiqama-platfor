@@ -106,7 +106,7 @@ const homePhase = computed(() => {
 .stat span { font-size: 0.78rem; opacity: 0.9; }
 .note { margin: 1.25rem 0; }
 .section-title { font-size: 1.05rem; margin: 1.5rem 0 0.75rem; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 0.85rem; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); gap: 0.85rem; }
 .tile {
   display: flex;
   flex-direction: column;

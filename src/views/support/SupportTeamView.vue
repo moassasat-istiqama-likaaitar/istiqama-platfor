@@ -35,7 +35,7 @@ async function add(v) {
 </script>
 
 <style scoped>
-.team { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.85rem; }
+.team { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 0.85rem; }
 .mb { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.3rem; position: relative; }
 .av { width: 56px; height: 56px; border-radius: 50%; background: color-mix(in srgb, var(--brand) 14%, #fff); color: var(--brand); display: grid; place-items: center; font-size: 1.4rem; font-weight: 800; box-shadow: 0 0 0 3px #fff, 0 0 0 5px #b8c0cc; }
 .av.online { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #17a077; }

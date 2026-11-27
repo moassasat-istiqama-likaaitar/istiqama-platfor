@@ -60,7 +60,7 @@ async function run(e) {
 </script>
 
 <style scoped>
-.ex { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.85rem; margin-bottom: 1rem; }
+.ex { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr)); gap: 0.85rem; margin-bottom: 1rem; }
 .card { display: flex; flex-direction: column; gap: 0.35rem; align-items: flex-start; }
 .card > i { font-size: 1.5rem; color: var(--brand); }
 .card .p-button { margin-top: 0.4rem; }

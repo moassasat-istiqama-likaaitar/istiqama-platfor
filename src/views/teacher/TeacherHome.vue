@@ -86,7 +86,7 @@ watch(() => auth.activeAssignmentId, async () => (d.value = await teacherHome(au
 .av.warn { background: #fdeeee; color: #b42318; }
 .av.ic { border-radius: 10px; }
 .go { margin-inline-start: auto; font-size: 0.82rem; font-weight: 700; color: #fff; background: var(--brand); padding: 0.3rem 0.8rem; border-radius: 8px; text-decoration: none; }
-.classes { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0.75rem; }
+.classes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(230px, 100%), 1fr)); gap: 0.75rem; }
 .cl { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.9rem; border: 1px solid var(--line); border-radius: 12px; text-decoration: none; color: inherit; }
 .cl:hover { border-color: var(--brand); }
 .cl__bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 0.4rem; }

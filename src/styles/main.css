@@ -168,3 +168,8 @@ a { color: inherit; }
 @media (max-width: 600px) {
   .p-toast { left: 0.75rem !important; right: auto !important; width: calc(100vw - 1.5rem) !important; max-width: none; transform: none !important; }
 }
+
+/* الأزرار والتبويبات لا ينكسر نصها على سطرين؛ والمجموعات تنتقل إلى سطر جديد بدل الخروج عن إطارها */
+.p-button, .p-tab, .p-togglebutton { white-space: nowrap; }
+.p-selectbutton { flex-wrap: wrap; max-width: 100%; }
+.p-selectbutton .p-togglebutton { flex: 1 1 auto; }

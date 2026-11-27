@@ -90,7 +90,7 @@ const visible = computed(() => grouped.value[tab.value])
 .sa__tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .sa--kids .pill { font-size: 1.05rem; padding: 0.55rem 1.2rem; }
 
-.k-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 1rem; }
+.k-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(190px, 100%), 1fr)); gap: 1rem; }
 .k-card { display: flex; flex-direction: column; align-items: center; gap: 0.35rem; padding: 1.3rem 0.8rem; border-radius: 28px; background: var(--surface); text-align: center; text-decoration: none; color: var(--ink); box-shadow: var(--shadow); border-bottom: 7px solid var(--c); }
 .k-card__icon { width: 70px; height: 70px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; }
 .k-card__icon i { font-size: 1.8rem; }

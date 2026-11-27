@@ -89,7 +89,7 @@ h1 { margin: 0; font-family: var(--font-display); }
 .row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
 .q { flex: 1; min-width: 180px; }
 .empty { text-align: center; padding: 3rem; color: var(--p-text-muted-color); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 0.8rem; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(210px, 100%), 1fr)); gap: 0.8rem; }
 .card { text-align: start; border: 1px solid var(--line); background: var(--surface); border-radius: 16px; padding: 1rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.35rem; font: inherit; color: inherit; border-top: 4px solid var(--c); }
 .card:hover { box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08); }
 .card__ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 15%, transparent); color: var(--c); font-size: 1.2rem; }
@@ -97,7 +97,7 @@ h1 { margin: 0; font-family: var(--font-display); }
 .tag { align-self: flex-start; font-size: 0.72rem; background: #f0f2f6; padding: 0.1rem 0.5rem; border-radius: 999px; }
 .sl--kids .card { border-radius: 24px; border-top-width: 6px; align-items: center; text-align: center; }
 .sl--kids .card__ic { width: 64px; height: 64px; font-size: 1.8rem; border-radius: 20px; }
-.sl--kids .grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.sl--kids .grid { grid-template-columns: repeat(auto-fill, minmax(min(180px, 100%), 1fr)); }
 .sl--teens .card { border-top: 0; border-inline-start: 4px solid var(--c); }
 .go { display: inline-flex; gap: 0.4rem; margin-top: 0.8rem; color: var(--brand); font-weight: 700; text-decoration: none; }
 </style>

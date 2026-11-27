@@ -16,7 +16,7 @@ defineProps({ items: { type: Array, default: () => [] } })
 </script>
 
 <style scoped>
-.tiles-s { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.85rem; margin-bottom: 1.25rem; }
+.tiles-s { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr)); gap: 0.85rem; margin-bottom: 1.25rem; }
 .ts { display: flex; align-items: center; gap: 0.85rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 1rem; text-decoration: none; color: inherit; transition: border-color 0.15s; }
 a.ts:hover { border-color: var(--brand); }
 .ts__icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 1.15rem; flex-shrink: 0; }

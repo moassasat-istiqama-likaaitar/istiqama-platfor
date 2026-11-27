@@ -251,7 +251,7 @@ const fmt = (iso) => new Date(iso).toLocaleDateString('ar-DZ', { day: 'numeric',
 .chk.ok { color: #146c3c; }
 .chk.warn { color: #a15c00; }
 
-.covers { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.6rem; }
+.covers { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(120px, 100%), 1fr)); gap: 0.6rem; }
 .cover { position: relative; height: 72px; border-radius: 12px; border: 3px solid transparent; background-size: cover; background-position: center; cursor: pointer; padding: 0; display: flex; align-items: flex-end; overflow: hidden; box-shadow: 0 0 0 1px var(--line); }
 .cover span { position: relative; width: 100%; padding: 0.2rem 0.5rem; font-size: 0.78rem; font-weight: 700; color: #fff; background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent); text-align: start; }
 .cover.on { border-color: var(--ink); }
