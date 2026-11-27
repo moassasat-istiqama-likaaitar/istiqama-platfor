@@ -1,15 +1,18 @@
 <template>
-  <!-- الإدراج في القسم: في أي قسم (أو المستوى كله للمحرر)، وفي أي درس (أو بلا درس)، وآخر أجل للأنشطة -->
+  <!-- الإدراج في القسم: في أي قسم (أو المستوى كله للمحرر)، وفي أي درس (أو بلا درس)، وآخر أجل للواجبات والتقييمات.
+       يمكن ربط عنصر من مستوى آخر بدرس من مستوى القسم (مثلاً محتوى الرابعة في درس من الثالثة). -->
   <Dialog :visible="visible" modal :header="`إدراج: ${item?.title || ''}`" :style="{ width: 'min(560px, 95vw)' }" @update:visible="$emit('update:visible', $event)">
     <div v-if="item" class="ld">
       <label class="fl"><span>{{ tg.isEditor.value ? 'أين؟ (المستوى كقسم واحد أو قسم بعينه)' : 'في أي قسم؟' }}</span>
-        <MultiSelect v-model="targets" :options="targetOpts" option-label="label" option-value="value" display="chip" placeholder="اختر" fluid />
-        <small v-if="!targetOpts.length" class="warn">لا أقسام لك في مستوى هذا العنصر ({{ item.levelName || item.level?.name }}).</small>
+        <MultiSelect v-model="targets" :options="targetOpts" option-label="label" option-value="value" option-disabled="disabled" display="chip" placeholder="اختر" fluid />
+        <small v-if="!targetOpts.length" class="warn">لا أقسام لك.</small>
+        <small v-else-if="multiLevel" class="muted">أقسام من مستوى واحد في كل إدراج، لأن لكل مستوى دروسه.</small>
       </label>
       <label class="fl"><span>في أي درس تريد إدراجه؟</span>
-        <Select v-model="lessonId" placeholder="— بلا درس —" :options="lessonOpts" option-label="label" option-value="value" option-disabled="disabled" filter fluid />
+        <Select v-model="lessonId" :placeholder="targetLevel ? '— بلا درس —' : 'اختر القسم أولاً'" :disabled="!targetLevel" :options="lessonGroups" option-label="label" option-value="value" option-disabled="disabled" option-group-label="label" option-group-children="items" filter fluid />
         <small class="muted">«بلا درس»: يظهر في مكتبة القسم فقط، ويجده التلميذ بالتصفية. الدروس المقفلة لم يفتحها المحرر بعد.</small>
       </label>
+      <p v-if="cross" class="note note--cross"><i class="pi pi-arrows-h" /> هذا العنصر من مستوى <b>{{ levelName(itemLevel) }}</b>، وسيُربط بدرس من <b>{{ levelName(targetLevel) }}</b>. يظهر للتلاميذ حين يُفتح الدرس الذي تختاره.</p>
       <label v-if="kind === 'activity'" class="fl"><span>آخر أجل للتسليم</span><InputText v-model="due" type="datetime-local" fluid /></label>
       <p v-if="tg.isEditor.value && targets.some((t) => t.startsWith('L:'))" class="note"><i class="pi pi-lock" /> ما تدرجه على المستوى يصل كل أقسامه ويكون <b>إجبارياً</b>: لا يستطيع المعلم إزالته.</p>
     </div>
@@ -43,17 +46,37 @@ const targets = ref([])
 const lessonId = ref(null)
 const due = ref('')
 const busy = ref(false)
-const levelId = computed(() => props.item?.levelId || props.item?.level?.id)
-const targetOpts = computed(() => tg.options(levelId.value))
+const itemLevel = computed(() => props.item?.levelId || props.item?.level?.id)
 const subjectId = computed(() => props.item?.subjectId || props.item?.subject?.id)
-const lessonOpts = computed(() => [{ label: '— بلا درس (عام للقسم) —', value: null }, ...cat.linkLessonOptions(subjectId.value)])
+const levelName = (id) => cat.levels.find((l) => l.id === id)?.name || ''
+// كل أقسام المعلم (أو مستويات المحرر)، لا أقسام مستوى العنصر فقط
+const allTargets = computed(() => tg.options(null))
+const multiLevel = computed(() => new Set(allTargets.value.map((o) => tg.levelOf(o.value))).size > 1)
+// مستوى الإدراج = مستوى أول قسم مختار؛ أقسام المستويات الأخرى تُعطَّل
+const targetLevel = computed(() => (targets.value.length ? tg.levelOf(targets.value[0]) : null))
+const targetOpts = computed(() => allTargets.value.map((o) => ({ ...o, disabled: !!targetLevel.value && tg.levelOf(o.value) !== targetLevel.value })))
+const cross = computed(() => !!targetLevel.value && targetLevel.value !== itemLevel.value)
+// دروس مستوى القسم المختار، مجمّعة حسب المادة، ومادة العنصر أولاً
+const itemSubjectName = computed(() => cat.subjects.find((x) => x.id === subjectId.value)?.name)
+const lessonGroups = computed(() => {
+  if (!targetLevel.value) return []
+  const subs = cat.subjects.filter((x) => x.levelId === targetLevel.value).sort((a, b) => (b.name === itemSubjectName.value) - (a.name === itemSubjectName.value) || (a.order ?? 0) - (b.order ?? 0))
+  return [{ label: 'عام', items: [{ label: '— بلا درس (عام للقسم) —', value: null }] }, ...subs.map((x) => ({ label: x.name, items: cat.linkLessonOptions(x.id) })).filter((g) => g.items.length)]
+})
+const openLesson = (id) => lessonGroups.value.some((g) => g.items.some((o) => o.value === id && !o.disabled))
 watch(() => props.visible, (v) => {
   if (!v) return
-  targets.value = targetOpts.value.length === 1 ? [targetOpts.value[0].value] : []
-  const want = props.item?.lessonId || props.item?.lesson?.id || null
-  lessonId.value = lessonOpts.value.find((o) => o.value === want && !o.disabled) ? want : null
+  const same = allTargets.value.filter((o) => tg.levelOf(o.value) === itemLevel.value)
+  targets.value = allTargets.value.length === 1 ? [allTargets.value[0].value] : same.length === 1 ? [same[0].value] : []
   due.value = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 16)
+  pickLesson(targetLevel.value)
 })
+// درس العنصر نفسه إن كان الإدراج في مستواه، وإلا بلا درس حتى يختار المعلم
+function pickLesson(lv) {
+  const want = props.item?.lessonId || props.item?.lesson?.id || null
+  lessonId.value = lv && lv === itemLevel.value && want && openLesson(want) ? want : null
+}
+watch(targetLevel, pickLesson)
 async function save() {
   busy.value = true
   try {
@@ -75,4 +98,10 @@ async function save() {
 .fl > span { font-weight: 700; font-size: 0.88rem; }
 .warn { color: #a15c00; }
 .note { margin: 0; padding: 0.6rem 0.8rem; background: #fff6e0; border-radius: 10px; font-size: 0.86rem; }
+.note--cross { background: #eaf1ff; }
+</style>
+
+<style>
+/* عناوين المجموعات في قوائم الاختيار (المادة فوق دروسها) */
+.p-select-option-group { font-weight: 700; color: var(--p-primary-color); }
 </style>

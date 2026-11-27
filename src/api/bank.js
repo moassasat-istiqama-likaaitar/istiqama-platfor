@@ -139,9 +139,11 @@ export function classContentItems(classId) {
   const okLesson = (l) => !l || !l.gender || l.gender === c.gender
   const out = new Map()
   const add = (item, extra) => {
-    const l = item.lessonId ? lessonOf(extra.lessonId ?? item.lessonId) : null
+    // المربوط من مستوى آخر يأخذ درس القسم المختار فقط (أو بلا درس)، لا درسه الأصلي
+    const lid = extra.cross ? extra.lessonId : (extra.lessonId ?? item.lessonId)
+    const l = lid ? lessonOf(lid) : null
     if (!okLesson(l)) return
-    const key = `${item.id}@${extra.lessonId ?? item.lessonId ?? 'none'}`
+    const key = `${item.id}@${lid ?? 'none'}`
     if (!out.has(key)) out.set(key, { ...item, ...extra })
   }
   // محتوى المؤسسة في المكتبة (المعتمد) أساسي لكل أقسام المستوى
@@ -155,7 +157,7 @@ export function classContentItems(classId) {
   })
   linksForClass(classId, 'content').forEach((l) => {
     const item = findContent(l.itemId)
-    if (item) add(item, { source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, lessonId: l.lessonId, linkId: l.id, linkedBy: l.byName })
+    if (item) add(item, { source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, lessonId: l.lessonId, linkId: l.id, linkedBy: l.byName, ...crossExtra(item, c.levelId, l.lessonId) })
   })
   return [...out.values()].map((x) => decorate(x))
 }
@@ -170,12 +172,22 @@ export function classActivityItems(classId) {
     if (!a || out.some((x) => x.id === a.id)) return
     // لا يصل التلميذَ إلا ما صودق عليه: المعتمد، أو المؤقت في أقسام صاحبه
     const visible = a.origin === 'platform' || a.status === 'approved' || (a.status === 'temp' && teacherIdsOf(classId).includes(a.authorId))
-    out.push({ ...a, lessonId: l.lessonId ?? a.lessonId, due: l.due || a.due, source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, linkId: l.id, linkedBy: l.byName, visibleToStudents: visible, temp: a.status === 'temp', ownerId: a.authorId })
+    out.push({ ...a, lessonId: l.lessonId ?? a.lessonId, due: l.due || a.due, source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, linkId: l.id, linkedBy: l.byName, visibleToStudents: visible, temp: a.status === 'temp', ownerId: a.authorId, ...crossExtra(a, c.levelId, l.lessonId) })
   })
   return out.filter((a) => {
     const l = a.lessonId && lessonOf(a.lessonId)
     return !l || !l.gender || l.gender === c.gender
   })
+}
+
+/**
+ * عنصر من مستوى آخر رُبط بدرس من مستوى القسم (مثلاً محتوى الرابعة في درس من الثالثة):
+ * يأخذ درس القسم المختار (أو بلا درس) ومادّته، ويُوسم «من مستوى آخر» للمعلم والمحرر.
+ */
+function crossExtra(item, levelId, lessonId) {
+  if (!item?.levelId || item.levelId === levelId) return {}
+  const l = lessonId ? lessonOf(lessonId) : null
+  return { cross: true, lessonId: lessonId || null, ...(l ? { subjectId: l.subjectId } : {}) }
 }
 
 function decorate(x) {
@@ -208,13 +220,13 @@ export function levelLibrary(levelId) {
     const lk = links().all().filter((l) => l.scope === 'level' && l.levelId === levelId)
     lk.filter((l) => l.itemKind === 'content').forEach((l) => {
       const it = findContent(l.itemId)
-      if (it) cts.push(decorate({ ...it, lessonId: l.lessonId, source: 'level', mandatory: true, linkId: l.id, linkedBy: l.byName }))
+      if (it) cts.push(decorate({ ...it, lessonId: l.lessonId, source: 'level', mandatory: true, linkId: l.id, linkedBy: l.byName, ...crossExtra(it, levelId, l.lessonId) }))
     })
     uploads().all().filter((u) => u.status === 'approved' && u.essential && u.levelId === levelId).forEach((u) => cts.push(decorate({ ...normUpload(u), source: 'essential', mandatory: true })))
     const acts = activities.filter((a) => a.levelId === levelId).map((a) => decorate({ ...normActivity(a), classification: 'activity', source: 'essential', mandatory: true }))
     lk.filter((l) => l.itemKind === 'activity').forEach((l) => {
       const a = findActivity(l.itemId)
-      if (a) acts.push(decorate({ ...a, classification: 'activity', lessonId: l.lessonId ?? a.lessonId, due: l.due, source: 'level', mandatory: true, linkId: l.id }))
+      if (a) acts.push(decorate({ ...a, classification: 'activity', lessonId: l.lessonId ?? a.lessonId, due: l.due, source: 'level', mandatory: true, linkId: l.id, ...crossExtra(a, levelId, l.lessonId) }))
     })
     return { contents: cts, activities: acts }
   })

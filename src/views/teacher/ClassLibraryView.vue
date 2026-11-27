@@ -38,6 +38,7 @@
           <span v-if="it.mandatory" class="bd bd--lock"><i class="pi pi-lock" /> {{ it.source === 'level' ? 'إجباري للمستوى' : 'أساسي' }}</span>
           <span v-else-if="it.source === 'link'" class="bd bd--link"><i class="pi pi-link" /> أدرجته</span>
           <span v-if="it.source === 'mine'" class="bd bd--mine"><i class="pi pi-user" /> من رفعي</span>
+          <span v-if="it.cross" class="bd bd--cross" title="عنصر من مستوى آخر رُبط بدرس من هذا المستوى"><i class="pi pi-arrows-h" /> من {{ it.levelName }}</span>
           <span v-if="it.temp" class="bd bd--temp"><i class="pi pi-hourglass" /> مؤقت</span>
           <span v-if="it.isAct && it.visibleToStudents === false" class="bd bd--wait" title="لا يراه التلاميذ حتى يصادق عليه المدير أو يعتمده المحرر"><i class="pi pi-eye-slash" /> بانتظار المصادقة</span>
         </span>
@@ -144,6 +145,7 @@ async function unlink(it) {
 .cc small { font-size: 0.76rem; }
 .cnt { font-size: 0.8rem; color: var(--p-text-muted-color); }
 .badges { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+.bd--cross { background: #eaf1ff; color: #2b4a8b; }
 .bd { font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 999px; white-space: nowrap; }
 .bd--lock { background: #eef1f6; color: #3d4a5c; }
 .bd--link { background: #e8f3ff; color: #1d5fa8; }
