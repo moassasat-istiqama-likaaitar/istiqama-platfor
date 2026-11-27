@@ -30,6 +30,7 @@
           <Button v-if="s.status === 'active'" label="بدء الإقفال" icon="pi pi-lock" text size="small" severity="warn" @click="closing(s, true)" />
           <Button v-if="s.status === 'closing'" label="إلغاء الإقفال" icon="pi pi-undo" text size="small" @click="closing(s, false)" />
           <Button v-if="s.status === 'archived' && !s.reopened" label="إعادة فتح مؤقت للتصحيح" icon="pi pi-unlock" text size="small" severity="secondary" @click="openReopen(s)" />
+          <Button v-if="s.reopened" label="تمديد" icon="pi pi-clock" text size="small" @click="openExtend(s)" />
           <Button v-if="s.reopened" label="إنهاء الفتح المؤقت" icon="pi pi-lock" text size="small" @click="endRe(s)" />
         </footer>
       </article>
@@ -115,17 +116,25 @@
       </template>
     </Dialog>
 
+    <!-- تمديد الفتح المؤقت -->
+    <Dialog v-model:visible="ext.open" modal header="تمديد الفتح المؤقت" :style="{ width: 'min(420px, 95vw)' }">
+      <p class="muted small">مفتوح حالياً حتى {{ ext.season?.reopen && fmtTime(ext.season.reopen.until) }}. تُضاف المدة إلى هذا الموعد، ويُسجَّل التمديد.</p>
+      <label class="fl"><span>أضف</span><Select v-model="ext.hours" :options="DURATIONS" option-label="label" option-value="value" fluid /></label>
+      <template #footer><Button label="إلغاء" text severity="secondary" @click="ext.open = false" /><Button label="تمديد" icon="pi pi-clock" @click="extend" /></template>
+    </Dialog>
+
     <!-- إعادة الفتح المؤقت -->
     <Dialog v-model:visible="re.open" modal header="إعادة فتح مؤقت للتصحيح" :style="{ width: 'min(560px, 95vw)' }">
       <p class="muted small">يُفتح الموسم {{ re.season?.name }} مدةً محددة لمدارس وأشخاص بعينهم، ثم يعود مؤرشفاً تلقائياً. يُعدَّل فيه: العلامات وكشوف النقاط وقرارات الترقية فقط؛ المراسلات تبقى للقراءة. كل دخول وتعديل مسجَّل.</p>
-      <label class="fl"><span>المدارس *</span><MultiSelect v-model="re.schoolIds" :options="cat.schoolOptions" option-label="label" option-value="value" display="chip" filter fluid placeholder="اختر المدرسة أو المدارس" /></label>
       <div class="fl"><span>من يعدّل</span>
         <SelectButton v-model="re.editors" :options="EDITORS" option-label="label" option-value="value" :allow-empty="false" class="eds" />
       </div>
+      <label class="fl"><span>المدارس {{ re.editors === 'admins' ? '(اختياري — الفراغ يعني كل المدارس)' : '*' }}</span><MultiSelect v-model="re.schoolIds" :options="cat.schoolOptions" option-label="label" option-value="value" display="chip" filter fluid placeholder="اختر المدرسة أو المدارس" /></label>
       <label v-if="re.editors === 'manager_teachers'" class="fl"><span>الأقسام (معلموها يعدّلون) *</span><MultiSelect v-model="re.classIds" :options="reClassOpts" option-label="label" option-value="value" display="chip" filter fluid :disabled="!re.schoolIds.length" /></label>
       <label class="fl"><span>السبب *</span><Textarea v-model="re.reason" rows="2" auto-resize fluid placeholder="مثال: تصحيح علامة تلميذ في كشف السداسي الثاني" /></label>
-      <label class="fl"><span>المدة</span><Select v-model="re.hours" :options="[{ label: '24 ساعة', value: 24 }, { label: '48 ساعة', value: 48 }, { label: '7 أيام', value: 168 }]" option-label="label" option-value="value" fluid /></label>
-      <template #footer><Button label="إلغاء" text severity="secondary" @click="re.open = false" /><Button label="فتح للتصحيح" icon="pi pi-unlock" :disabled="!re.reason.trim() || !re.schoolIds.length || (re.editors === 'manager_teachers' && !re.classIds.length)" @click="reopen" /></template>
+      <label class="fl"><span>المدة</span><Select v-model="re.hours" :options="DURATIONS" option-label="label" option-value="value" fluid /></label>
+      <p class="muted small">يمكن تمديد المدة لاحقاً من بطاقة الموسم دون إعادة الفتح.</p>
+      <template #footer><Button label="إلغاء" text severity="secondary" @click="re.open = false" /><Button label="فتح للتصحيح" icon="pi pi-unlock" :disabled="!re.reason.trim() || (re.editors !== 'admins' && !re.schoolIds.length) || (re.editors === 'manager_teachers' && !re.classIds.length)" @click="reopen" /></template>
     </Dialog>
   </div>
 </template>
@@ -145,7 +154,7 @@ import FormDialog from '@/components/ui/FormDialog.vue'
 import StatusTag from '@/components/ui/StatusTag.vue'
 import { useAuthStore } from '@/stores/auth'
 import { fullName } from '@/api/people'
-import { listSeasons, createSeason, updateSeason, setClosing, promotionPreview, launchSeason, reopenSeason, endReopen, ARCHIVE_SCOPE, SEMESTER_NAMES, ARCHIVE_ROLES, ARCHIVE_DATA, DEFAULT_ARCHIVE_MATRIX, archiveMatrix, saveArchiveMatrix } from '@/api/admin'
+import { listSeasons, createSeason, updateSeason, setClosing, promotionPreview, launchSeason, reopenSeason, extendReopen, endReopen, ARCHIVE_SCOPE, SEMESTER_NAMES, ARCHIVE_ROLES, ARCHIVE_DATA, DEFAULT_ARCHIVE_MATRIX, archiveMatrix, saveArchiveMatrix } from '@/api/admin'
 import MultiSelect from 'primevue/multiselect'
 import SelectButton from 'primevue/selectbutton'
 import { useCatalog } from '@/composables/useCatalog'
@@ -236,13 +245,29 @@ async function launch() {
 
 const cat = useCatalog()
 const season = useSeasonStore()
-const EDITORS = [{ label: 'المدير فقط', value: 'manager' }, { label: 'المدير ومعلمو أقسام محددة', value: 'manager_teachers' }]
-const re = reactive({ open: false, season: null, reason: '', hours: 48, schoolIds: [], editors: 'manager', classIds: [] })
-const openReopen = (s) => Object.assign(re, { open: true, season: s, reason: '', hours: 48, schoolIds: [], editors: 'manager', classIds: [] })
+const EDITORS = [{ label: 'الإدارة العامة فقط', value: 'admins' }, { label: 'المدير فقط', value: 'manager' }, { label: 'المدير ومعلمو أقسام محددة', value: 'manager_teachers' }]
+const DURATIONS = [{ label: 'ساعة واحدة', value: 1 }, { label: '3 ساعات', value: 3 }, { label: '24 ساعة', value: 24 }, { label: '48 ساعة', value: 48 }, { label: '7 أيام', value: 168 }]
+const re = reactive({ open: false, season: null, reason: '', hours: 1, schoolIds: [], editors: 'admins', classIds: [] })
+const openReopen = (s) => Object.assign(re, { open: true, season: s, reason: '', hours: 1, schoolIds: [], editors: 'admins', classIds: [] })
+// تمديد الفتح الجاري
+const ext = reactive({ open: false, season: null, hours: 1 })
+const openExtend = (s) => Object.assign(ext, { open: true, season: s, hours: 1 })
+async function extend() {
+  try {
+    await extendReopen(ext.season.id, ext.hours, fullName(auth.person), auth.role)
+    toast.add({ severity: 'success', summary: `مُدّد الفتح ${DURATIONS.find((d) => d.value === ext.hours)?.label}`, life: 2200 })
+    ext.open = false
+    load()
+    season.check()
+  } catch (e) {
+    err(e)
+  }
+}
 const reClassOpts = computed(() => cat.classOptions().filter((c) => re.schoolIds.includes(cat.classes.find((x) => x.id === c.value)?.schoolId)))
 const scopeText = (r) => {
   const sch = (r.schoolIds || []).map((id) => cat.schools.find((x) => x.id === id)?.short || cat.schools.find((x) => x.id === id)?.name).join('، ')
-  return `${sch || '—'} · ${r.editors === 'manager_teachers' ? `المدير ومعلمو ${r.classIds.length} قسم` : 'المدير فقط'}`
+  const who = r.editors === 'admins' ? 'الإدارة العامة فقط' : r.editors === 'manager_teachers' ? `المدير ومعلمو ${r.classIds.length} قسم` : 'المدير فقط'
+  return `${sch || 'كل المدارس'} · ${who}`
 }
 const clone = (o) => JSON.parse(JSON.stringify(o))
 const avm = reactive(clone(archiveMatrix()))

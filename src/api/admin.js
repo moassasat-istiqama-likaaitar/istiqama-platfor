@@ -165,19 +165,29 @@ export function launchSeason(id, { promotion = [], copyClasses = true, proposeAs
 }
 /**
  * POST /api/seasons/:id/reopen — إعادة فتح مؤقت وموجَّه للتصحيح (يُسجَّل):
- * schoolIds: المدارس المعنية · editors: 'manager' (المدير فقط) أو 'manager_teachers' (المدير ومعلمو أقسام محددة) · classIds.
+ * schoolIds: المدارس المعنية · editors: 'admins' (الإدارة العامة فقط، المدارس اختيارية: الفراغ = كلها) أو 'manager' (المدير فقط) أو 'manager_teachers' (المدير ومعلمو أقسام محددة) · classIds.
  * ما يُعدَّل: العلامات وكشوف النقاط وقرارات الترقية. المراسلات تبقى للقراءة دائماً.
  */
 export function reopenSeason(id, { reason, hours = 48, schoolIds = [], editors = 'manager', classIds = [] }, by, role) {
   return respond(() => {
     if (!ADMINS.includes(role)) throw new ApiError('forbidden', 'إعادة الفتح من صلاحية الإدارة العامة')
     if (!reason?.trim()) throw new ApiError('required', 'سبب إعادة الفتح إجباري')
-    if (!schoolIds.length) throw new ApiError('required', 'اختر مدرسة واحدة على الأقل')
+    if (editors !== 'admins' && !schoolIds.length) throw new ApiError('required', 'اختر مدرسة واحدة على الأقل')
     if (editors === 'manager_teachers' && !classIds.length) throw new ApiError('required', 'اختر الأقسام التي يعدّل معلموها')
     const until = new Date(Date.now() + hours * 36e5).toISOString()
     const s = seasonCol.find(id)
     const scope = { schoolIds, editors, classIds: editors === 'manager_teachers' ? classIds : [] }
     return seasonCol.update(id, { reopen: { reason, until, by, at: new Date().toISOString(), ...scope }, reopenLog: [...(s.reopenLog || []), { reason, hours, by, at: new Date().toISOString(), ...scope }] })
+  })
+}
+/** POST /api/seasons/:id/reopen/extend { hours } — تمديد الفتح المؤقت الجاري (يُسجَّل) */
+export function extendReopen(id, hours, by, role) {
+  return respond(() => {
+    if (!ADMINS.includes(role)) throw new ApiError('forbidden', 'التمديد من صلاحية الإدارة العامة')
+    const s = decorateSeason(seasonCol.find(id))
+    if (!s.reopened) throw new ApiError('state', 'الموسم غير مفتوح حالياً')
+    const until = new Date(new Date(s.reopen.until).getTime() + hours * 36e5).toISOString()
+    return seasonCol.update(id, { reopen: { ...s.reopen, until }, reopenLog: [...(s.reopenLog || []), { reason: `تمديد ${hours} ساعة`, hours, by, at: new Date().toISOString(), extend: true }] })
   })
 }
 export function endReopen(id) {
@@ -190,6 +200,7 @@ export function editableSeasons(given) {
   return seasonCol.all().map(decorateSeason).filter((s) => s.reopened).filter((s) => {
     const r = s.reopen
     if (ADMINS.includes(assignment.role)) return true
+    if (r.editors === 'admins') return false
     if (!r.schoolIds?.includes(assignment.schoolId)) return false
     if (assignment.role === 'school_manager') return true
     return assignment.role === 'teacher' && r.editors === 'manager_teachers' && (assignment.classIds || []).some((c) => r.classIds.includes(c))
