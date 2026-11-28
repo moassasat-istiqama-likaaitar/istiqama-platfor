@@ -80,26 +80,6 @@ export function classTeacherIds(classId) {
   return assignments.filter((a) => a.role === 'teacher' && a.classIds?.includes(classId)).map((a) => a.personId)
 }
 
-/** GET /api/schools/:id/pending-accounts → حسابات بانتظار التفعيل (تلاميذ، أولياء، معلمون) */
-export function pendingAccounts(schoolId) {
-  return respond(() => {
-    const out = []
-    const seen = new Set()
-    const push = (pid, role, detail) => {
-      const p = personOf(pid)
-      if (!p || p.status !== 'pending' || seen.has(pid)) return
-      seen.add(pid)
-      out.push({ id: pid, name: fullName(p), role, detail, phone: p.phone || '—', requestedAt: new Date(Date.now() - ((pid.charCodeAt(pid.length - 1) % 9) + 1) * 864e5).toISOString() })
-    }
-    schoolStudents(schoolId).forEach((a) => push(a.personId, 'student', classes.find((c) => c.id === a.classId)?.name))
-    schoolTeachers(schoolId).forEach((a) => push(a.personId, 'teacher', (a.subjects || []).join('، ')))
-    assignments.filter((a) => a.role === 'parent').forEach((a) => {
-      const kid = a.childIds?.find((cid) => schoolStudents(schoolId).some((s) => s.personId === cid))
-      if (kid) push(a.personId, 'parent', `ولي ${personOf(kid)?.firstName}`)
-    })
-    return out
-  })
-}
 
 /** GET /api/schools/:id/content-follow → استهلاك المحتوى حسب القسم والمادة */
 export function contentFollow(schoolId) {

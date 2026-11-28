@@ -88,9 +88,15 @@
         <div class="pv__kw"><span v-for="k in preview.item.keywords" :key="k" class="chip"># {{ k }}</span></div>
       </div>
       <template #footer>
+        <StarRate v-if="auth.role === 'teacher' && preview.item" class="me-auto" label="تقديرك لتصميمه" :model-value="myStars" @update:model-value="rateItem" />
+        <Button v-if="isTop(auth.role)" label="حذف من المكتبة" icon="pi pi-trash" text severity="danger" @click="delOpen = true" />
         <Button :label="t('common.close')" text severity="secondary" @click="preview.open = false" />
         <Button v-if="['teacher', 'editor'].includes(auth.role) && ['approved', 'temp'].includes(preview.item.status)" :label="t('library.addToClass')" icon="pi pi-plus" @click="add" />
       </template>
+    </Dialog>
+    <Dialog v-model:visible="delOpen" modal header="حذف من المكتبة المركزية" :style="{ width: 'min(440px, 95vw)' }">
+      <p>سيُحذف «{{ preview.item?.title }}» من المكتبة المركزية، ويختفي من كل الأقسام التي أُدرج فيها. الحذف من صلاحية الإدارة العامة وحدها، ويُسجَّل.</p>
+      <template #footer><Button label="إلغاء" text severity="secondary" @click="delOpen = false" /><Button label="حذف" icon="pi pi-trash" severity="danger" @click="doDelete" /></template>
     </Dialog>
     <LinkDialog v-model:visible="linkOpen" :item="linkItem" :kind="linkItem && ['quiz', 'homework'].includes(linkItem.type) ? 'activity' : 'content'" />
   </div>
@@ -113,6 +119,10 @@ import * as libraryApi from '@/api/library'
 import { useAuthStore } from '@/stores/auth'
 import { classes as classesAll } from '@/mock/db'
 import LinkDialog from '@/components/library/LinkDialog.vue'
+import { isTop } from '@/config/roles'
+import StarRate from '@/components/ui/StarRate.vue'
+import { rate, myRating } from '@/api/ratings'
+import { fullName } from '@/api/people'
 
 const { t } = useI18n()
 const toast = useToast()
@@ -147,12 +157,31 @@ function reload() {
     items.value = await libraryApi.list({ ...f }, { curator: curator.value })
   }, 150)
 }
+// تقدير المعلم لتصميم المحتوى
+const myStars = ref(0)
+async function rateItem(n) {
+  myStars.value = n
+  await rate(preview.item.id, 'content', auth.person.id, 'teacher', n)
+}
+const delOpen = ref(false)
+async function doDelete() {
+  try {
+    await libraryApi.removeFromLibrary(preview.item.id, auth.role, fullName(auth.person))
+    toast.add({ severity: 'success', summary: 'حُذف من المكتبة', life: 2000 })
+    delOpen.value = false
+    preview.open = false
+    reload()
+  } catch (e) {
+    toast.add({ severity: 'warn', summary: e.message, life: 2800 })
+  }
+}
 function reset() {
   Object.assign(f, { q: '', level: myLevel(), subjectKey: null, lessonId: null, status: null, type: null, classification: null })
   reload()
 }
 function open(c) {
   preview.item = c
+  myStars.value = myRating(c.id, auth.person.id)
   preview.open = true
 }
 // يفتح المعلم/المحرر على مستواه الأول (يغيّره من القائمة)

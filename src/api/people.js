@@ -1,9 +1,12 @@
 import { canGrantRole, canRemoveHolder } from '@/config/roles'
 import { respond, ApiError, newId } from './client'
 import { persons, assignments, classes, schools, levels } from '@/mock/db'
+import { collection } from '@/mock/collections'
+import { PERSON_KEYS } from '@/config/personFields'
 import { subjects, lessons, activities } from '@/mock/content'
 import { progressOf } from '@/mock/progress'
 import { hashStats } from '@/mock/world'
+import { lessonOpenFor } from './bank'
 
 /**
  * الأشخاص والأدوار والمؤشرات — تخدم شاشات المعلم والمدير والإدارة العامة والولي.
@@ -23,13 +26,16 @@ export function studentSnapshot(personId) {
   const pr = progressOf(personId)
   const subs = subjects.filter((s) => s.levelId === lvl.id)
   const ls = lessons.filter((l) => subs.some((s) => s.id === l.subjectId) && (!l.gender || l.gender === g))
-  const done = ls.filter((l) => pr.done.includes(l.id)).length
-  const acts = activities.filter((x) => x.levelId === lvl.id && ls.some((l) => l.id === x.lessonId))
+  // التقدّم على الدروس المفتوحة للقسم حتى اليوم فقط
+  const open = ls.filter((l) => lessonOpenFor(a.classId, l))
+  const done = open.filter((l) => pr.done.includes(l.id)).length
+  const acts = activities.filter((x) => x.levelId === lvl.id && open.some((l) => l.id === x.lessonId))
   const graded = acts.filter((x) => pr.submissions[x.id]?.status === 'graded')
   const avg = graded.length ? graded.reduce((n, x) => n + (pr.submissions[x.id].score / x.maxScore) * 20, 0) / graded.length : null
-  const late = acts.filter((x) => !pr.submissions[x.id] && new Date(x.due) < new Date() && pr.done.includes(x.lessonId)).length
+  // متأخر = كل عمل مُسند فات أجله دون تسليم (سواء أتمّ التلميذ الدرس أم لا)
+  const late = acts.filter((x) => !pr.submissions[x.id] && x.due && new Date(x.due) < new Date()).length
   return {
-    progress: ls.length ? Math.round((done / ls.length) * 100) : 0,
+    progress: open.length ? Math.round((done / open.length) * 100) : 0,
     average: avg === null ? null : Math.round(avg * 10) / 10,
     late,
     done,
@@ -135,7 +141,8 @@ export function createUser(data, actorRole = null) {
     if (actorRole && data.role && !canGrantRole(actorRole, data.role)) throw new ApiError('forbidden', 'إضافة مشرف عام أو مدير عام من صلاحية المدير العام وحده')
     const login = (data.username || '').trim()
     if (login && persons.some((p) => p.username === login)) throw new ApiError('duplicate', 'اسم المستخدم مستعمل')
-    const p = { id: newId('p'), username: login, email: data.email || '', password: '1234', firstName: data.firstName, lastName: data.lastName, gender: data.gender || 'male', phone: data.phone || '', birthDate: data.birthDate || '', status: data.status || 'active', generated: !login }
+    const extra = Object.fromEntries(PERSON_KEYS.filter((k) => data[k] !== undefined).map((k) => [k, data[k]]))
+    const p = { id: newId('p'), username: login, email: '', password: '1234', gender: 'male', phone: '', birthDate: '', ...extra, status: data.status || 'active', generated: !login }
     persons.push(p)
     if (data.role) addAssignmentSync(p.id, data)
     return { id: p.id }
@@ -155,15 +162,26 @@ function addAssignmentSync(personId, d) {
 export function updateUser(id, patch) {
   return respond(() => {
     const p = personOf(id)
-    ;['firstName', 'lastName', 'email', 'phone', 'gender', 'status', 'birthDate'].forEach((k) => patch[k] !== undefined && (p[k] = patch[k]))
+    PERSON_KEYS.forEach((k) => patch[k] !== undefined && (p[k] = patch[k]))
     return true
   })
 }
 
 /** POST /api/users/:id/assignments — إضافة دور لشخص موجود (مثلاً معلم يصبح ولياً) */
-export function addAssignment(personId, data, actorRole = null) {
+/** المدارس التي يرتبط بها الشخص (أدواره، ومدارس أبنائه إن كان ولياً) */
+const schoolsOfPerson = (personId) => new Set(assignments.filter((a) => a.personId === personId).flatMap((a) => (a.role === 'parent' ? (a.childIds || []).map((c) => assignments.find((x) => x.personId === c && x.role === 'student')?.schoolId) : [a.schoolId])).filter(Boolean))
+/**
+ * POST /api/users/:id/assignments — إضافة دور:
+ * المدير: معلم/تلميذ/ولي داخل مدرسته، لشخص لا دور له في مدرسة أخرى.
+ * دور في مدرسة أخرى، والمحرر والمدير والدعم الفني: الإدارة العامة وحدها (يدوياً أو من تنبيه الحسابات المكررة).
+ */
+export function addAssignment(personId, data, actorRole = null, actorSchoolId = null) {
   return respond(() => {
-    if (actorRole && !canGrantRole(actorRole, data.role)) throw new ApiError('forbidden', 'إضافة مشرف عام أو مدير عام من صلاحية المدير العام وحده')
+    if (actorRole && !canGrantRole(actorRole, data.role)) throw new ApiError('forbidden', ['super_admin', 'admin'].includes(data.role) ? 'إضافة مشرف عام أو مدير عام من صلاحية المدير العام وحده' : 'هذا الدور تمنحه الإدارة العامة وحدها')
+    if (actorRole === 'school_manager') {
+      if (data.schoolId && data.schoolId !== actorSchoolId) throw new ApiError('forbidden', 'تضيف الأدوار داخل مدرستك فقط')
+      if ([...schoolsOfPerson(personId)].some((s) => s !== actorSchoolId)) throw new ApiError('forbidden', 'لهذا الشخص دور في مدرسة أخرى: تضيف الإدارة العامة هذا الدور (يدوياً أو من تنبيه الحسابات المكررة)')
+    }
     return addAssignmentSync(personId, data)
   })
 }
@@ -233,4 +251,46 @@ export function classTeachers(classId) {
         return { id: p.id, assignmentId: a.id, name: fullName(p), gender: p.gender, subjects: a.subjects || [], canMessage: !p.generated }
       })
   )
+}
+
+/**
+ * GET /api/report-cards?student=|class= — كشف النقاط من صلاحية المعلم وحده، لتلاميذ أقسامه فقط
+ * (تلميذ واحد، أو كشوف القسم كله للطباعة دفعة واحدة).
+ */
+export function reportCardTargets({ studentId, classId }, assignment) {
+  return respond(() => {
+    const raw = assignments.find((x) => x.id === assignment?.id) || assignment
+    if (raw?.role !== 'teacher') throw new ApiError('forbidden', 'كشف النقاط من صلاحية المعلم')
+    const mine = raw.classIds || []
+    const studs = assignments.filter((a) => a.role === 'student' && mine.includes(a.classId) && (classId ? a.classId === classId : a.personId === studentId))
+    return studs.map((a) => {
+      const c = classes.find((x) => x.id === a.classId)
+      const l = levels.find((x) => x.id === c?.levelId)
+      return { id: a.personId, name: fullName(personOf(a.personId)), className: c?.name, levelId: l?.id, levelName: l?.name }
+    })
+  })
+}
+
+/* ——— صلاحية الإدراج خارج الأقسام: يمنحها مدير المدرسة (لأقسام مدرسته) أو الإدارة العامة (لأي قسم) ——— */
+const linkGrants = collection('linkGrants', [])
+/** الأقسام الإضافية التي يحق لهذا المعلم الإدراج فيها */
+export const grantedClassIds = (personId) => linkGrants.find(personId)?.classIds || []
+export function getLinkGrant(personId) {
+  return respond(() => linkGrants.find(personId) || { id: personId, classIds: [] })
+}
+/** PUT /api/teachers/:id/link-grant { classIds } */
+export function setLinkGrant(personId, classIds, actor) {
+  return respond(() => {
+    const top = ['super_admin', 'admin'].includes(actor.role)
+    if (!top && actor.role !== 'school_manager') throw new ApiError('forbidden', 'منح الصلاحية للمدير أو الإدارة العامة')
+    const own = assignments.find((a) => a.personId === personId && a.role === 'teacher')?.classIds || []
+    let keep = classIds.filter((c) => !own.includes(c))
+    if (!top) {
+      // المدير يمنح أقسام مدرسته فقط، ولا يمسّ ما منحته الإدارة العامة في مدارس أخرى
+      const outside = grantedClassIds(personId).filter((c) => classes.find((x) => x.id === c)?.schoolId !== actor.schoolId)
+      keep = [...outside, ...keep.filter((c) => classes.find((x) => x.id === c)?.schoolId === actor.schoolId)]
+    }
+    const row = { id: personId, classIds: [...new Set(keep)], by: actor.name, at: new Date().toISOString() }
+    return linkGrants.find(personId) ? linkGrants.update(personId, row) : linkGrants.insert(row)
+  })
 }

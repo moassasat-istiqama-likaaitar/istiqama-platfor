@@ -1,7 +1,7 @@
 <template>
-  <!-- C07: الإعلانات — ما وصل المستخدم من إعلانات إدارة مدرسته والإدارة العامة (باتجاه واحد، بلا رد). تُفتح من الجرس -->
+  <!-- C07: الإعلانات — ما وصل المستخدم من إعلانات إدارة مدرسته والإدارة العامة (باتجاه واحد، بلا رد). تُفتح من رمز الإعلانات بجانب الجرس -->
   <div>
-    <PageHeader title="الإعلانات" subtitle="إعلانات إدارة المدرسة والإدارة العامة. تصلك أيضاً إشعاراً في الجرس." />
+    <PageHeader title="الإعلانات" subtitle="إعلانات إدارة المدرسة والإدارة العامة (رمز المكبّر في الشريط العلوي)." />
     <div v-if="list.length" class="nl">
       <article v-for="n in list" :id="`n-${n.id}`" :key="n.id" class="panel ni" :class="{ hl: n.id === route.query.id, unread: !n.read }">
         <header>
@@ -22,13 +22,11 @@ import { useRoute } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { useAuthStore } from '@/stores/auth'
-import { useInboxStore } from '@/stores/inbox'
 import { myNotices } from '@/api/school'
-import { markRead } from '@/api/notifications'
+import { markNoticeRead } from '@/api/school'
 
 const route = useRoute()
 const auth = useAuthStore()
-const inbox = useInboxStore()
 const list = ref([])
 const fmt = (d) => new Date(d).toLocaleString('ar-DZ', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })
 
@@ -36,8 +34,7 @@ onMounted(async () => {
   list.value = await myNotices(auth.person.id)
   // فتح الصفحة = قراءة إعلاناتها (يختفي عدّادها من الجرس)
   const unread = list.value.filter((x) => !x.read)
-  for (const n of unread) await markRead(`nt:${n.id}`, auth.person.id)
-  if (unread.length) inbox.load(auth.person.id, true)
+  unread.forEach((n) => markNoticeRead(n.id, auth.person.id))
   await nextTick()
   if (route.query.id) document.getElementById(`n-${route.query.id}`)?.scrollIntoView({ block: 'center' })
 })

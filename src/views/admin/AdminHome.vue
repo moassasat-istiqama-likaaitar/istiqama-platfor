@@ -51,7 +51,7 @@ const r = ref(null)
 const brandingPending = ref(0)
 const openTickets = ref(0)
 onMounted(async () => {
-  const [g, br, tk] = await Promise.all([globalReport(), listRequests(), listTickets()])
+  const [g, br, tk] = await Promise.all([globalReport(), listRequests(), listTickets(auth.role)])
   brandingPending.value = br.filter((x) => x.status === 'pending').length
   openTickets.value = tk.filter((x) => !['done', 'resolved'].includes(x.status)).length
   r.value = g

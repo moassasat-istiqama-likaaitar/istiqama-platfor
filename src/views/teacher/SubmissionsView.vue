@@ -9,7 +9,7 @@
     <RecordTable :rows="shown" :loading="loading" :columns="[
       { field: 'student', label: 'التلميذ', type: 'person', sub: 'className' }, { field: 'title', label: 'العمل' }, { field: 'subjectName', label: 'المادة' },
       { field: 'at', label: 'سُلّم في', type: 'date' }, { field: 'scoreLabel', label: 'العلامة' }, { field: 'status', label: 'الحالة', type: 'status' }
-    ]" :search-keys="['student', 'title']" :filters="[{ key: 'className', label: 'القسم', options: classOpts }, { key: 'type', label: 'النوع', options: [{ label: 'واجب', value: 'homework' }, { label: 'تقييم', value: 'quiz' }] }]" unit="تسليم" empty-text="لا تسليمات هنا">
+    ]" :search-keys="['student', 'title']" :filters="[{ key: 'className', label: 'القسم', options: classOpts }, { key: 'subjectName', label: 'المادة', options: subjectOpts }, { key: 'type', label: 'النوع', options: [{ label: 'واجب', value: 'homework' }, { label: 'تقييم', value: 'quiz' }] }]" unit="تسليم" empty-text="لا تسليمات هنا">
       <template #cell-title="{ row }">{{ row.title }} <span v-if="row.late" class="late">متأخر</span></template>
       <template #actions="{ row }"><Button :label="row.status === 'submitted' ? 'صحّح' : 'عرض'" size="small" :outlined="row.status !== 'submitted'" @click="open(row)" /></template>
     </RecordTable>
@@ -100,6 +100,7 @@ onMounted(async () => {
   }
 })
 const shown = computed(() => rows.value.filter((r) => r.status === tab.value))
+const subjectOpts = computed(() => [...new Set(rows.value.map((r) => r.subjectName))].filter(Boolean).map((c) => ({ label: c, value: c })))
 const classOpts = computed(() => [...new Set(rows.value.map((r) => r.className))].map((c) => ({ label: c, value: c })))
 const quick = computed(() => (cur.value ? [cur.value.maxScore, Math.round(cur.value.maxScore * 0.75), Math.round(cur.value.maxScore * 0.5)] : []))
 

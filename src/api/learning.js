@@ -1,3 +1,4 @@
+import { setRatingSync } from './ratings'
 import { respond, ApiError, newId } from './client'
 import { subjects, lessons, contents, activities } from '@/mock/content'
 import { progressOf, save, BADGES } from '@/mock/progress'
@@ -30,11 +31,16 @@ function subjectSummary(sub, p, personId) {
   const cid = classIdOf(personId)
   // الدرس التالي = أول درس غير منجز ومفتوح (حسب خطة المعلم)
   const next = ls.find((l) => !p.done.includes(l.id) && isLessonOpen(cid, l)) || null
+  // التقدّم يُحسب على الدروس المفتوحة للتلميذ حتى اليوم فقط
+  const open = ls.filter((l) => isLessonOpen(cid, l))
+  const doneOpen = open.filter((l) => p.done.includes(l.id)).length
   return {
     ...sub,
     lessonsCount: ls.length,
     doneCount: done,
-    progress: ls.length ? Math.round((done / ls.length) * 100) : 0,
+    openCount: open.length,
+    doneOpen,
+    progress: open.length ? Math.round((doneOpen / open.length) * 100) : 0,
     newCount: ls.filter((l) => !p.viewed.includes(l.id)).length,
     next: next ? { id: next.id, title: next.title } : null
   }
@@ -238,6 +244,7 @@ export function rateContent(personId, contentId, stars) {
     const p = progressOf(personId)
     p.ratings[contentId] = stars
     save()
+    setRatingSync(contentId, 'content', personId, 'student', stars)
     return { ok: true }
   }, 100)
 }
@@ -345,8 +352,8 @@ export function progressReport(personId, levelId) {
       allBadges: Object.entries(BADGES).filter(([id, b]) => !b.manual || p.badges.includes(id)).map(([id, b]) => ({ id, ...b, ...badgeHint(p, id), earned: p.badges.includes(id) })),
       subjects: subs,
       totals: {
-        lessons: subs.reduce((n, s) => n + s.doneCount, 0),
-        lessonsAll: subs.reduce((n, s) => n + s.lessonsCount, 0),
+        lessons: subs.reduce((n, s) => n + s.doneOpen, 0),
+        lessonsAll: subs.reduce((n, s) => n + s.openCount, 0), // الدروس المفتوحة حتى اليوم
         activities: Object.keys(p.submissions).length,
         graded: graded.length
       }

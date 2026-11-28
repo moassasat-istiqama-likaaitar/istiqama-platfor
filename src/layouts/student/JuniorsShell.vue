@@ -14,6 +14,7 @@
         <span class="j-streak"><i class="pi pi-bolt" /> {{ student.streak }}</span>
         <div class="j-top__end">
           <RouterLink :to="{ name: 'messages' }" class="j-icon" :aria-label="t('menu.messages')"><i class="pi pi-envelope" /><b v-if="inbox.unreadMessages">{{ inbox.unreadMessages }}</b></RouterLink>
+          <RouterLink :to="{ name: 'notices' }" class="j-icon" aria-label="الإعلانات"><i class="pi pi-megaphone" /><b v-if="noticesUnread">{{ noticesUnread }}</b></RouterLink>
           <RouterLink :to="{ name: 'notifications' }" class="j-icon" :aria-label="t('menu.notifications')"><i class="pi pi-bell" /><b v-if="inbox.unreadNotifications">{{ inbox.unreadNotifications }}</b></RouterLink>
           <LangSwitcher compact class="hide-sm" />
           <RoleSwitcher v-if="auth.hasManyAssignments" />
@@ -32,6 +33,8 @@
 </template>
 
 <script setup>
+import { useNoticesUnread } from '@/composables/useNoticesUnread'
+const noticesUnread = useNoticesUnread()
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
@@ -98,8 +101,11 @@ const tap = () => chime('tap', 'juniors')
 @media (max-width: 420px) {
   .j-top__row { gap: 0.3rem; padding-inline: 0.6rem; }
   .j-level { padding: 0.2rem; }
-  .j-streak { padding: 0.3rem 0.5rem; }
   .j-top__end { gap: 0; }
-  .j-icon { width: 34px; }
+  .j-icon { width: 32px; }
+  /* على الشاشات الضيقة تكفي شارة المستوى دون شريطه (لإفساح مكان لرمز الإعلانات) */
+  .j-level__info { display: none; }
+  /* أيام المواظبة ظاهرة في بطاقة الرئيسية، فتُخفى من الشريط الضيق */
+  .j-streak { display: none; }
 }
 </style>

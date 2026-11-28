@@ -22,7 +22,6 @@
       <p v-else class="bell__empty">{{ t('layout.noNotifications') }}</p>
       <div class="bell__foot">
         <Button :label="t('layout.viewAll')" text class="bell__all" @click="goAll" />
-        <Button :label="t('layout.allNotices')" icon="pi pi-megaphone" text class="bell__all" @click="goNotices" />
       </div>
     </div>
   </Popover>

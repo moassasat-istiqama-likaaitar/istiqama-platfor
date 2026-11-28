@@ -40,8 +40,14 @@ const view = (t) => {
   const a = assignments.find((x) => x.personId === t.personId)
   return { ...t, person: fullName(p), role: a?.role, school: schools.find((s) => s.id === a?.schoolId)?.short || '—', replies: t.thread.length - 1 }
 }
-export function listTickets() {
-  return respond(() => tickets.all().map(view))
+/**
+ * من يرى أي بلاغ:
+ *  الدعم الفني ← الملاحظات التقنية ومشاكل الحسابات فقط · المحرر ← بلاغات المحتوى
+ *  الإدارة العامة ← الكل، ومنها المقترحات (لا يراها غيرها).
+ */
+export const TICKET_SCOPE = { support: ['technical', 'account'], editor: ['content'] }
+export function listTickets(role = null) {
+  return respond(() => tickets.all().filter((t) => !role || ['super_admin', 'admin'].includes(role) || (TICKET_SCOPE[role] || []).includes(t.type)).map(view))
 }
 export function getTicket(id) {
   return respond(() => view(tickets.find(id)))

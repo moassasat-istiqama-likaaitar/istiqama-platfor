@@ -39,10 +39,10 @@
           <h2 class="panel__title">{{ t('profile.security') }}</h2>
           <Message v-if="auth.person?.mustChange" severity="warn" class="must">دخلت بكلمة مرور مؤقتة (من ورقة الدخول). اختر كلمة مرور خاصة بك لتتمكّن من استعمال المنصة: اكتب الكلمة المؤقتة في الخانة الأولى، ثم كلمتك الجديدة.</Message>
           <form class="form two" @submit.prevent="changePwd">
-            <label class="field"><span>{{ t('profile.currentPassword') }}</span><Password v-model="pwd.current" :feedback="false" toggle-mask fluid /></label>
+            <label class="field"><span>{{ t('profile.currentPassword') }}</span><Password v-model="pwd.current" :feedback="false" fluid :input-props="{ autocomplete: 'off', name: 'pw-current-x' }" /></label>
             <span class="hide-sm" />
-            <label class="field"><span>{{ t('profile.newPassword') }}</span><Password v-model="pwd.next" toggle-mask fluid /></label>
-            <label class="field"><span>{{ t('profile.confirmPassword') }}</span><Password v-model="pwd.confirm" :feedback="false" toggle-mask fluid /></label>
+            <label class="field"><span>{{ t('profile.newPassword') }}</span><Password v-model="pwd.next" toggle-mask fluid :input-props="{ autocomplete: 'new-password' }" /></label>
+            <label class="field"><span>{{ t('profile.confirmPassword') }}</span><Password v-model="pwd.confirm" :feedback="false" toggle-mask fluid :input-props="{ autocomplete: 'new-password' }" /></label>
             <Message v-if="pwdError" severity="error" size="small" variant="simple" class="full">{{ pwdError }}</Message>
             <div class="actions"><Button type="submit" :label="t('profile.changePassword')" icon="pi pi-lock" severity="secondary" :loading="pwdSaving" /></div>
           </form>

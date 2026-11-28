@@ -65,10 +65,10 @@ classes.forEach((c) => {
   for (let i = already; i < count; i++) {
     const g = c.gender === 'mixed' ? (rnd() > 0.5 ? 'male' : 'female') : c.gender
     const y = 2026 - 5 - (lvl?.order || 1)
-    const st = newPerson(g, { birthDate: `${y}-0${1 + Math.floor(rnd() * 9)}-1${Math.floor(rnd() * 9)}`, status: rnd() > 0.95 ? 'pending' : 'active' })
+    const st = newPerson(g, { birthDate: `${y}-0${1 + Math.floor(rnd() * 9)}-1${Math.floor(rnd() * 9)}`, status: (rnd(), 'active') })
     assignments.push({ id: 'ga' + ai++, personId: st.id, role: 'student', schoolId: c.schoolId, classId: c.id })
     if (i % 2 === 0) {
-      const par = newPerson(rnd() > 0.5 ? 'male' : 'female', { lastName: st.lastName, phone: `06${String(20000000 + pi * 104729).slice(-8)}`, status: rnd() > 0.93 ? 'pending' : 'active' })
+      const par = newPerson(rnd() > 0.5 ? 'male' : 'female', { lastName: st.lastName, phone: `06${String(20000000 + pi * 104729).slice(-8)}`, status: (rnd(), 'active') })
       assignments.push({ id: 'ga' + ai++, personId: par.id, role: 'parent', schoolId: null, childIds: [st.id] })
     }
   }

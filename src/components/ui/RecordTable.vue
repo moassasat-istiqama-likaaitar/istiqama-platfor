@@ -8,9 +8,10 @@
       </span>
       <Select v-for="f in filters" :key="f.key" v-model="active[f.key]" :options="f.options" option-label="label" option-value="value" :placeholder="f.label" show-clear class="rt__filter" />
       <span class="rt__count muted">{{ shown.length }} {{ unit }}</span>
+      <label v-if="shown.length > PER_OPTS[0].value" class="rt__per"><span class="muted">في الصفحة</span><Select v-model="per" :options="PER_OPTS" option-label="label" option-value="value" class="rt__per-sel" @change="savePer" /></label>
       <div class="rt__tools"><slot name="toolbar" /></div>
     </div>
-    <DataTable :value="shown" :data-key="rowKey" :paginator="shown.length > pageSize" :rows="pageSize" :loading="loading" striped-rows removable-sort size="small" :row-class="rowClass" :selection="selection" :selection-mode="selectable ? 'multiple' : undefined" @update:selection="$emit('update:selection', $event)" @row-click="$emit('row-click', $event.data)">
+    <DataTable :value="shown" :data-key="rowKey" :paginator="per > 0 && shown.length > per" :rows="per > 0 ? per : shown.length || 1" :loading="loading" striped-rows removable-sort size="small" :row-class="rowClass" :selection="selection" :selection-mode="selectable ? 'multiple' : undefined" @update:selection="$emit('update:selection', $event)" @row-click="$emit('row-click', $event.data)">
       <Column v-if="selectable" selection-mode="multiple" header-style="width: 3rem" />
       <Column v-for="c in columns" :key="c.field" :field="c.field" :header="c.label" :sortable="c.sortable !== false" :style="c.width ? { width: c.width } : null">
         <template #body="{ data }">
@@ -42,6 +43,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Select from 'primevue/select'
 import StatusTag from './StatusTag.vue'
+import { storage } from '@/utils/storage'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -72,9 +74,16 @@ const shown = computed(() =>
 const HUES = ['#3159e8', '#0a9bdc', '#17a077', '#8457d6', '#e0457b', '#ef7d32', '#1590c7']
 const hue = (s) => HUES[[...String(s || '')].reduce((n, ch) => n + ch.charCodeAt(0), 0) % HUES.length]
 const fmtDate = (v) => (v ? new Date(v).toLocaleDateString('ar-DZ', { day: 'numeric', month: 'short', year: 'numeric' }) : '—')
+
+/* عدد الصفوف في الصفحة يختاره المستخدم (أو «الكل»)، ويُحفظ اختياره لكل الجداول */
+const PER_OPTS = [{ label: '12', value: 12 }, { label: '25', value: 25 }, { label: '50', value: 50 }, { label: '100', value: 100 }, { label: 'الكل', value: 0 }]
+const per = ref(storage.get('ist.perPage') ?? props.pageSize)
+const savePer = () => storage.set('ist.perPage', per.value)
 </script>
 
 <style scoped>
+.rt__per { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; }
+.rt__per-sel { min-width: 0; }
 .rt { padding: 0; overflow: hidden; }
 .rt__bar { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; padding: 0.85rem 1rem; border-bottom: 1px solid var(--line); }
 .rt__search { display: flex; align-items: center; gap: 0.5rem; flex: 1 1 220px; max-width: 340px; border: 1px solid var(--line); border-radius: 10px; padding: 0.45rem 0.75rem; background: var(--surface); }

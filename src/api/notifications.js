@@ -1,19 +1,16 @@
 import { respond } from './client'
 import { notifications } from '@/mock/db'
-import { myNoticesSync, markNoticeRead } from './school'
+import { markNoticeRead } from './school'
 
 /**
- * الإشعارات (الجرس). الإعلان يصل إشعاراً هنا وفي صفحة «الإعلانات»، ولا يدخل صندوق الرسائل (لا رد عليه).
- * إشعار الإعلان معرّفه nt:<معرّف الإعلان>، ويفتح الإعلان في صفحة الإعلانات.
+ * الإشعارات (الجرس): آلية فقط (درس، واجب، نتيجة، تسليم...).
+ * الإعلانات (يكتبها شخص: المدير أو الإدارة العامة) لها رمز مستقل بجانب الجرس وصفحة «الإعلانات»، ولا تدخل صندوق الرسائل.
  */
-const noticeItems = (personId) => myNoticesSync(personId).map((n) => ({
-  id: `nt:${n.id}`, personId, assignmentId: null, type: 'announcement', title: `إعلان: ${n.title}`, body: `${n.from} · ${n.body.slice(0, 90)}`, read: n.read, at: n.at, link: { name: 'notices', query: { id: n.id } }
-}))
 
 /** GET /api/notifications → قائمة إشعارات الشخص (كل أدواره)، الأحدث أولاً */
 export function list(personId) {
   return respond(() =>
-    [...notifications.filter((n) => n.personId === personId), ...noticeItems(personId)].sort((a, b) => b.at.localeCompare(a.at))
+    notifications.filter((n) => n.personId === personId).sort((a, b) => b.at.localeCompare(a.at))
   )
 }
 
@@ -31,7 +28,6 @@ export function markRead(id, personId) {
 export function markAllRead(personId) {
   return respond(() => {
     notifications.filter((n) => n.personId === personId).forEach((n) => (n.read = true))
-    myNoticesSync(personId).forEach((n) => markNoticeRead(n.id, personId))
     return { ok: true }
   }, 120)
 }

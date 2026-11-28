@@ -31,6 +31,7 @@
         </form>
         <div class="t-top__end">
           <RouterLink :to="{ name: 'messages' }" class="t-icon"><i class="pi pi-envelope" /><b v-if="inbox.unreadMessages" /></RouterLink>
+          <RouterLink :to="{ name: 'notices' }" class="t-icon" aria-label="الإعلانات"><i class="pi pi-megaphone" /><b v-if="noticesUnread" /></RouterLink>
           <RouterLink :to="{ name: 'notifications' }" class="t-icon"><i class="pi pi-bell" /><b v-if="inbox.unreadNotifications" /></RouterLink>
           <LangSwitcher compact />
           <RoleSwitcher v-if="auth.hasManyAssignments" />
@@ -43,6 +44,8 @@
 </template>
 
 <script setup>
+import { useNoticesUnread } from '@/composables/useNoticesUnread'
+const noticesUnread = useNoticesUnread()
 import { ref, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'

@@ -31,7 +31,7 @@
             <small class="muted"><i class="pi pi-user" /> {{ t.authorName }}</small>
             <span>
               <Button v-if="isEditor" :label="t.hidden ? 'إظهار' : 'إخفاء'" :icon="t.hidden ? 'pi pi-eye' : 'pi pi-eye-slash'" text size="small" severity="secondary" @click="hide(t)" />
-              <Button v-if="t.authorId === auth.person.id" icon="pi pi-trash" text rounded size="small" severity="danger" title="حذف" @click="del(t)" />
+              <Button v-if="isTop(auth.role)" icon="pi pi-trash" text rounded size="small" severity="danger" title="حذف" @click="del(t)" />
               <Button label="تنزيل" icon="pi pi-download" size="small" outlined @click="toast.add({ severity: 'info', summary: 'يُنزَّل الملف بعد الربط بالخلفية', life: 2000 })" />
             </span>
           </footer>
@@ -62,6 +62,7 @@
 </template>
 
 <script setup>
+import { isTop } from '@/config/roles'
 import { reactive, ref, computed, onMounted } from 'vue'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -117,7 +118,7 @@ async function hide(t) {
   load()
 }
 async function del(t) {
-  await removeOfflineTest(t.id)
+  await removeOfflineTest(t.id, auth.role)
   toast.add({ severity: 'info', summary: 'حُذف', life: 1800 })
   load()
 }

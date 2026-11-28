@@ -37,6 +37,7 @@
           </OverlayBadge>
           <Button v-else icon="pi pi-envelope" text rounded severity="secondary" :aria-label="t('menu.messages')" @click="navigate" />
         </RouterLink>
+        <NoticesButton />
         <NotificationBell />
         <RoleSwitcher />
         <UserMenu />
@@ -67,6 +68,7 @@ import SideNav from '@/components/SideNav.vue'
 import DateBadge from '@/components/DateBadge.vue'
 import LangSwitcher from '@/components/LangSwitcher.vue'
 import NotificationBell from '@/components/NotificationBell.vue'
+import NoticesButton from '@/components/NoticesButton.vue'
 import SeasonSwitcher from '@/components/SeasonSwitcher.vue'
 import SeasonBanner from '@/components/SeasonBanner.vue'
 import RoleSwitcher from '@/components/RoleSwitcher.vue'

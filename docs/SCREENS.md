@@ -39,7 +39,6 @@
 | المعلمون | SM02 | `#/app/teachers` | `src/views/users/UsersView.vue` | الكل |
 | التلاميذ | SM03 | `#/app/students` | `src/views/users/UsersView.vue` | الكل |
 | الأولياء | SM04 | `#/app/parents` | `src/views/users/UsersView.vue` | الكل |
-| تفعيل الحسابات | SM05 | `#/app/activation` | `src/views/manager/ActivationView.vue` | school_manager |
 | أوراق الدخول | SM12 / AD21 | `#/app/login-sheets` (والطباعة `#/print/login-sheets`) | `src/views/manager/LoginSheetsView.vue`، `src/views/print/LoginSheetsPrint.vue` | school_manager، super_admin، admin |
 | الأقسام | SM06 | `#/app/school-classes` | `src/views/manager/SchoolClassesView.vue` | school_manager |
 | مصادقة محتوى المعلمين | SM07 | `#/app/teacher-files-review` | `src/views/manager/TeacherFilesReview.vue` | school_manager |
@@ -54,6 +53,10 @@
 | أداء المدارس | AD17 | `#/app/reports-schools` | `src/views/admin/ReportsView.vue` | الكل |
 | إحصائيات الملفات | AD17 | `#/app/reports-files` | `src/views/admin/ReportsView.vue` | الكل |
 | جودة التفاعل | AD17 | `#/app/reports-engagement` | `src/views/admin/ReportsView.vue` | الكل |
+| المساهمون في المكتبة | RP01 | `#/app/reports-contributors` | `src/views/reports/InsightsView.vue` | admin, super_admin, editor (مستوياته) |
+| نشاط التلاميذ | RP02 | `#/app/reports-activity` | `src/views/reports/InsightsView.vue` | admin, super_admin (حسب المدرسة)، teacher (تلاميذ أقسامه) |
+| نشاط المعلمين | RP03 | `#/app/reports-teachers` | `src/views/reports/InsightsView.vue` | admin, super_admin |
+| تقديرات المحتوى | RP04 | `#/app/reports-ratings` | `src/views/reports/InsightsView.vue` | admin, super_admin, editor (مستوياته) |
 | المدارس | AD07 | `#/app/schools` | `src/views/admin/SchoolsView.vue` | admin, super_admin |
 | الأطوار والمستويات | AD08 | `#/app/levels` | `src/views/admin/LevelsView.vue` | admin, super_admin |
 | المواسم الدراسية | AD09 | `#/app/seasons` | `src/views/admin/SeasonsView.vue` | admin, super_admin — إعادة فتح موجَّهة + مصفوفة رؤية الأرشيف |
@@ -65,7 +68,7 @@
 | الرزنامة | AD15 | `#/app/calendar` | `src/views/admin/CalendarView.vue` | admin, super_admin |
 | إعدادات التواصل | AD16 | `#/app/communication` | `src/views/admin/CommunicationView.vue` | admin, super_admin |
 | الاستيراد والتصدير | AD18 | `#/app/import-export` | `src/views/admin/ImportExportView.vue` | admin, super_admin |
-| البلاغات | SU02 | `#/app/tickets` | `src/views/support/TicketsView.vue` | support, admin, super_admin |
+| البلاغات | SU02 | `#/app/tickets` | `src/views/support/TicketsView.vue` | support (تقني وحسابات)، editor (المحتوى)، admin, super_admin (الكل والمقترحات) |
 | سجل الأعطال | SU03 | `#/app/incidents` | `src/views/support/IncidentsView.vue` | support |
 | فريق الدعم | SU04 | `#/app/support-team` | `src/views/support/SupportTeamView.vue` | support |
 | المكتبة المركزية | TE11,TE12 | `#/app/central-library` | `src/views/library/LibraryView.vue` | teacher, editor, admin, super_admin |

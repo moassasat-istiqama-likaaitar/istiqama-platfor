@@ -1,7 +1,7 @@
 <template>
   <!-- SU02: البلاغات — قائمة + محادثة البلاغ وحالته -->
   <div>
-    <PageHeader title="البلاغات" subtitle="بلاغات المستخدمين ومقترحاتهم الواردة من «البلاغات والمقترحات». ردّك يصل صاحب البلاغ كإشعار." />
+    <PageHeader title="البلاغات" :subtitle="SUBS[auth.role] || SUBS.admin" />
     <StatTiles :items="[
       { label: 'مفتوحة', value: rows.filter((r) => r.status === 'open').length, icon: 'pi pi-circle', tone: 'blue' },
       { label: 'قيد المعالجة', value: rows.filter((r) => r.status === 'in_progress').length, icon: 'pi pi-spinner', tone: 'amber' },
@@ -48,6 +48,11 @@ import { listTickets, replyTicket } from '@/api/support'
 
 const { t } = useI18n()
 const auth = useAuthStore()
+const SUBS = {
+  support: 'الملاحظات التقنية ومشاكل الحسابات. بلاغات المحتوى تذهب إلى المحرر، والمقترحات إلى الإدارة العامة. ردّك يصل صاحب البلاغ كإشعار.',
+  editor: 'بلاغات المحتوى الواردة من المستخدمين. ردّك يصل صاحب البلاغ كإشعار.',
+  admin: 'كل البلاغات: التقنية، والمحتوى، والحسابات، والمقترحات. ردّك يصل صاحب البلاغ كإشعار.'
+}
 const toast = useToast()
 const STATUS_OPTS = [{ label: 'مفتوح', value: 'open' }, { label: 'قيد المعالجة', value: 'in_progress' }, { label: 'بانتظار المستخدم', value: 'waiting' }, { label: 'تم الحل', value: 'resolved' }]
 const TYPE_OPTS = [{ label: 'تقني', value: 'technical' }, { label: 'محتوى', value: 'content' }, { label: 'حساب', value: 'account' }, { label: 'مقترح', value: 'suggestion' }]
@@ -57,7 +62,7 @@ const reply = ref('')
 const nextStatus = ref(null)
 const busy = ref(false)
 const decorate = (r) => ({ ...r, typeLabel: TYPE_OPTS.find((x) => x.value === r.type)?.label || r.type, priorityLabel: { high: 'عالية', normal: 'عادية', low: 'منخفضة' }[r.priority] })
-const load = async () => (rows.value = (await listTickets()).map(decorate))
+const load = async () => (rows.value = (await listTickets(auth.role)).map(decorate))
 onMounted(load)
 function open(r) {
   cur.value = r

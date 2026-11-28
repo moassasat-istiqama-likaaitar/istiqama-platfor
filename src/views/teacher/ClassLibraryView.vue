@@ -30,13 +30,13 @@
         <header>
           <span class="cc__ic"><i :class="iconOf(it)" /></span>
           <div class="cc__t"><b>{{ it.title }}</b><small class="muted">{{ it.isAct ? (it.type === 'quiz' ? 'تقييم' : 'واجب') : cat.TYPE_LABEL[it.type] }}<template v-if="it.classification && !it.isAct"> · {{ classLabel(it.classification) }}</template></small></div>
-          <Button v-if="it.linkId && (!it.mandatory || isEditor)" icon="pi pi-times" text rounded size="small" severity="secondary" title="إزالة من القسم" @click="unlink(it)" />
+          <Button v-if="it.linkId && (isEditor || (!it.mandatory && it.linkedById === auth.person.id))" icon="pi pi-times" text rounded size="small" severity="secondary" title="إلغاء الإدراج من القسم (لا يُحذف من المكتبة)" @click="unlink(it)" />
         </header>
         <span class="cc__lesson"><i class="pi pi-bookmark" /> {{ it.lessonTitle || 'بلا درس — عام للقسم' }}</span>
         <small class="muted">{{ it.subjectName }}<template v-if="it.due"> · آخر أجل {{ fmt(it.due) }}</template><template v-if="it.linkedBy"> · أدرجه {{ it.linkedBy }}</template></small>
         <span class="badges">
           <span v-if="it.mandatory" class="bd bd--lock"><i class="pi pi-lock" /> {{ it.source === 'level' ? 'إجباري للمستوى' : 'أساسي' }}</span>
-          <span v-else-if="it.source === 'link'" class="bd bd--link"><i class="pi pi-link" /> أدرجته</span>
+          <span v-else-if="it.source === 'link'" class="bd bd--link"><i class="pi pi-link" /> {{ it.linkedById === auth.person.id ? 'أدرجته' : `أدرجه ${it.linkedBy}` }}</span>
           <span v-if="it.source === 'mine'" class="bd bd--mine"><i class="pi pi-user" /> من رفعي</span>
           <span v-if="it.cross" class="bd bd--cross" title="عنصر من مستوى آخر رُبط بدرس من هذا المستوى"><i class="pi pi-arrows-h" /> من {{ it.levelName }}</span>
           <span v-if="it.temp" class="bd bd--temp"><i class="pi pi-hourglass" /> مؤقت</span>

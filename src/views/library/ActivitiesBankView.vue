@@ -7,7 +7,6 @@
       <Select v-model="level" :options="levelOpts" placeholder="كل المستويات" show-clear option-label="label" option-value="value" />
       <Select v-model="subject" :options="subjectOpts" placeholder="كل المواد" show-clear option-label="label" option-value="value" />
       <Select v-model="kind" :options="[{ label: 'التقييمات', value: 'quiz' }, { label: 'الواجبات', value: 'homework' }]" option-label="label" option-value="value" placeholder="التقييمات والواجبات" show-clear />
-      <Select v-model="qt" :options="Object.entries(QTYPES).map(([value, x]) => ({ value, label: x.label }))" option-label="label" option-value="value" placeholder="كل أنواع الأسئلة" show-clear />
       <span class="grow" />
       <RouterLink to="/app/quiz-builder" class="p-button p-component p-button-sm"><i class="pi pi-plus" />&nbsp;تقييم جديد</RouterLink>
       <RouterLink to="/app/new-homework" class="p-button p-component p-button-sm p-button-outlined">واجب جديد</RouterLink>
@@ -37,14 +36,14 @@
           <li v-for="(qq, i) in cur.questions || []" :key="i"><b>{{ qq.q }}</b> <small class="muted">({{ QTYPES[qtype(qq)].label }} · {{ qpoints(qq) }} ن)</small><div class="ans">✓ {{ correctText(qq) }}</div></li>
         </ol>
       </div>
-      <template #footer><Button label="إدراج في قسمي" icon="pi pi-plus" :disabled="!cur || !canLink(cur)" @click="link(cur)" /></template>
+      <template #footer><StarRate v-if="auth.role === 'teacher' && cur" class="me-auto" label="تقديرك لتصميمه" :model-value="myStars" @update:model-value="rateCur" /><Button label="إدراج في قسمي" icon="pi pi-plus" :disabled="!cur || !canLink(cur)" @click="link(cur)" /></template>
     </Dialog>
     <LinkDialog v-model:visible="linkOpen" :item="linkIt" kind="activity" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import Dialog from 'primevue/dialog'
@@ -54,6 +53,8 @@ import InputIcon from 'primevue/inputicon'
 import PageHeader from '@/components/PageHeader.vue'
 import StatusTag from '@/components/ui/StatusTag.vue'
 import LinkDialog from '@/components/library/LinkDialog.vue'
+import StarRate from '@/components/ui/StarRate.vue'
+import { rate, myRating } from '@/api/ratings'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalog } from '@/composables/useCatalog'
 import { activitiesBank } from '@/api/bank'
@@ -83,6 +84,14 @@ function link(a) {
   linkIt.value = a
   cur.value = null
   linkOpen.value = true
+}
+
+// تقدير المعلم لتصميم الواجب أو التقييم
+const myStars = ref(0)
+watch(() => cur.value?.id, (id) => (myStars.value = id ? myRating(id, auth.person.id) : 0))
+async function rateCur(n) {
+  myStars.value = n
+  await rate(cur.value.id, 'activity', auth.person.id, 'teacher', n)
 }
 </script>
 

@@ -157,7 +157,7 @@ export function classContentItems(classId) {
   })
   linksForClass(classId, 'content').forEach((l) => {
     const item = findContent(l.itemId)
-    if (item) add(item, { source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, lessonId: l.lessonId, linkId: l.id, linkedBy: l.byName, ...crossExtra(item, c.levelId, l.lessonId) })
+    if (item) add(item, { source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, lessonId: l.lessonId, linkId: l.id, linkedBy: l.byName, linkedById: l.by, ...crossExtra(item, c.levelId, l.lessonId) })
   })
   return [...out.values()].map((x) => decorate(x))
 }
@@ -172,7 +172,7 @@ export function classActivityItems(classId) {
     if (!a || out.some((x) => x.id === a.id)) return
     // لا يصل التلميذَ إلا ما صودق عليه: المعتمد، أو المؤقت في أقسام صاحبه
     const visible = a.origin === 'platform' || a.status === 'approved' || (a.status === 'temp' && teacherIdsOf(classId).includes(a.authorId))
-    out.push({ ...a, lessonId: l.lessonId ?? a.lessonId, due: l.due || a.due, source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, linkId: l.id, linkedBy: l.byName, visibleToStudents: visible, temp: a.status === 'temp', ownerId: a.authorId, ...crossExtra(a, c.levelId, l.lessonId) })
+    out.push({ ...a, lessonId: l.lessonId ?? a.lessonId, due: l.due || a.due, source: l.scope === 'level' ? 'level' : 'link', mandatory: l.mandatory, linkId: l.id, linkedBy: l.byName, linkedById: l.by, visibleToStudents: visible, temp: a.status === 'temp', ownerId: a.authorId, ...crossExtra(a, c.levelId, l.lessonId) })
   })
   return out.filter((a) => {
     const l = a.lessonId && lessonOf(a.lessonId)
@@ -220,7 +220,7 @@ export function levelLibrary(levelId) {
     const lk = links().all().filter((l) => l.scope === 'level' && l.levelId === levelId)
     lk.filter((l) => l.itemKind === 'content').forEach((l) => {
       const it = findContent(l.itemId)
-      if (it) cts.push(decorate({ ...it, lessonId: l.lessonId, source: 'level', mandatory: true, linkId: l.id, linkedBy: l.byName, ...crossExtra(it, levelId, l.lessonId) }))
+      if (it) cts.push(decorate({ ...it, lessonId: l.lessonId, source: 'level', mandatory: true, linkId: l.id, linkedBy: l.byName, linkedById: l.by, ...crossExtra(it, levelId, l.lessonId) }))
     })
     uploads().all().filter((u) => u.status === 'approved' && u.essential && u.levelId === levelId).forEach((u) => cts.push(decorate({ ...normUpload(u), source: 'essential', mandatory: true })))
     const acts = activities.filter((a) => a.levelId === levelId).map((a) => decorate({ ...normActivity(a), classification: 'activity', source: 'essential', mandatory: true }))
@@ -284,6 +284,8 @@ export function activitiesBank({ personId, scopeLevels } = {}) {
 let isOpenFor = () => true
 /** يُحقن من teaching.js (تجنّباً للاستيراد الدائري) */
 export const setOpenCheck = (fn) => (isOpenFor = fn)
+/** هل الدرس مفتوح لتلاميذ هذا القسم الآن؟ */
+export const lessonOpenFor = (classId, lesson) => isOpenFor(classId, lesson)
 export function studentLibrary(personId) {
   return respond(() => {
     const a = assignments.find((x) => x.personId === personId && x.role === 'student')

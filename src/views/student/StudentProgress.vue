@@ -27,7 +27,7 @@
 
     <!-- ================= المستكشفون: طريق المستويات ================= -->
     <template v-else-if="theme === 'juniors'">
-      <div class="sp-head"><h1>إنجازاتي</h1><RouterLink :to="{ name: 'report-card' }" class="print-btn"><i class="pi pi-print" /> كشف النقاط</RouterLink></div>
+      <div class="sp-head"><h1>إنجازاتي</h1></div>
       <section class="j-road card">
         <div class="j-road__head"><span class="j-lvl">{{ r.xp.level }}</span><div><strong>مستوى المستكشف {{ r.xp.level }}</strong><small>{{ r.xp.inLevel }}/{{ r.xp.next }} نقطة للمستوى التالي</small></div></div>
         <div class="j-road__track">
@@ -57,7 +57,7 @@
 
     <!-- ================= الشباب: لوحة تحليلات ================= -->
     <template v-else>
-      <div class="sp-head"><h1>التحليلات</h1><RouterLink :to="{ name: 'report-card' }" class="print-btn"><i class="pi pi-print" /> كشف النقاط للطباعة</RouterLink></div>
+      <div class="sp-head"><h1>التحليلات</h1></div>
       <div class="t-kpis">
         <div><small>الدروس المكتملة</small><b>{{ r.totals.lessons }}<span>/{{ r.totals.lessonsAll }}</span></b></div>
         <div><small>الواجبات والتقييمات المنجزة</small><b>{{ r.totals.activities }}</b></div>

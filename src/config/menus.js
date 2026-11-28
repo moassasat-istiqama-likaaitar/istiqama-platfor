@@ -29,7 +29,11 @@ const adminMenu = [
     item('reports-general', 'pi pi-chart-line', ['AD17'], 7),
     item('reports-schools', 'pi pi-building', ['AD17'], 7),
     item('reports-files', 'pi pi-file', ['AD17'], 7),
-    item('reports-engagement', 'pi pi-heart', ['AD17'], 7)
+    item('reports-engagement', 'pi pi-heart', ['AD17'], 7),
+    item('reports-activity', 'pi pi-bolt', ['RP02'], 7),
+    item('reports-teachers', 'pi pi-briefcase', ['RP03'], 7),
+    item('reports-contributors', 'pi pi-users', ['RP01'], 7),
+    item('reports-ratings', 'pi pi-star', ['RP04'], 7)
   ]),
   group('settings', 'pi pi-cog', [
     item('schools', 'pi pi-building', ['AD07'], 7),
@@ -75,7 +79,12 @@ export const MENUS = {
       item('class-library', 'pi pi-bookmark', ['TE04', 'TE05'], 4),
       item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4)
     ]),
-    item('editor-reports', 'pi pi-chart-bar', ['ED06'], 5),
+    group('reports', 'pi pi-chart-bar', [
+      item('editor-reports', 'pi pi-chart-bar', ['ED06'], 5),
+      item('reports-contributors', 'pi pi-users', ['RP01'], 5),
+      item('reports-ratings', 'pi pi-star', ['RP04'], 5)
+    ]),
+    item('tickets', 'pi pi-ticket', ['SU02'], 5),
     feedback
   ],
 
@@ -85,7 +94,6 @@ export const MENUS = {
       item('teachers', 'pi pi-user', ['SM02'], 6),
       item('students', 'pi pi-users', ['SM03'], 6),
       item('parents', 'pi pi-user-plus', ['SM04'], 6),
-      item('activation', 'pi pi-check-circle', ['SM05'], 6),
       item('login-sheets', 'pi pi-id-card', ['SM12'], 6)
     ]),
     item('school-classes', 'pi pi-th-large', ['SM06'], 6),
@@ -105,6 +113,7 @@ export const MENUS = {
     item('class-library', 'pi pi-bookmark', ['TE04', 'TE05'], 4),
     item('submissions', 'pi pi-inbox', ['TE09', 'TE10'], 4),
     item('central-library', 'pi pi-book', ['TE11', 'TE12'], 4),
+    item('reports-activity', 'pi pi-bolt', ['RP02'], 4),
     group('banks', 'pi pi-database', [
       item('activities', 'pi pi-database', ['ED05'], 4),
       item('offline-tests', 'pi pi-print', ['TE17'], 4)

@@ -173,3 +173,4 @@ a { color: inherit; }
 .p-button, .p-tab, .p-togglebutton { white-space: nowrap; }
 .p-selectbutton { flex-wrap: wrap; max-width: 100%; }
 .p-selectbutton .p-togglebutton { flex: 1 1 auto; }
+.me-auto { margin-inline-end: auto; }

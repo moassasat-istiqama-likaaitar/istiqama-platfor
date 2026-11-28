@@ -10,7 +10,7 @@
         <label class="fl"><span>الدرس المرتبط</span><Select v-model="f.lessonId" placeholder="— بلا درس —" :options="[{ label: '— بلا درس —', value: null }, ...cat.linkLessonOptions(f.subjectId)]" option-label="label" option-value="value" option-disabled="disabled" filter fluid :disabled="!f.subjectId" /></label>
         <label class="fl"><span>آخر أجل *</span><InputText v-model="f.due" type="datetime-local" fluid /></label>
         <label class="fl full"><span>التعليمات *</span><Textarea v-model="f.instructions" rows="4" auto-resize fluid placeholder="ماذا يجب أن ينجز التلميذ؟ وكيف يسلّم (نص، صورة الكراس…)" /></label>
-        <label class="fl"><span>العلامة القصوى</span><InputNumber v-model="f.maxScore" :min="1" :max="100" fluid /></label>
+        <label class="fl"><span>سلّم العلامة</span><SelectButton v-model="f.maxScore" :options="[{ label: 'على 10', value: 10 }, { label: 'على 20', value: 20 }]" option-label="label" option-value="value" :allow-empty="false" /></label>
         <label class="fl"><span>طريقة التسليم</span><Select v-model="f.mode" :options="[{ label: 'نص أو صورة', value: 'any' }, { label: 'صورة الكراس فقط', value: 'photo' }, { label: 'نص فقط', value: 'text' }, { label: 'بلا تسليم (للمتابعة)', value: 'none' }]" option-label="label" option-value="value" fluid /></label>
         <label class="fl full sw"><ToggleSwitch v-model="f.required" /> <span>واجب إجباري (يُحتسب في التقرير)</span></label>
         <label class="fl full sw"><ToggleSwitch v-model="f.notifyParents" /> <span>إشعار الأولياء</span></label>
@@ -43,6 +43,7 @@
 <script setup>
 import { reactive, ref, computed, onMounted } from 'vue'
 import Button from 'primevue/button'
+import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'

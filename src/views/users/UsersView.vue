@@ -26,6 +26,14 @@
           <div class="ud__grid">
             <label><span>الاسم</span><InputText v-model="user.firstName" fluid /></label>
             <label><span>اللقب</span><InputText v-model="user.lastName" fluid /></label>
+            <label><span>اسم الأب</span><InputText v-model="user.fatherName" fluid /></label>
+            <label><span>اسم الجد</span><InputText v-model="user.grandfatherName" fluid /></label>
+            <label><span>تاريخ الميلاد</span><InputText v-model="user.birthDate" type="date" fluid /></label>
+            <label><span>الجنس</span><Select v-model="user.gender" :options="GENDERS" option-label="label" option-value="value" fluid /></label>
+            <label><span>القصر</span><InputText v-model="user.ksar" fluid /></label>
+            <label><span>العشيرة</span><InputText v-model="user.clan" fluid /></label>
+            <label v-if="user.assignments?.some((a) => EDU_ROLES.includes(a.role))"><span>المستوى الدراسي</span><Select v-model="user.educationLevel" :options="EDU_LEVELS" fluid show-clear /></label>
+            <label v-if="user.assignments?.some((a) => a.role === 'parent')"><span>صلة القرابة بالأبناء</span><Select v-model="user.relation" :options="RELATIONS" fluid /></label>
             <label><span>الهاتف</span><InputText v-model="user.phone" dir="ltr" fluid /></label>
             <label><span>البريد</span><InputText v-model="user.email" dir="ltr" fluid /></label>
             <label><span>اسم الدخول</span><InputText :model-value="user.username || '— (لم يُنشأ حساب دخول)'" disabled fluid /></label>
@@ -41,12 +49,20 @@
               <Button v-if="canEditAssignments && user.assignments.length > 1 && canRemoveHolder(auth.role, [a.role])" icon="pi pi-times" text rounded size="small" severity="danger" title="إزالة الدور" @click="dropAssignment(a)" />
             </li>
           </ul>
-          <div v-if="canEditAssignments" class="add-asg">
+          <p v-if="canEditAssignments && otherSchool" class="muted small"><i class="pi pi-info-circle" /> لهذا الشخص دور في مدرسة أخرى، فإضافة دور له من صلاحية الإدارة العامة.</p>
+          <div v-if="canEditAssignments && !otherSchool" class="add-asg">
             <Select v-model="na.role" :options="roleOptions" option-label="label" option-value="value" placeholder="دور جديد" />
             <Select v-if="needsSchool(na.role) && !schoolId" v-model="na.schoolId" :options="cat.schoolOptions" option-label="label" option-value="value" placeholder="المدرسة" filter />
             <MultiSelect v-if="na.role === 'teacher'" v-model="na.classIds" :options="cat.classOptions().filter((c) => !effSchool || cat.classes.find((x) => x.id === c.value)?.schoolId === effSchool)" option-label="label" option-value="value" placeholder="الأقسام" display="chip" />
             <Select v-if="na.role === 'student'" v-model="na.classId" :options="cat.classOptions().filter((c) => !effSchool || cat.classes.find((x) => x.id === c.value)?.schoolId === effSchool)" option-label="label" option-value="value" placeholder="القسم" />
             <Button label="إضافة الدور" icon="pi pi-plus" size="small" :disabled="!na.role" @click="addAsg" />
+          </div>
+        </section>
+        <section v-if="canGrant">
+          <h4>الإدراج خارج أقسامه <small class="muted">— أقسام إضافية يستطيع هذا المعلم إدراج المحتوى والواجبات والتقييمات فيها</small></h4>
+          <div class="add-asg">
+            <MultiSelect v-model="grant" :options="grantOpts" option-label="label" option-value="value" display="chip" filter placeholder="لا أقسام إضافية" class="grow" />
+            <Button label="حفظ الصلاحية" icon="pi pi-key" size="small" outlined @click="saveGrant" />
           </div>
         </section>
       </div>
@@ -60,6 +76,7 @@
 
 <script setup>
 import { canGrantRole, canRemoveHolder } from '@/config/roles'
+import { commonFields, eduField, relationField, GENDERS, EDU_LEVELS, RELATIONS, EDU_ROLES } from '@/config/personFields'
 import { ref, reactive, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import Button from 'primevue/button'
@@ -75,14 +92,14 @@ import FormDialog from '@/components/ui/FormDialog.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCatalog } from '@/composables/useCatalog'
 import { exportCsv } from '@/utils/exportCsv'
-import { listUsers, getUser, createUser, updateUser, setStatus, addAssignment, removeAssignment } from '@/api/people'
+import { listUsers, getUser, createUser, updateUser, setStatus, addAssignment, removeAssignment, getLinkGrant, setLinkGrant, fullName } from '@/api/people'
 
 const props = defineProps({ role: { type: String, default: null }, scope: { type: String, default: 'school' }, title: String, subtitle: String })
 const { t } = useI18n()
 const toast = useToast()
 const auth = useAuthStore()
 const cat = useCatalog()
-const STATUS_OPTS = [{ label: 'مفعّل', value: 'active' }, { label: 'بانتظار التفعيل', value: 'pending' }, { label: 'موقوف', value: 'suspended' }, { label: 'مؤرشف', value: 'archived' }]
+const STATUS_OPTS = [{ label: 'مفعّل', value: 'active' }, { label: 'موقوف', value: 'suspended' }, { label: 'مؤرشف', value: 'archived' }]
 const schoolId = computed(() => (props.scope === 'school' ? auth.active.school?.id : null))
 const rows = ref([])
 const loading = ref(true)
@@ -118,8 +135,8 @@ const filters = computed(() => {
 })
 const stats = computed(() => {
   if (!rows.value.length) return []
-  const pend = rows.value.filter((r) => r.status === 'pending').length
-  const base = [{ label: `عدد ${unit.value === 'مستخدم' ? 'المستخدمين' : 'السجلات'}`, value: rows.value.length, icon: 'pi pi-users' }, { label: 'بانتظار التفعيل', value: pend, icon: 'pi pi-clock', tone: pend ? 'amber' : 'green', to: props.scope === 'school' ? '/app/activation' : null }]
+  const susp = rows.value.filter((r) => r.status === 'suspended').length
+  const base = [{ label: `عدد ${unit.value === 'مستخدم' ? 'المستخدمين' : 'السجلات'}`, value: rows.value.length, icon: 'pi pi-users' }, { label: 'موقوفون', value: susp, icon: 'pi pi-ban', tone: susp ? 'amber' : 'green' }]
   if (props.role === 'student') base.push({ label: 'متوسط التقدّم', value: Math.round(rows.value.reduce((n, r) => n + r.progress, 0) / rows.value.length) + '%', icon: 'pi pi-book', tone: 'purple' }, { label: 'يحتاجون متابعة', value: rows.value.filter((r) => r.progress < 30 || r.late >= 3).length, icon: 'pi pi-exclamation-triangle', tone: 'red' })
   if (props.role === 'teacher') base.push({ label: 'الأقسام المغطاة', value: rows.value.reduce((n, r) => n + (r.classCount || 0), 0), icon: 'pi pi-th-large', tone: 'purple' })
   if (!props.role) base.push({ label: 'لهم أكثر من دور', value: rows.value.filter((r) => r.roles.length > 1).length, icon: 'pi pi-clone', tone: 'purple', hint: 'شخص واحد = حساب واحد' })
@@ -133,13 +150,12 @@ const needsSchool = (r) => ['school_manager', 'teacher', 'student'].includes(r)
 const roleOptions = computed(() => (props.scope === 'school' ? ['teacher', 'student', 'parent'] : ['super_admin', 'admin', 'editor', 'school_manager', 'teacher', 'student', 'parent', 'support']).filter((r) => canGrantRole(auth.role, r)).map((r) => ({ label: t('roles.' + r), value: r })))
 const schoolClasses = computed(() => cat.classOptions().filter((c) => !schoolId.value || cat.classes.find((x) => x.id === c.value)?.schoolId === schoolId.value))
 const addFields = computed(() => {
-  const f = [
-    { key: 'firstName', label: 'الاسم', required: true }, { key: 'lastName', label: 'اللقب', required: true },
-    { key: 'gender', label: 'الجنس', type: 'select', options: [{ label: 'ذكر', value: 'male' }, { label: 'أنثى', value: 'female' }], required: true }
-  ]
+  const f = commonFields()
   if (!props.role) f.push({ key: 'role', label: 'الدور', type: 'select', options: roleOptions.value, required: true }, { key: 'schoolId', label: 'المدرسة', type: 'select', options: cat.schoolOptions, hint: 'لمدير المدرسة والمعلم والتلميذ' })
-  if (props.role === 'student') f.push({ key: 'classId', label: 'القسم', type: 'select', options: schoolClasses.value, required: true }, { key: 'birthDate', label: 'تاريخ الميلاد', type: 'date' })
+  if (props.role === 'student') f.push({ key: 'classId', label: 'القسم', type: 'select', options: schoolClasses.value, required: true })
+  if (props.role === 'teacher' || !props.role) f.push({ ...eduField(), hint: !props.role ? 'للمعلم والمحرر والمدير العام والمشرف العام' : undefined })
   if (props.role === 'teacher') f.push({ key: 'classIds', label: 'الأقسام', type: 'multi', options: schoolClasses.value }, { key: 'subjects', label: 'المواد', type: 'multi', options: cat.subjectNames })
+  if (props.role === 'parent') f.push(relationField())
   if (props.role === 'parent') f.push({ key: 'childIds', label: 'الأبناء', type: 'multi', options: [], hint: 'يُربط الأبناء من ملف الولي بعد الإنشاء أو بالاستيراد' })
   if (props.role !== 'student') f.push({ key: 'phone', label: 'الهاتف', ltr: true }, { key: 'email', label: 'البريد الإلكتروني', ltr: true })
   f.push({ key: 'username', label: 'اسم الدخول', ltr: true, hint: 'اتركه فارغاً لإنشاء السجل دون حساب دخول الآن' })
@@ -152,8 +168,8 @@ function openAdd() {
 async function add(v) {
   busy.value = true
   try {
-    await createUser({ ...v, role: props.role || v.role, schoolId: schoolId.value || v.schoolId, status: 'pending' }, auth.role)
-    toast.add({ severity: 'success', summary: 'أُضيف', detail: 'الحساب بانتظار التفعيل', life: 2500 })
+    await createUser({ ...v, role: props.role || v.role, schoolId: schoolId.value || v.schoolId, status: 'active' }, auth.role)
+    toast.add({ severity: 'success', summary: 'أُضيف الحساب مفعّلاً', detail: 'اطبع ورقة دخوله من «أوراق الدخول» (الجدد)', life: 3200 })
     addDlg.value = false
     load()
   } catch (e) {
@@ -168,6 +184,8 @@ const userDlg = ref(false)
 const user = ref(null)
 const na = reactive({ role: null, schoolId: null, classIds: [], classId: null })
 const canEditAssignments = computed(() => props.scope === 'all' || ['teacher', 'student', 'parent'].includes(props.role))
+// المدير لا يضيف دوراً لشخص له دور في مدرسة أخرى
+const otherSchool = computed(() => auth.role === 'school_manager' && (user.value?.assignments || []).some((a) => a.schoolId && a.schoolId !== auth.active.school?.id))
 const effSchool = computed(() => schoolId.value || na.schoolId)
 async function openUser(id) {
   user.value = await getUser(id)
@@ -183,7 +201,7 @@ async function saveUser() {
 const err = (e) => toast.add({ severity: 'warn', summary: e.message, life: 3000 })
 async function addAsg() {
   try {
-    await addAssignment(user.value.id, { ...na, schoolId: effSchool.value }, auth.role)
+    await addAssignment(user.value.id, { ...na, schoolId: effSchool.value }, auth.role, auth.active.school?.id)
   } catch (e) {
     return err(e)
   }
@@ -211,9 +229,29 @@ async function bulk(status) {
   toast.add({ severity: 'success', summary: status === 'active' ? `فُعّل ${n} حساباً` : `أُوقف ${n} حساباً`, life: 2200 })
   load()
 }
+
+/* صلاحية الإدراج خارج الأقسام: المدير لأقسام مدرسته، والإدارة العامة لأي قسم */
+const grant = ref([])
+const teacherAsg = computed(() => user.value?.assignments?.find((a) => a.role === 'teacher'))
+const canGrant = computed(() => !!teacherAsg.value && (['super_admin', 'admin'].includes(auth.role) || auth.role === 'school_manager'))
+const grantOpts = computed(() => {
+  const own = user.value?.assignments?.filter((a) => a.role === 'teacher').flatMap((a) => a.classIds || []) || []
+  const sid = auth.role === 'school_manager' ? auth.active.school?.id : null
+  return cat.classOptions().filter((c) => !own.includes(c.value) && (!sid || cat.classes.find((x) => x.id === c.value)?.schoolId === sid))
+})
+watch(() => user.value?.id, async (id) => { grant.value = id && canGrant.value ? (await getLinkGrant(id)).classIds : [] })
+async function saveGrant() {
+  try {
+    await setLinkGrant(user.value.id, grant.value, { role: auth.role, schoolId: auth.active.school?.id, name: fullName(auth.person) })
+    toast.add({ severity: 'success', summary: 'حُفظت صلاحية الإدراج', life: 2000 })
+  } catch (e) {
+    toast.add({ severity: 'warn', summary: e.message, life: 2800 })
+  }
+}
 </script>
 
 <style scoped>
+.grow { flex: 1; min-width: 0; }
 .roles { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 .role { font-size: 0.75rem; padding: 0.1rem 0.5rem; border-radius: 999px; background: color-mix(in srgb, var(--brand) 10%, #fff); color: var(--brand); font-weight: 700; white-space: nowrap; }
 .ud { display: flex; flex-direction: column; gap: 1.25rem; }

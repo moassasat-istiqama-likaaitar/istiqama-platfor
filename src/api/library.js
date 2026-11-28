@@ -1,3 +1,4 @@
+import { collection } from '@/mock/collections'
 import { respond, ApiError } from './client'
 import { subjects, lessons, contents } from '@/mock/content'
 import { levels } from '@/mock/db'
@@ -22,6 +23,17 @@ const decorate = (c) => {
  * المعلم يرى المعتمد فقط؛ المحرر والإدارة يرون كل الحالات (curator).
  * الترتيب: المستوى ← المادة ← المحور ← الدرس ← الرئيسي قبل الإثرائي.
  */
+/* ما يُدرج في المكتبة لا يحذفه إلا الإشراف العام (حذف منطقي يُسجَّل) */
+const removedCol = collection('libraryRemoved', [])
+/** DELETE /api/library/{id} — الإدارة العامة وحدها */
+export function removeFromLibrary(id, role, by) {
+  return respond(() => {
+    if (!['super_admin', 'admin'].includes(role)) throw new ApiError('forbidden', 'الحذف من المكتبة من صلاحية الإدارة العامة وحدها')
+    removedCol.insert({ id, by, at: new Date().toISOString() })
+    return true
+  })
+}
+
 export function list(filters = {}, { curator = false } = {}) {
   return respond(() => {
     // ما رفعه المعلمون واعتمده المحرر أصبح جزءاً من المكتبة المركزية
@@ -30,6 +42,7 @@ export function list(filters = {}, { curator = false } = {}) {
     const rank = { main: 0, enrichment: 1, activity: 2 }
     const lvl = (id) => levels.findIndex((l) => l.id === id)
     return [...fromTeachers, ...contents]
+      .filter((c) => !removedCol.find(c.id))
       .filter((c) => curator || c.status === 'approved')
       .filter((c) => !filters.level || c.levelId === filters.level)
       .filter((c) => !filters.subjectKey || subjects.find((s) => s.id === c.subjectId)?.name === filters.subjectKey)

@@ -34,7 +34,7 @@ const auth = useAuthStore()
 const tickets = ref([])
 const incidents = ref([])
 const fullName = computed(() => `${auth.person.firstName} ${auth.person.lastName}`)
-onMounted(async () => ([tickets.value, incidents.value] = await Promise.all([listTickets(), listIncidents()])))
+onMounted(async () => ([tickets.value, incidents.value] = await Promise.all([listTickets('support'), listIncidents()])))
 const byType = computed(() => Object.entries({ technical: 'تقني', content: 'محتوى', account: 'حساب', suggestion: 'مقترح' }).map(([k, label]) => ({ label, value: tickets.value.filter((x) => x.type === k).length })))
 </script>
 

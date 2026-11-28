@@ -9,6 +9,7 @@
         <label class="fl"><span>المادة *</span><Select v-model="q.subjectId" :options="cat.subjectOptions(levelId)" option-label="label" option-value="value" fluid :disabled="!levelId" /></label>
         <label class="fl"><span>الدرس</span><Select v-model="q.lessonId" placeholder="— بلا درس —" :options="[{ label: '— بلا درس —', value: null }, ...cat.linkLessonOptions(q.subjectId)]" option-label="label" option-value="value" option-disabled="disabled" filter fluid :disabled="!q.subjectId" /></label>
         <label class="fl"><span>المدة (دقائق)</span><InputNumber v-model="q.minutes" :min="0" :max="180" fluid placeholder="بلا حدّ" /></label>
+<label class="fl"><span>سلّم العلامة</span><SelectButton v-model="q.maxScore" :options="[{ label: 'على 10', value: 10 }, { label: 'على 20', value: 20 }]" option-label="label" option-value="value" :allow-empty="false" /></label>
         <label class="fl"><span>آخر أجل</span><InputText v-model="q.due" type="datetime-local" fluid /></label>
         <label class="fl sw full"><ToggleSwitch v-model="q.showAnswers" /> <span>إظهار الإجابات الصحيحة بعد التسليم</span></label>
         <p v-if="!tg.isEditor.value" class="muted small full"><i class="pi pi-info-circle" /> يُرسل تلقائياً للمكتبة المركزية للمراجعة، ولا يراه التلاميذ حتى يصادق عليه مدير المدرسة أو يعتمده المحرر.</p>
@@ -17,7 +18,7 @@
 
       <section class="qs">
         <div class="qs__bar">
-          <h3>الأسئلة ({{ q.questions.length }}) · المجموع {{ total }} ن</h3>
+          <h3>الأسئلة ({{ q.questions.length }}) · المجموع {{ total }} ن <small class="muted">← تُحوَّل إلى /{{ q.maxScore }}</small></h3>
           <div class="btns">
             <Button label="من بنك الأسئلة" icon="pi pi-database" outlined size="small" :disabled="!levelId" @click="openBank" />
             <Button :label="mode === 'test' ? 'العودة للتحرير' : 'جرّب التقييم'" :icon="mode === 'test' ? 'pi pi-pencil' : 'pi pi-play'" severity="help" size="small" :disabled="!q.questions.length" @click="toggleTest" />
@@ -88,6 +89,7 @@
 <script setup>
 import { reactive, ref, computed } from 'vue'
 import Button from 'primevue/button'
+import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
@@ -113,7 +115,7 @@ const toast = useToast()
 let k = 0
 const targetOpts = computed(() => tg.options())
 const week = () => new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 16)
-const blank = () => ({ title: '', targets: targetOpts.value.slice(0, 1).map((o) => o.value), subjectId: null, lessonId: null, minutes: 15, due: week(), showAnswers: true, questions: [] })
+const blank = () => ({ title: '', targets: targetOpts.value.slice(0, 1).map((o) => o.value), subjectId: null, lessonId: null, minutes: 15, due: week(), showAnswers: true, maxScore: 20, questions: [] })
 const q = reactive(blank())
 const mode = ref('edit')
 const busy = ref(false)

@@ -158,7 +158,7 @@ function hashN(s) {
 }
 
 /** كل تسليمات الأقسام: الحقيقية (من تقدّم التلاميذ) + المولَّدة لأنشطة المنصة */
-function collectSubmissions(classIds) {
+export function collectSubmissions(classIds) {
   const out = []
   classIds.forEach((cid) => {
     const c = classes.find((x) => x.id === cid)
@@ -245,8 +245,13 @@ export function createUpload(author, data, submit = true) {
 export function submitUpload(id) {
   return respond(() => uploads().update(id, { status: 'review', at: new Date().toISOString() }))
 }
-export function removeUpload(id) {
-  return respond(() => uploads().remove(id))
+/** DELETE — صاحبه يحذف مسودته أو المرفوض فقط (لم يدخل المكتبة)؛ ما دخل المكتبة لا يحذفه إلا الإشراف العام */
+export function removeUpload(id, role) {
+  return respond(() => {
+    const u = uploads().find(id)
+    if (u && !['draft', 'rejected'].includes(u.status) && !['super_admin', 'admin'].includes(role)) throw new ApiError('forbidden', 'ما دخل المكتبة لا يحذفه إلا الإشراف العام')
+    return uploads().remove(id)
+  })
 }
 
 /* ——— الأنشطة (واجبات وتقييمات) ——— */
@@ -339,8 +344,12 @@ export function uploadOfflineTest(author, data) {
     return offlineBankCol().insert({ ...data, id: newId('ob'), authorId: author.id, authorName: fullName(author), hidden: false, at: new Date().toISOString() })
   }, 400)
 }
-export function removeOfflineTest(id) {
-  return respond(() => offlineBankCol().remove(id))
+/** حذف وثيقة من بنك الاختبارات الحضورية — الإشراف العام وحده (المحرر يخفي فقط) */
+export function removeOfflineTest(id, role) {
+  return respond(() => {
+    if (!['super_admin', 'admin'].includes(role)) throw new ApiError('forbidden', 'الحذف من صلاحية الإشراف العام وحده')
+    return offlineBankCol().remove(id)
+  })
 }
 /** PATCH /api/offline-bank/:id { hidden } — المحرر يخفي وثيقة غير لائقة */
 export function setOfflineHidden(id, hidden) {

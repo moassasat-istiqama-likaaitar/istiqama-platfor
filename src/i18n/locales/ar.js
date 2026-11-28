@@ -13,7 +13,7 @@ export default {
   menu: {
     teaching: 'أقسامي', 'my-library': 'مكتبة القسم',
     home: 'الرئيسية', users: 'المستخدمون', 'users-list': 'قائمة المستخدمين', 'users-import': 'الاستيراد الجماعي',
-    'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل العمليات', notices: 'الإعلانات', library: 'المكتبة', content: 'المحتوى', review: 'المراجعة والمصادقة', banks: 'بنوك التقييم', production: 'إنتاجي',
+    'users-duplicates': 'الحسابات المكررة', 'activity-log': 'سجل العمليات', 'reports-contributors': 'المساهمون في المكتبة', 'reports-ratings': 'تقديرات المحتوى', 'reports-activity': 'نشاط التلاميذ', 'reports-teachers': 'نشاط المعلمين', notices: 'الإعلانات', library: 'المكتبة', content: 'المحتوى', review: 'المراجعة والمصادقة', banks: 'بنوك التقييم', production: 'إنتاجي',
     'library-manage': 'المكتبة المركزية', 'lesson-opening': 'فتح الدروس', 'activities-review': 'مراجعة الواجبات والتقييمات', 'library-review': 'مراجعة المحتوى', activities: 'بنك الواجبات والتقييمات',
     'activities-group': 'الواجبات والتقييمات', reports: 'التقارير', 'reports-general': 'تقارير عامة',
     'reports-schools': 'أداء المدارس', 'reports-files': 'إحصائيات المحتوى', 'reports-engagement': 'جودة التفاعل',

@@ -13,6 +13,7 @@
         <span class="k-pill k-pill--fire"><i class="pi pi-bolt" /> {{ student.streak }}</span>
       </div>
       <div class="k-top__end">
+        <RouterLink :to="{ name: 'notices' }" class="k-round" aria-label="الإعلانات"><i class="pi pi-megaphone" /><b v-if="noticesUnread">{{ noticesUnread }}</b></RouterLink>
         <RouterLink :to="{ name: 'notifications' }" class="k-round" :aria-label="t('menu.notifications')">
           <i class="pi pi-bell" /><b v-if="inbox.unreadNotifications">{{ inbox.unreadNotifications }}</b>
         </RouterLink>
@@ -36,6 +37,8 @@
 </template>
 
 <script setup>
+import { useNoticesUnread } from '@/composables/useNoticesUnread'
+const noticesUnread = useNoticesUnread()
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import RoleSwitcher from '@/components/RoleSwitcher.vue'

@@ -67,7 +67,7 @@ async function send(row) {
   load()
 }
 async function del(row) {
-  if (tab.value === 'files') await removeUpload(row.id)
+  if (tab.value === 'files') await removeUpload(row.id, auth.role)
   else teacherActs().remove(row.id)
   toast.add({ severity: 'info', summary: 'حُذف', life: 1800 })
   load()

@@ -7,7 +7,7 @@
       { label: 'التلاميذ', value: d.counts.students, icon: 'pi pi-users', to: '/app/students' },
       { label: 'المعلمون', value: d.counts.teachers, icon: 'pi pi-user', tone: 'purple', to: '/app/teachers' },
       { label: 'الأقسام', value: d.counts.classes, icon: 'pi pi-th-large', tone: 'blue', to: '/app/school-classes' },
-      { label: 'بانتظار التفعيل', value: d.counts.pending, icon: 'pi pi-clock', tone: d.counts.pending ? 'amber' : 'green', to: '/app/activation' },
+      { label: 'أوراق دخول لم تُطبع', value: toPrint, icon: 'pi pi-id-card', tone: toPrint ? 'amber' : 'green', to: '/app/login-sheets' },
       { label: 'ملفات للمصادقة', value: d.uploadsPending, icon: 'pi pi-check-square', tone: d.uploadsPending ? 'amber' : 'green', to: '/app/teacher-files-review' }
     ]" />
     <div class="g">
@@ -39,11 +39,19 @@ import RecordTable from '@/components/ui/RecordTable.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useBrandStore } from '@/stores/brand'
 import { schoolOverview } from '@/api/school'
+import { sheetsSummary } from '@/api/credentials'
+// حسابات أُنشئت ولم تُطبع ورقة دخولها بعد (كل حساب يُنشأ مفعّلاً، ويصل صاحبَه بورقة الدخول)
+const toPrint = ref(0)
 
 const auth = useAuthStore()
 const brand = useBrandStore()
 const d = ref(null)
-onMounted(async () => (d.value = await schoolOverview(auth.active.school.id)))
+onMounted(async () => {
+  const sid = auth.active.school.id
+  d.value = await schoolOverview(sid)
+  const sums = await Promise.all(['students', 'parents', 'teachers'].map((c) => sheetsSummary(c, sid)))
+  toPrint.value = sums.reduce((n, x) => n + x.toPrint, 0)
+})
 </script>
 
 <style scoped>

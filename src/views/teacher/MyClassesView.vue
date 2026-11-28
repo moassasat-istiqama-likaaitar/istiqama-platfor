@@ -22,12 +22,14 @@
       </div>
 
       <!-- التلاميذ -->
+      <div v-if="tab === 'students'" class="rc-bar"><Button label="كشوف نقاط القسم" icon="pi pi-print" size="small" outlined @click="$router.push({ name: 'report-card', query: { class: cur.id } })" /></div>
       <RecordTable v-if="tab === 'students'" :rows="students" :columns="[
         { field: 'name', label: 'التلميذ', type: 'person', sub: 'parents' }, { field: 'progress', label: 'التقدّم', type: 'progress' },
         { field: 'average', label: 'المعدل' }, { field: 'late', label: 'متأخرات' }, { field: 'seen', label: 'آخر دخول' }
       ]" :search-keys="['name', 'parents']" :filters="[{ key: 'risk', label: 'الحالة', options: [{ label: 'يحتاج متابعة', value: true }, { label: 'في المسار', value: false }] }]" unit="تلميذ" :row-class="(r) => (r.risk ? 'row-risk' : '')">
         <template #actions="{ row }">
           <Button icon="pi pi-eye" text rounded size="small" title="ملف التلميذ" @click="openStudent(row)" />
+          <Button icon="pi pi-file" text rounded size="small" title="كشف النقاط" @click="$router.push({ name: 'report-card', query: { student: row.id } })" />
         </template>
       </RecordTable>
 
@@ -39,8 +41,8 @@
             <p class="muted">المحرر يفتح دروس المستوى أولاً. «تلقائي»: كل ما فتحه المحرر يُفتح لتلاميذك في موعده. «يدوي»: تفتح أنت ما فتحه المحرر، فوراً أو بتاريخ، حتى لا يسبق التلميذ الشرح في القسم.</p>
           </div>
           <div class="seg">
-            <button type="button" :class="{ on: plan.mode === 'follow' }" @click="setMode('follow')"><i class="pi pi-sync" /> تلقائي (يتبع المحرر)</button>
-            <button type="button" :class="{ on: plan.mode === 'manual' }" @click="setMode('manual')"><i class="pi pi-calendar" /> يدوي / مجدول</button>
+            <button type="button" :class="{ on: plan.mode === 'follow' }" @click="askMode('follow')"><i class="pi pi-sync" /> تلقائي (يتبع المحرر)</button>
+            <button type="button" :class="{ on: plan.mode === 'manual' }" @click="askMode('manual')"><i class="pi pi-calendar" /> يدوي / مجدول</button>
           </div>
         </div>
         <p class="muted hint"><i class="pi pi-star-fill" style="color: #f5a400" /> «درس الأسبوع» يظهر لكل تلاميذ القسم كدرس مقترح في رئيسيتهم، قبل اقتراح المنصة الآلي.</p>
@@ -101,6 +103,10 @@
         <Button label="إغلاق" @click="sDlg = false" />
       </template>
     </Dialog>
+    <Dialog :visible="!!modeDlg" modal :header="modeDlg && MODE_INFO[modeDlg].title" :style="{ width: 'min(480px, 95vw)' }" @update:visible="(v) => !v && (modeDlg = null)">
+      <ul v-if="modeDlg" class="mode-pts"><li v-for="t in MODE_INFO[modeDlg].points" :key="t">{{ t }}</li></ul>
+      <template #footer><Button label="إلغاء" text severity="secondary" @click="modeDlg = null" /><Button label="تأكيد التحويل" :icon="modeDlg && MODE_INFO[modeDlg].icon" @click="confirmMode" /></template>
+    </Dialog>
   </div>
 </template>
 
@@ -155,6 +161,14 @@ async function persist(patch, msg) {
   if (msg) toast.add({ severity: 'success', summary: msg, life: 2200 })
 }
 // عند التحويل إلى «يدوي» نبدأ مما هو مفتوح حالياً حتى لا تُغلق الدروس فجأة على التلاميذ
+// تأكيد تغيير طريقة الفتح مع شرح أثرها
+const MODE_INFO = {
+  follow: { title: 'التحويل إلى الفتح التلقائي', icon: 'pi pi-sync', points: ['كل درس يفتحه المحرر يُفتح لتلاميذ هذا القسم تلقائياً في موعده.', 'لن تتحكم في تواريخ الفتح يدوياً ما دام هذا الوضع مفعّلاً.', 'تواريخ الفتح اليدوية التي ضبطتها سابقاً تُتجاهل.'] },
+  manual: { title: 'التحويل إلى الفتح اليدوي', icon: 'pi pi-calendar', points: ['تفتح أنت الدروس لتلاميذك، فوراً أو بتاريخ لكل درس.', 'لا يمكنك فتح درس لم يفتحه المحرر، ولا قبل موعده.', 'الدروس المفتوحة حالياً تبقى مفتوحة.', 'الدروس التي يفتحها المحرر لاحقاً لن تُفتح لتلاميذك حتى تفتحها أنت.'] }
+}
+const modeDlg = ref(null)
+const askMode = (mode) => { if (plan.value.mode !== mode) modeDlg.value = mode }
+const confirmMode = () => { setMode(modeDlg.value); modeDlg.value = null }
 const setMode = (mode) => persist(mode === 'manual' && !Object.keys(plan.value.opens || {}).length ? { mode, opens: Object.fromEntries(plan.value.subjects.flatMap((s) => s.lessons.filter((l) => l.open).map((l) => [l.id, l.editorAt]))) } : { mode }, mode === 'follow' ? 'تلقائي: ما يفتحه المحرر يُفتح لتلاميذك في موعده' : 'يدوي: افتح الدروس لتلاميذك فوراً أو بتاريخ')
 function setOpen(l, at) {
   // لا يُفتح للتلميذ قبل موعد المحرر
@@ -186,6 +200,8 @@ async function give() {
 </script>
 
 <style scoped>
+.mode-pts { margin: 0; padding-inline-start: 1.2rem; line-height: 1.9; }
+.rc-bar { display: flex; justify-content: flex-end; margin-bottom: 0.6rem; }
 .gb { margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed var(--line); }
 .gb__list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0; }
 .gb__b { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 0.3rem 0.75rem; cursor: pointer; font: inherit; font-size: 0.84rem; color: inherit; display: inline-flex; gap: 0.35rem; align-items: center; }

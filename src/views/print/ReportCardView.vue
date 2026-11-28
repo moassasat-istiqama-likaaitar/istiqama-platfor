@@ -6,7 +6,7 @@
       <Button label="طباعة / حفظ PDF" icon="pi pi-print" @click="print" />
     </div>
 
-    <article v-if="r" class="sheet" :style="vars">
+    <article v-for="{ who, r } in sheets" :key="who.id" class="sheet" :style="vars">
       <header class="sheet__head">
         <div class="side">
           <InstitutionMark :size="64" />
@@ -33,12 +33,12 @@
 
       <table class="grid">
         <thead>
-          <tr><th>المادة</th><th>الدروس المنجزة</th><th>نسبة التقدّم</th><th>التقييمات</th><th>الواجبات</th><th>المعدل /20</th><th>التقدير</th></tr>
+          <tr><th>المادة</th><th>الدروس المنجزة / المفتوحة</th><th>نسبة التقدّم</th><th>التقييمات</th><th>الواجبات</th><th>المعدل /20</th><th>التقدير</th></tr>
         </thead>
         <tbody>
           <tr v-for="s in r.subjects" :key="s.id">
             <td class="subj">{{ s.name }}</td>
-            <td>{{ s.doneCount }} / {{ s.lessonsCount }}</td>
+            <td>{{ s.doneOpen }} / {{ s.openCount }}</td>
             <td><div class="bar"><span :style="{ width: s.progress + '%' }" /></div>{{ s.progress }}%</td>
             <td>{{ s.quizzesDone }} / {{ s.quizzesTotal }}</td>
             <td>{{ s.homeworkDone }} / {{ s.homeworkTotal }}</td>
@@ -47,7 +47,7 @@
           </tr>
         </tbody>
         <tfoot>
-          <tr><td>المجموع</td><td>{{ r.totals.lessons }} / {{ r.totals.lessonsAll }}</td><td>{{ overall }}%</td><td colspan="2">{{ r.totals.activities }} عملاً منجزاً</td><td class="avg">{{ generalAvg ?? '—' }}</td><td>{{ grade(generalAvg) }}</td></tr>
+          <tr><td>المجموع</td><td>{{ r.totals.lessons }} / {{ r.totals.lessonsAll }}</td><td>{{ overall(r) }}%</td><td colspan="2">{{ r.totals.activities }} عملاً منجزاً</td><td class="avg">{{ generalAvg(r) ?? '—' }}</td><td>{{ grade(generalAvg(r)) }}</td></tr>
         </tfoot>
       </table>
 
@@ -62,6 +62,7 @@
       </footer>
       <p class="foot">وثيقة صادرة عن {{ t('app.name') }} — {{ brand.school?.name }}</p>
     </article>
+    <p v-if="loaded && !sheets.length" class="no-print empty">لا كشوف لعرضها.</p>
   </div>
 </template>
 
@@ -75,31 +76,35 @@ import SchoolLogo from '@/components/brand/SchoolLogo.vue'
 import { useAuthStore } from '@/stores/auth'
 import { useBrandStore } from '@/stores/brand'
 import * as learning from '@/api/learning'
+import { reportCardTargets } from '@/api/people'
 
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const brand = useBrandStore()
-const r = ref(null)
 
-// التلميذ يطبع كشفه، والولي يطبع كشف ابنه (?child=)
-const kid = computed(() => (auth.role === 'parent' ? (auth.active.children || []).find((c) => c.id === route.query.child) || auth.active.children?.[0] : null))
-const who = computed(() => (kid.value ? { id: kid.value.id, name: kid.value.name, className: kid.value.className, levelId: kid.value.levelId, levelName: kid.value.levelName } : { id: auth.person.id, name: auth.fullName, className: auth.active.class?.name, levelId: auth.active.level?.id, levelName: auth.active.level?.name }))
+// كشف النقاط من صلاحية المعلم وحده: تلميذ واحد (?student=) أو كشوف قسم كامل (?class=)، لتلاميذ أقسامه فقط
+const sheets = ref([])
+const loaded = ref(false)
 onMounted(async () => {
-  if (kid.value) await brand.setChild(kid.value.id, auth.active)
-  else await brand.sync(auth.active)
-  r.value = await learning.progressReport(who.value.id, who.value.levelId)
+  await brand.sync(auth.active)
+  try {
+    const targets = await reportCardTargets({ studentId: route.query.student, classId: route.query.class }, auth.active)
+    sheets.value = await Promise.all(targets.map(async (who) => ({ who, r: await learning.progressReport(who.id, who.levelId) })))
+  } finally {
+    loaded.value = true
+  }
 })
 
 const vars = computed(() => ({ '--s1': brand.branding?.primary || '#233b85', '--s2': brand.branding?.secondary || '#ffc96b' }))
 const today = new Date().toLocaleDateString('ar-DZ', { day: 'numeric', month: 'long', year: 'numeric' })
 const season = (() => { const y = new Date().getFullYear(), m = new Date().getMonth(); return m >= 8 ? `${y}/${y + 1}` : `${y - 1}/${y}` })()
-const overall = computed(() => (r.value.totals.lessonsAll ? Math.round((r.value.totals.lessons / r.value.totals.lessonsAll) * 100) : 0))
-const generalAvg = computed(() => {
-  const xs = r.value.subjects.map((s) => s.average).filter((x) => x !== null)
+const overall = (r) => (r.totals.lessonsAll ? Math.round((r.totals.lessons / r.totals.lessonsAll) * 100) : 0)
+const generalAvg = (r) => {
+  const xs = r.subjects.map((s) => s.average).filter((x) => x !== null)
   return xs.length ? Math.round((xs.reduce((a, b) => a + b, 0) / xs.length) * 10) / 10 : null
-})
+}
 const grade = (v) => (v === null || v === undefined ? '—' : v >= 16 ? 'ممتاز' : v >= 14 ? 'جيد جداً' : v >= 12 ? 'جيد' : v >= 10 ? 'مقبول' : 'يحتاج دعماً')
 const print = () => window.print()
 </script>
@@ -107,6 +112,8 @@ const print = () => window.print()
 <style scoped>
 .rc-page { min-height: 100vh; background: #e9ecf2; padding: 1.5rem 1rem 3rem; font-family: Cairo, sans-serif; color: #1a1f36; }
 .rc-tools { max-width: 210mm; margin: 0 auto 1rem; display: flex; justify-content: space-between; }
+.empty { text-align: center; padding: 3rem; color: #64748b; }
+.sheet + .sheet { margin-top: 1.5rem; break-before: page; }
 .sheet { width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; padding: 14mm 14mm 10mm; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12); box-sizing: border-box; display: flex; flex-direction: column; }
 .sheet__head { display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; }
 .side { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }

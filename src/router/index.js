@@ -61,7 +61,6 @@ const routes = [
       { path: 'students', name: 'students', component: () => import('@/views/users/UsersView.vue'), props: { role: 'student', title: 'التلاميذ', subtitle: 'تلاميذ المدرسة وتقدّمهم ومعدلاتهم.' }, meta: { roles: ['school_manager'] } },
       { path: 'parents', name: 'parents', component: () => import('@/views/users/UsersView.vue'), props: { role: 'parent', title: 'الأولياء', subtitle: 'أولياء تلاميذ المدرسة وأبناؤهم.' }, meta: { roles: ['school_manager'] } },
       { path: 'login-sheets', name: 'login-sheets', component: () => import('@/views/manager/LoginSheetsView.vue'), meta: { roles: ['school_manager', 'super_admin', 'admin'] } },
-      { path: 'activation', name: 'activation', component: () => import('@/views/manager/ActivationView.vue'), meta: { roles: ['school_manager'] } },
       { path: 'school-classes', name: 'school-classes', component: () => import('@/views/manager/SchoolClassesView.vue'), meta: { roles: ['school_manager'] } },
       { path: 'teacher-files-review', name: 'teacher-files-review', component: () => import('@/views/manager/TeacherFilesReview.vue'), meta: { roles: ['school_manager'] } },
       { path: 'content-follow', name: 'content-follow', component: () => import('@/views/manager/ContentFollowView.vue'), meta: { roles: ['school_manager'] } },
@@ -75,6 +74,10 @@ const routes = [
       { path: 'reports-general', name: 'reports-general', component: () => import('@/views/admin/ReportsView.vue'), props: { kind: 'general' }, meta: { roles: ['admin', 'super_admin'] } },
       { path: 'reports-schools', name: 'reports-schools', component: () => import('@/views/admin/ReportsView.vue'), props: { kind: 'schools' }, meta: { roles: ['admin', 'super_admin'] } },
       { path: 'reports-files', name: 'reports-files', component: () => import('@/views/admin/ReportsView.vue'), props: { kind: 'files' }, meta: { roles: ['admin', 'super_admin'] } },
+      { path: 'reports-contributors', name: 'reports-contributors', component: () => import('@/views/reports/InsightsView.vue'), props: { kind: 'contributors' }, meta: { roles: ['admin', 'super_admin', 'editor'] } },
+      { path: 'reports-ratings', name: 'reports-ratings', component: () => import('@/views/reports/InsightsView.vue'), props: { kind: 'ratings' }, meta: { roles: ['admin', 'super_admin', 'editor'] } },
+      { path: 'reports-activity', name: 'reports-activity', component: () => import('@/views/reports/InsightsView.vue'), props: { kind: 'activity' }, meta: { roles: ['admin', 'super_admin', 'teacher'] } },
+      { path: 'reports-teachers', name: 'reports-teachers', component: () => import('@/views/reports/InsightsView.vue'), props: { kind: 'teachers' }, meta: { roles: ['admin', 'super_admin'] } },
       { path: 'reports-engagement', name: 'reports-engagement', component: () => import('@/views/admin/ReportsView.vue'), props: { kind: 'engagement' }, meta: { roles: ['admin', 'super_admin'] } },
       { path: 'schools', name: 'schools', component: () => import('@/views/admin/SchoolsView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       { path: 'levels', name: 'levels', component: () => import('@/views/admin/LevelsView.vue'), meta: { roles: ['admin', 'super_admin'] } },
@@ -88,7 +91,7 @@ const routes = [
       { path: 'communication', name: 'communication', component: () => import('@/views/admin/CommunicationView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       { path: 'import-export', name: 'import-export', component: () => import('@/views/admin/ImportExportView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       // ——— الدعم الفني ———
-      { path: 'tickets', name: 'tickets', component: () => import('@/views/support/TicketsView.vue'), meta: { roles: ['support', 'admin', 'super_admin'] } },
+      { path: 'tickets', name: 'tickets', component: () => import('@/views/support/TicketsView.vue'), meta: { roles: ['support', 'admin', 'super_admin', 'editor'] } },
       { path: 'incidents', name: 'incidents', component: () => import('@/views/support/IncidentsView.vue'), meta: { roles: ['support'] } },
       { path: 'support-team', name: 'support-team', component: () => import('@/views/support/SupportTeamView.vue'), meta: { roles: ['support'] } },
       // ——— المكتبة المركزية ———
@@ -105,7 +108,7 @@ const routes = [
   // صفحات الطباعة (خارج القالب)
   { path: '/print/offline-test/:id', name: 'offline-print', component: () => import('@/views/print/OfflineTestPrint.vue'), meta: { auth: true, roles: ['teacher', 'editor'] } },
   { path: '/print/login-sheets', name: 'login-sheets-print', component: () => import('@/views/print/LoginSheetsPrint.vue'), meta: { auth: true, roles: ['school_manager', 'super_admin', 'admin'] } },
-  { path: '/print/report-card', name: 'report-card', component: () => import('@/views/print/ReportCardView.vue'), meta: { auth: true, roles: ['student', 'parent'] } },
+  { path: '/print/report-card', name: 'report-card', component: () => import('@/views/print/ReportCardView.vue'), meta: { auth: true, roles: ['teacher'] } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/errors/NotFoundView.vue') }
 ]
 
