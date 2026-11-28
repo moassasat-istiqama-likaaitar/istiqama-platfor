@@ -46,7 +46,7 @@
 | تقارير الأداء | SM09 | `#/app/performance` | `src/views/manager/PerformanceView.vue` | school_manager |
 | إعلانات المدرسة (الإرسال) | SM10 | `#/app/school-notice` | `src/views/manager/SchoolNoticeView.vue` | school_manager |
 | قائمة المستخدمين | AD02,AD03 | `#/app/users-list` | `src/views/users/UsersView.vue` | الكل |
-| الاستيراد الجماعي | AD04 | `#/app/users-import` | `src/views/admin/ImportView.vue` | admin, super_admin |
+| الاستيراد الجماعي | AD04 | `#/app/users-import` | `src/views/admin/ImportView.vue` | admin, super_admin, school_manager (مدرسته فقط) |
 | الحسابات المكررة | AD05 | `#/app/users-duplicates` | `src/views/admin/DuplicatesView.vue` | admin, super_admin |
 | سجل العمليات | AD06 | `#/app/activity-log` | `src/views/admin/ActivityLogView.vue` | admin, super_admin |
 | تقارير عامة | AD17 | `#/app/reports-general` | `src/views/admin/ReportsView.vue` | الكل |
