@@ -1,13 +1,13 @@
 <template>
   <!-- AD04: الاستيراد الجماعي — نموذج Excel ← معاينة وتصحيح الأخطاء ← تأكيد -->
   <div>
-    <PageHeader title="الاستيراد الجماعي" subtitle="أضف مئات التلاميذ أو المعلمين أو الأولياء دفعة واحدة من ملف Excel." />
+    <PageHeader title="الاستيراد الجماعي" :subtitle="isManager ? `أضف تلاميذ مدرستك أو معلميها أو أولياءها دفعة واحدة من ملف Excel — في حدود ${auth.active.school?.name || 'مدرستك'}.` : 'أضف مئات التلاميذ أو المعلمين أو الأولياء دفعة واحدة من ملف Excel.'" />
     <ol class="steps"><li v-for="(s, i) in STEPS" :key="s" :class="{ on: step === i, done: step > i }"><span>{{ i + 1 }}</span>{{ s }}</li></ol>
 
     <section v-if="step === 0" class="panel s0">
       <div class="grid2">
         <label class="fl"><span>نوع البيانات</span><Select v-model="entity" :options="ENTITIES" option-label="label" option-value="value" fluid /></label>
-        <label class="fl"><span>المدرسة</span><Select v-model="schoolId" :options="cat.schoolOptions" option-label="label" option-value="value" filter fluid /></label>
+        <label class="fl"><span>المدرسة</span><Select v-model="schoolId" :options="schoolOpts" option-label="label" option-value="value" filter fluid :disabled="isManager" /></label>
       </div>
       <div class="tpl">
         <i class="pi pi-file-excel" />
@@ -63,7 +63,10 @@ const ENTITIES = [
 ]
 const step = ref(0)
 const entity = ref('students')
-const schoolId = ref(null)
+// مدير المدرسة يستورد في حدود مدرسته فقط (المدرسة مثبّتة، والخادم يرفض أي سطر خارجها)
+const isManager = auth.role === 'school_manager'
+const schoolId = ref(isManager ? auth.active.school?.id : null)
+const schoolOpts = computed(() => (isManager ? cat.schoolOptions.filter((o) => o.value === schoolId.value) : cat.schoolOptions))
 const file = ref(null)
 const busy = ref(false)
 const rows = ref([])
@@ -88,7 +91,7 @@ async function analyze() {
 async function confirm() {
   busy.value = true
   imported.value = rows.value.length - errors.value
-  await addJob({ kind: 'import', entity: entity.value, file: file.value, rows: rows.value.length, ok: imported.value, errors: errors.value }, auth.person)
+  await addJob({ kind: 'import', schoolId: schoolId.value, entity: entity.value, file: file.value, rows: rows.value.length, ok: imported.value, errors: errors.value }, auth.person)
   busy.value = false
   step.value = 2
 }

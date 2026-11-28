@@ -68,7 +68,7 @@ const routes = [
       { path: 'school-notice', name: 'school-notice', component: () => import('@/views/manager/SchoolNoticeView.vue'), meta: { roles: ['school_manager'] } },
       // ——— الإدارة العامة ———
       { path: 'users-list', name: 'users-list', component: () => import('@/views/users/UsersView.vue'), props: { scope: 'all', title: 'قائمة المستخدمين', subtitle: 'كل الأشخاص في المنصة وأدوارهم. شخص واحد = حساب واحد بأدوار متعددة.' }, meta: { roles: ['admin', 'super_admin'] } },
-      { path: 'users-import', name: 'users-import', component: () => import('@/views/admin/ImportView.vue'), meta: { roles: ['admin', 'super_admin'] } },
+      { path: 'users-import', name: 'users-import', component: () => import('@/views/admin/ImportView.vue'), meta: { roles: ['admin', 'super_admin', 'school_manager'] } },
       { path: 'users-duplicates', name: 'users-duplicates', component: () => import('@/views/admin/DuplicatesView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       { path: 'activity-log', name: 'activity-log', component: () => import('@/views/admin/ActivityLogView.vue'), meta: { roles: ['admin', 'super_admin'] } },
       { path: 'reports-general', name: 'reports-general', component: () => import('@/views/admin/ReportsView.vue'), props: { kind: 'general' }, meta: { roles: ['admin', 'super_admin'] } },

@@ -153,7 +153,7 @@ const addFields = computed(() => {
   const f = commonFields()
   if (!props.role) f.push({ key: 'role', label: 'الدور', type: 'select', options: roleOptions.value, required: true }, { key: 'schoolId', label: 'المدرسة', type: 'select', options: cat.schoolOptions, hint: 'لمدير المدرسة والمعلم والتلميذ' })
   if (props.role === 'student') f.push({ key: 'classId', label: 'القسم', type: 'select', options: schoolClasses.value, required: true })
-  if (props.role === 'teacher' || !props.role) f.push({ ...eduField(), hint: !props.role ? 'للمعلم والمحرر والمدير العام والمشرف العام' : undefined })
+  if (props.role === 'teacher' || !props.role) f.push({ ...eduField(), hint: !props.role ? 'للمعلم والمحرر ومدير المدرسة والمدير العام والمشرف العام' : undefined })
   if (props.role === 'teacher') f.push({ key: 'classIds', label: 'الأقسام', type: 'multi', options: schoolClasses.value }, { key: 'subjects', label: 'المواد', type: 'multi', options: cat.subjectNames })
   if (props.role === 'parent') f.push(relationField())
   if (props.role === 'parent') f.push({ key: 'childIds', label: 'الأبناء', type: 'multi', options: [], hint: 'يُربط الأبناء من ملف الولي بعد الإنشاء أو بالاستيراد' })

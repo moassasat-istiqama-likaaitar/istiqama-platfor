@@ -367,7 +367,12 @@ export function listJobs() {
   return respond(() => jobs.all())
 }
 export function addJob(job, by) {
-  return respond(() => jobs.insert({ id: newId('jb'), status: 'done', at: new Date().toISOString(), by: fullName(by), ...job }), 600)
+  return respond(() => {
+    // مدير المدرسة: الاستيراد في حدود مدرسته فقط
+    const asg = assignments.find((a) => a.personId === by?.id && a.role === 'school_manager')
+    if (job.kind === 'import' && asg && !assignments.some((a) => a.personId === by.id && ADMINS.includes(a.role)) && job.schoolId !== asg.schoolId) throw new ApiError('forbidden', 'تستورد في حدود مدرستك فقط')
+    return jobs.insert({ id: newId('jb'), status: 'done', at: new Date().toISOString(), by: fullName(by), ...job })
+  }, 600)
 }
 /** محاكاة تحليل ملف استيراد: يُرجع معاينة الأسطر مع الأخطاء */
 export function previewImport(entity, schoolId) {

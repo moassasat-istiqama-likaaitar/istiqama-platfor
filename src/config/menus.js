@@ -94,6 +94,7 @@ export const MENUS = {
       item('teachers', 'pi pi-user', ['SM02'], 6),
       item('students', 'pi pi-users', ['SM03'], 6),
       item('parents', 'pi pi-user-plus', ['SM04'], 6),
+      item('users-import', 'pi pi-file-import', ['AD04'], 6),
       item('login-sheets', 'pi pi-id-card', ['SM12'], 6)
     ]),
     item('school-classes', 'pi pi-th-large', ['SM06'], 6),
